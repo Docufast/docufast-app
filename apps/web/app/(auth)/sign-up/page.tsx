@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 
@@ -44,7 +45,7 @@ export default function SignUpPage() {
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
         <div className="flex items-center gap-2 border-b-4 border-brand-black pb-4">
-          <span className="h-5 w-5 bg-brand-yellow" />
+          <Image src="/images/logo-black.png" alt="Docufast" width={24} height={24} />
           <span className="mr-auto text-xl font-extrabold tracking-wide text-brand-black">
             DOCUFAST
           </span>
@@ -145,10 +146,7 @@ export default function SignUpPage() {
         </form>
       </div>
 
-      <HeroPanel
-        variant="yellow"
-        caption="Yellow panel on Home and Sign up; the darker variant marks the returning-user path."
-      />
+      <HeroPanel src="/images/hero-signup.png" alt="Docufast — start your journey" bg="yellow" />
     </main>
   );
 }

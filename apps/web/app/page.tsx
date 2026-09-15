@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 
 export default function Home() {
@@ -8,7 +9,7 @@ export default function Home() {
         {/* Nav */}
         <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
           <div className="flex items-center gap-2">
-            <span className="h-5 w-5 bg-brand-yellow" />
+            <Image src="/images/logo-black.png" alt="Docufast" width={28} height={28} />
             <span className="text-xl font-extrabold tracking-wide text-brand-black">
               DOCUFAST
             </span>
@@ -90,10 +91,7 @@ export default function Home() {
         </div>
       </div>
 
-      <HeroPanel
-        variant="yellow"
-        caption="Full-height, bleeds to the panel edge. Portrait-friendly crop, 720 × 1080 minimum."
-      />
+      <HeroPanel src="/images/hero-home.png" alt="Docufast — documents made simple" bg="yellow" />
     </main>
   );
 }

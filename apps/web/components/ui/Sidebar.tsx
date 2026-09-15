@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home" },
@@ -20,7 +21,7 @@ export default function Sidebar({
   return (
     <aside className="hidden flex-col bg-brand-black text-brand-white lg:flex">
       <div className="flex items-center gap-2 border-b border-neutral-700 px-4 pb-4 pt-4">
-        <span className="h-5 w-5 bg-brand-yellow" />
+        <Image src="/images/logo-yellow.png" alt="Docufast" width={22} height={22} />
         <span className="text-lg font-extrabold tracking-wide">DOCUFAST</span>
       </div>
 
