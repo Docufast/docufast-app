@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { getPasswordStrength, strengthLabel, strengthColor } from "@/lib/passwordStrength";
+import HeroPanel from "@/components/ui/HeroPanel";
+import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
@@ -33,7 +32,6 @@ export default function SignUpPage() {
     setSubmitting(true);
     try {
       // TODO: wire up to Supabase Auth once the project is connected.
-      // const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, phone } } });
       console.log("Sign up submitted", { fullName, email, phone });
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -43,75 +41,114 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
-      <h1 className="text-2xl font-bold text-brand-black">
-        Docu<span className="text-brand-yellow">fast</span>
-      </h1>
-      <p className="mt-1 text-sm text-brand-gray">Create your account</p>
-
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-        <Input
-          id="fullName"
-          label="Full name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="e.g. Nkem Chidinma Eze"
-        />
-        <Input
-          id="email"
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.ng"
-        />
-        <Input
-          id="phone"
-          label="Phone number"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+234 800 000 0000"
-        />
-        <div>
-          <Input
-            id="password"
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {strength && (
-            <p className={`mt-1 text-xs font-medium ${strengthColor[strength]}`}>
-              {strengthLabel[strength]}
-            </p>
-          )}
-        </div>
-
-        <label className="flex items-start gap-2 text-xs text-brand-gray">
-          <input
-            type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-0.5"
-          />
-          I agree to the Terms of Service and Privacy Policy, including NDPR
-          data handling.
-        </label>
-
-        {error && <p className="text-sm text-brand-error">{error}</p>}
-
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "Creating account…" : "Create account"}
-        </Button>
-
-        <p className="text-center text-sm text-brand-gray">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="font-semibold text-brand-black underline">
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+      <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
+        <div className="flex items-center gap-2 border-b-4 border-brand-black pb-4">
+          <span className="h-5 w-5 bg-brand-yellow" />
+          <span className="mr-auto text-xl font-extrabold tracking-wide text-brand-black">
+            DOCUFAST
+          </span>
+          <span className="text-sm text-brand-gray">Already registered?</span>
+          <Link href="/sign-in" className="text-sm font-bold uppercase tracking-wide">
             Sign in
           </Link>
-        </p>
-      </form>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-8 flex max-w-md flex-1 flex-col gap-6">
+          <div>
+            <h1 className="text-4xl font-extrabold text-brand-black">Create your account</h1>
+            <p className="mt-2 text-brand-gray">
+              One account covers you personally and every business you manage.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                Full name
+              </label>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+                placeholder="e.g. Nkem Chidinma Eze"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  placeholder="you@example.ng"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  placeholder="+234 800 000 0000"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+              />
+              {strength && (
+                <p className="mt-1.5 text-xs font-semibold text-brand-black">
+                  {strengthLabel[strength]}
+                </p>
+              )}
+            </div>
+
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+              />
+              I agree to the Terms of Service and Privacy Policy, including
+              NDPR data handling.
+            </label>
+
+            {error && <p className="text-sm text-brand-error">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex items-center justify-between bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
+            >
+              {submitting ? "Creating account…" : "Create account"} →
+            </button>
+
+            <p className="text-xs text-brand-gray">
+              Businesses are added later, when you place an order under one.
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <HeroPanel
+        variant="yellow"
+        caption="Yellow panel on Home and Sign up; the darker variant marks the returning-user path."
+      />
     </main>
   );
 }
