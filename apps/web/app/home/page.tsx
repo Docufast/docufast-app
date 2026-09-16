@@ -54,6 +54,7 @@ export default function HomeDashboardPage() {
           <h1 className="text-3xl font-extrabold text-brand-black">Welcome back, {firstName}</h1>
         </div>
 
+        {/* Quick actions */}
         <div className="mt-6">
           <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
             Start something new
@@ -63,7 +64,7 @@ export default function HomeDashboardPage() {
               <Link
                 key={action.href}
                 href={action.href}
-                className="flex flex-col gap-1 border-4 border-brand-black p-4 hover:bg-brand-yellow/10"
+                className="flex flex-col gap-1 border-4 border-brand-black p-4 hover:bg-brand-yellow/10 rounded-card"
               >
                 <span className="font-bold text-brand-black">{action.label}</span>
                 <span className="text-xs text-brand-gray">{action.desc}</span>
@@ -73,6 +74,7 @@ export default function HomeDashboardPage() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Recent orders — honest empty state, no fake data */}
           <section>
             <div className="flex items-baseline justify-between border-b-4 border-brand-black pb-1.5">
               <span className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
@@ -82,7 +84,7 @@ export default function HomeDashboardPage() {
                 View all
               </Link>
             </div>
-            <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center">
+            <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center rounded-card">
               <p className="text-sm text-brand-gray">You haven't placed any orders yet.</p>
               <Link
                 href="/services/affidavits"
@@ -93,6 +95,7 @@ export default function HomeDashboardPage() {
             </div>
           </section>
 
+          {/* Upcoming deadlines — honest empty state */}
           <section>
             <div className="flex items-baseline justify-between border-b-4 border-brand-black pb-1.5">
               <span className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
@@ -102,12 +105,13 @@ export default function HomeDashboardPage() {
                 View calendar
               </Link>
             </div>
-            <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center">
+            <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center rounded-card">
               <p className="text-sm text-brand-gray">No compliance deadlines tracked yet.</p>
             </div>
           </section>
         </div>
 
+        {/* Vault preview — honest empty state */}
         <section className="mt-6">
           <div className="flex items-baseline justify-between border-b-4 border-brand-black pb-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
@@ -117,7 +121,7 @@ export default function HomeDashboardPage() {
               Open vault
             </Link>
           </div>
-          <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center">
+          <div className="mt-3 border-2 border-dashed border-brand-gray-light p-8 text-center rounded-card">
             <p className="text-sm text-brand-gray">Your vault is empty. Completed documents will appear here.</p>
           </div>
         </section>

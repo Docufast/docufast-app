@@ -74,7 +74,7 @@ export default function SignInPage() {
               <input
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
                 placeholder="you@example.ng"
               />
             </div>
@@ -86,7 +86,7 @@ export default function SignInPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
               />
             </div>
 
@@ -96,7 +96,7 @@ export default function SignInPage() {
                   type="checkbox"
                   checked={keepSignedIn}
                   onChange={(e) => setKeepSignedIn(e.target.checked)}
-                  className="h-4 w-4 border-4 border-brand-black"
+                  className="h-4 w-4 rounded-input border-4 border-brand-black"
                 />
                 Keep me signed in
               </label>
@@ -110,12 +110,12 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center justify-between bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
+              className="flex items-center justify-between rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
             >
               {submitting ? "Signing in…" : "Sign in"} →
             </button>
 
-            <div className="border-l-4 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-xs text-brand-black">
+            <div className="rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-xs text-brand-black">
               A 6-digit code follows if two-factor is switched on.
             </div>
           </div>

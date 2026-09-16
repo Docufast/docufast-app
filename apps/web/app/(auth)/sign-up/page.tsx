@@ -15,7 +15,6 @@ export default function SignUpPage() {
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const strength = password ? getPasswordStrength(password) : null;
 
@@ -47,11 +46,8 @@ export default function SignUpPage() {
         return;
       }
 
-      if (data.user && !data.session) {
-        setConfirmationSent(true);
-        return;
-      }
-
+      // TODO: once email confirmation is configured, redirect to a
+      // "check your email" screen instead of /account directly.
       window.location.href = "/account";
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -74,106 +70,95 @@ export default function SignUpPage() {
           </Link>
         </div>
 
-        {confirmationSent && (
-          <div className="mt-8 max-w-md border-4 border-brand-black bg-brand-yellow/10 p-4">
-            <p className="font-bold text-brand-black">Check your email</p>
-            <p className="mt-1 text-sm text-brand-gray">
-              We've sent a confirmation link to {email}. Click it, then come back and sign in.
+        <form onSubmit={handleSubmit} className="mt-8 flex max-w-md flex-1 flex-col gap-6">
+          <div>
+            <h1 className="text-4xl font-extrabold text-brand-black">Create your account</h1>
+            <p className="mt-2 text-brand-gray">
+              One account covers you personally and every business you manage.
             </p>
           </div>
-        )}
 
-        {!confirmationSent && (
-          <form onSubmit={handleSubmit} className="mt-8 flex max-w-md flex-1 flex-col gap-6">
+          <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-4xl font-extrabold text-brand-black">Create your account</h1>
-              <p className="mt-2 text-brand-gray">
-                One account covers you personally and every business you manage.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                  Full name
-                </label>
-                <input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
-                  placeholder="e.g. Nkem Chidinma Eze"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
-                    placeholder="you@example.ng"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
-                    placeholder="+234 800 000 0000"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border-4 border-brand-black px-3 py-3 text-base outline-none"
-                />
-                {strength && (
-                  <p className="mt-1.5 text-xs font-semibold text-brand-black">
-                    {strengthLabel[strength]}
-                  </p>
-                )}
-              </div>
-
-              <label className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 border-4 border-brand-black"
-                />
-                I agree to the Terms of Service and Privacy Policy, including
-                NDPR data handling.
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                Full name
               </label>
-
-              {error && <p className="text-sm text-brand-error">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex items-center justify-between bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
-              >
-                {submitting ? "Creating account…" : "Create account"} →
-              </button>
-
-              <p className="text-xs text-brand-gray">
-                Businesses are added later, when you place an order under one.
-              </p>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                placeholder="e.g. Nkem Chidinma Eze"
+              />
             </div>
-          </form>
-        )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  placeholder="you@example.ng"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  placeholder="+234 800 000 0000"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+              />
+              {strength && (
+                <p className="mt-1.5 text-xs font-semibold text-brand-black">
+                  {strengthLabel[strength]}
+                </p>
+              )}
+            </div>
+
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+              />
+              I agree to the Terms of Service and Privacy Policy, including
+              NDPR data handling.
+            </label>
+
+            {error && <p className="text-sm text-brand-error">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex items-center justify-between rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
+            >
+              {submitting ? "Creating account…" : "Create account"} →
+            </button>
+
+            <p className="text-xs text-brand-gray">
+              Businesses are added later, when you place an order under one.
+            </p>
+          </div>
+        </form>
       </div>
 
       <HeroPanel src="/images/hero-signup.png" alt="Docufast — start your journey" bg="yellow" />

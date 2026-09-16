@@ -4,6 +4,7 @@ import HeroPanel from "@/components/ui/HeroPanel";
 
 export default function Home() {
   return (
+    <>
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
       <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
         {/* Nav */}
@@ -34,7 +35,7 @@ export default function Home() {
 
         {/* Hero content */}
         <div className="mt-10 flex max-w-xl flex-1 flex-col gap-6">
-          <span className="w-fit bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
+          <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
             Regulated document infrastructure
           </span>
           <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-brand-black lg:text-6xl">
@@ -49,13 +50,13 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="/sign-up"
-              className="flex items-center gap-2 bg-brand-black px-6 py-4 text-base font-bold text-brand-white"
+              className="flex items-center gap-2 rounded-card bg-brand-black px-6 py-4 text-base font-bold text-brand-white"
             >
               Get started →
             </Link>
             <Link
               href="/services"
-              className="border-4 border-brand-black px-5 py-3.5 text-base font-bold text-brand-black"
+              className="rounded-card border-4 border-brand-black px-5 py-3.5 text-base font-bold text-brand-black"
             >
               Browse services
             </Link>
@@ -93,5 +94,51 @@ export default function Home() {
 
       <HeroPanel src="/images/hero-home.png" alt="Docufast — documents made simple" bg="yellow" />
     </main>
+
+    {/* Footer — mandatory elements per Playbook Section 03 */}
+    <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex items-center gap-2">
+          <Image src="/images/logo-yellow.png" alt="Docufast" width={32} height={32} />
+          <div>
+            <div className="text-lg font-extrabold tracking-wide">DOCUFAST</div>
+            <div className="text-xs text-neutral-400">Documents. Faster.</div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm">
+          <Link href="/services" className="text-neutral-300 hover:text-brand-yellow">Services</Link>
+          <Link href="/privacy" className="text-neutral-300 hover:text-brand-yellow">Privacy Policy</Link>
+          <Link href="/terms" className="text-neutral-300 hover:text-brand-yellow">Terms of Service</Link>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm text-neutral-300">
+          <span>WhatsApp | Email</span>
+          <span>Mon–Sat, 8am–6pm WAT</span>
+        </div>
+      </div>
+
+      <div className="mt-8 flex flex-col gap-2 border-t border-neutral-700 pt-6 text-xs text-neutral-400">
+        <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
+        <p className="max-w-3xl">
+          Docufast facilitates document preparation and filing services in partnership with
+          accredited processing agents. Docufast is not a law firm and does not provide legal
+          advice. Services are processed by licensed Commissioners for Oaths, Notaries Public,
+          and accredited agents as applicable.
+        </p>
+        <span>© 2026 Docufast Integrated Services Ltd</span>
+      </div>
+    </footer>
+
+    {/* Sticky WhatsApp CTA */}
+    <a
+      href="https://wa.me/2347085918205"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-card bg-brand-yellow px-4 py-3 text-sm font-bold text-brand-black shadow-lg hover:bg-brand-yellow-dark"
+    >
+      Chat with us on WhatsApp
+    </a>
+    </>
   );
 }

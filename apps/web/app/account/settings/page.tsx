@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
+import { supabase } from "@/lib/supabase";
 
-// TODO: replace with real data + mutations via Supabase once connected.
-const MOCK_ORGS = [
-  { name: "Personal", role: "Individual", highlight: false },
-  { name: "Adeyemi & Co", role: "Member", highlight: false },
-  { name: "Kessa Logistics Ltd", role: "Owner", highlight: true },
-];
+// Real account starts with only "Personal" — no fake companies until an
+// organisations table exists and the user actually adds a business.
+const REAL_ORGS = [{ name: "Personal", role: "Individual", highlight: false }];
 
 function ToggleBox({ on }: { on: boolean }) {
   return (
@@ -26,6 +24,47 @@ export default function AccountSettingsPage() {
   const [emailNotif, setEmailNotif] = useState(true);
   const [smsNotif, setSmsNotif] = useState(false);
   const [whatsappNotif, setWhatsappNotif] = useState(true);
+  const [user, setUser] = useState<{ fullName: string; email: string; phone: string } | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUser() {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!authUser) {
+        window.location.href = "/sign-in";
+        return;
+      }
+
+      setUser({
+        fullName: authUser.user_metadata?.full_name || "Your name",
+        email: authUser.email || "",
+        phone: authUser.user_metadata?.phone || "Not provided",
+      });
+      setLoading(false);
+    }
+    loadUser();
+  }, []);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "/sign-in";
+  }
+
+  if (loading || !user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p className="text-brand-gray">Loading your settings…</p>
+      </main>
+    );
+  }
+
+  // Referral code derived from the real signed-up email — no fake code.
+  const referralCode = user.email.split("@")[0].toUpperCase().slice(0, 6) + "-" + user.email.length;
 
   return (
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[260px_1fr]">
@@ -45,7 +84,10 @@ export default function AccountSettingsPage() {
             </div>
             <h1 className="text-3xl font-extrabold text-brand-black">Settings</h1>
           </div>
-          <button className="border-4 border-brand-error px-4 py-2.5 text-sm font-bold text-brand-error">
+          <button
+            onClick={handleLogout}
+            className="rounded-card border-4 border-brand-error px-4 py-2.5 text-sm font-bold text-brand-error"
+          >
             Log out
           </button>
         </div>
@@ -56,18 +98,24 @@ export default function AccountSettingsPage() {
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               Personal information
             </h2>
-            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm">
+            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
-                <span>Name, email and phone</span>
+                <span>{user.fullName}</span>
+                <span className="text-xs font-bold uppercase">Edit</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span>{user.email}</span>
+                <span className="text-xs font-bold uppercase">Edit</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span>{user.phone}</span>
                 <span className="text-xs font-bold uppercase">Edit</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Verification status</span>
-                <span className="bg-brand-yellow px-2 py-0.5 text-xs font-bold uppercase">KYC verified</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span>Profile photo</span>
-                <span className="text-xs font-bold uppercase">Change</span>
+                <span className="border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
+                  Not yet verified
+                </span>
               </div>
             </div>
           </section>
@@ -77,16 +125,17 @@ export default function AccountSettingsPage() {
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               Security
             </h2>
-            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm">
+            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Change password</span>
-                <span className="mr-3 text-xs text-brand-gray">Last changed July</span>
                 <span className="text-xs font-bold uppercase">Update</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Two-factor authentication</span>
-                <span className="mr-3 bg-brand-yellow px-2 py-0.5 text-xs font-bold uppercase">On · app</span>
-                <span className="text-xs font-bold uppercase">Manage</span>
+                <span className="mr-3 border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
+                  Off
+                </span>
+                <span className="text-xs font-bold uppercase">Set up</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Recovery codes</span>
@@ -96,8 +145,7 @@ export default function AccountSettingsPage() {
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Active sessions & devices</span>
-                <span className="mr-3 text-xs text-brand-gray">3 devices</span>
-                <span className="text-xs font-bold uppercase">Review</span>
+                <span className="text-xs text-brand-gray">1 device (this one)</span>
               </div>
             </div>
           </section>
@@ -107,32 +155,24 @@ export default function AccountSettingsPage() {
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               Notifications
             </h2>
-            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm">
+            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Email</span>
-                <span className="mr-3 text-xs text-brand-gray">Order updates, quotes</span>
                 <button onClick={() => setEmailNotif(!emailNotif)}>
                   <ToggleBox on={emailNotif} />
                 </button>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">SMS</span>
-                <span className="mr-3 text-xs text-brand-gray">Off</span>
                 <button onClick={() => setSmsNotif(!smsNotif)}>
                   <ToggleBox on={smsNotif} />
                 </button>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">WhatsApp</span>
-                <span className="mr-3 text-xs text-brand-gray">Status changes only</span>
                 <button onClick={() => setWhatsappNotif(!whatsappNotif)}>
                   <ToggleBox on={whatsappNotif} />
                 </button>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="mr-auto">Deadline reminders</span>
-                <span className="mr-3 text-xs text-brand-gray">60, 30 and 7 days before</span>
-                <span className="text-xs font-bold uppercase">Edit</span>
               </div>
             </div>
           </section>
@@ -143,22 +183,14 @@ export default function AccountSettingsPage() {
               <span className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 Organisations
               </span>
-              <span className="text-xs text-brand-gray">Role per organisation</span>
             </div>
-            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm">
-              {MOCK_ORGS.map((org) => (
+            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
+              {REAL_ORGS.map((org) => (
                 <div key={org.name} className="flex items-center justify-between px-4 py-3">
                   <span className="mr-auto">{org.name}</span>
-                  <span
-                    className={`mr-3 px-2 py-0.5 text-xs font-bold uppercase ${
-                      org.highlight
-                        ? "bg-brand-black text-brand-yellow"
-                        : "border-2 border-brand-black"
-                    }`}
-                  >
+                  <span className="border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
                     {org.role}
                   </span>
-                  <span className="text-xs font-bold uppercase">Manage</span>
                 </div>
               ))}
               <button className="flex items-center gap-2 px-4 py-3 text-sm font-bold">
@@ -172,38 +204,29 @@ export default function AccountSettingsPage() {
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               Referral
             </h2>
-            <div className="mt-3 border-4 border-brand-black p-4">
+            <div className="mt-3 rounded-card border-4 border-brand-black p-4">
               <div className="flex items-center gap-3">
                 <div className="mr-auto">
                   <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
                     Your code
                   </div>
-                  <div className="text-2xl font-extrabold tracking-wide">NKEM-4417</div>
+                  <div className="text-2xl font-extrabold tracking-wide">{referralCode}</div>
                 </div>
-                <button className="bg-brand-black px-3 py-2.5 text-sm font-bold text-brand-white">
+                <button className="rounded-card bg-brand-black px-3 py-2.5 text-sm font-bold text-brand-white">
                   Copy link
                 </button>
               </div>
-              <div className="mt-3 border-l-4 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-xs">
-                docufast.ng/r/NKEM-4417
-              </div>
               <div className="mt-3 flex gap-6 border-t-2 border-brand-black pt-3">
                 <div>
-                  <div className="text-xl font-extrabold">7</div>
+                  <div className="text-xl font-extrabold">0</div>
                   <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
                     Signed up
                   </div>
                 </div>
                 <div>
-                  <div className="text-xl font-extrabold">₦14,000</div>
+                  <div className="text-xl font-extrabold">₦0</div>
                   <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
                     Earned
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-extrabold">₦6,000</div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                    Pending
                   </div>
                 </div>
               </div>
@@ -215,7 +238,7 @@ export default function AccountSettingsPage() {
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               Help & support
             </h2>
-            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm">
+            <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span>WhatsApp support</span>
                 <span className="text-xs text-brand-gray">Mon–Sat, 08:00–20:00</span>
@@ -227,10 +250,6 @@ export default function AccountSettingsPage() {
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Data & NDPR requests</span>
                 <span className="text-xs font-bold uppercase">Open</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span>Terms & privacy</span>
-                <span className="text-xs font-bold uppercase">View</span>
               </div>
             </div>
           </section>

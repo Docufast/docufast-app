@@ -26,7 +26,9 @@ const config: Config = {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: {
-        card: "0.75rem",
+        card: "8px",
+        input: "4px",
+        block: "0px",
       },
     },
   },
