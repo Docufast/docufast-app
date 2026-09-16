@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home" },
-  { href: "/orders", label: "Orders", badge: 3 },
+  { href: "/orders", label: "Orders" },
   { href: "/vault", label: "Vault" },
   { href: "/calendar", label: "Calendar" },
   { href: "/account", label: "Account" },
@@ -39,11 +39,6 @@ export default function Sidebar({
                 }`}
               >
                 {item.label}
-                {item.badge && (
-                  <span className="ml-auto bg-brand-yellow px-1.5 py-0.5 text-xs font-bold text-brand-black">
-                    {item.badge}
-                  </span>
-                )}
               </Link>
               {isActive && subItem && (
                 <div className="flex flex-col gap-0.5 py-1 pl-11">

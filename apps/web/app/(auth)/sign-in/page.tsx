@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
+import { supabase } from "@/lib/supabase";
 
 export default function SignInPage() {
   const [identifier, setIdentifier] = useState("");
@@ -23,11 +24,21 @@ export default function SignInPage() {
 
     setSubmitting(true);
     try {
-      // TODO: wire up to Supabase Auth once the project is connected.
-      // const { error } = await supabase.auth.signInWithPassword({ email: identifier, password });
-      console.log("Sign in submitted", { identifier, keepSignedIn });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: identifier,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+
+      // TODO: once 2FA is configured, check for that requirement here
+      // before redirecting straight to /account.
+      window.location.href = "/account";
     } catch (err) {
-      setError("Incorrect email/phone or password.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
