@@ -17,7 +17,7 @@ export default function HeroPanel({
         src={src}
         alt={alt}
         fill
-        className="object-cover"
+        className="object-contain"
         priority
         sizes="50vw"
       />
