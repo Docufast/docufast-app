@@ -34,7 +34,7 @@ export default function Sidebar({
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 text-sm font-semibold ${
                   isActive
-                    ? "border-l-4 border-brand-yellow bg-neutral-800 text-brand-white"
+                    ? "border-l-4 border-brand-yellow bg-white/10 text-brand-white"
                     : "text-neutral-400"
                 }`}
               >
