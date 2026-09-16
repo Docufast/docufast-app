@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CAC_TYPES } from "@/lib/cacTypes";
+import AuthNavLink from "@/components/ui/AuthNavLink";
 
 export default function CacPage() {
   return (
@@ -16,9 +17,7 @@ export default function CacPage() {
           <Link href="/services" className="text-sm font-semibold uppercase tracking-wide">
             ← All services
           </Link>
-          <Link href="/sign-in" className="ml-auto text-sm font-bold uppercase tracking-wide">
-            Sign in
-          </Link>
+          <AuthNavLink />
         </nav>
 
         <div className="mt-8">

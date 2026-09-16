@@ -48,7 +48,7 @@ export default function SignUpPage() {
 
       // TODO: once email confirmation is configured, redirect to a
       // "check your email" screen instead of /account directly.
-      window.location.href = "/account";
+      window.location.href = "/home";
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {

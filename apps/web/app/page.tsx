@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
+import AuthNavLink from "@/components/ui/AuthNavLink";
 
 export default function Home() {
   return (

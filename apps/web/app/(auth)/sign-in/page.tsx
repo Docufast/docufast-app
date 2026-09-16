@@ -48,7 +48,7 @@ export default function SignInPage() {
         }
       }
 
-      window.location.href = "/account";
+      window.location.href = "/home";
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -83,7 +83,7 @@ export default function SignInPage() {
       setError("Incorrect code.");
       return;
     }
-    window.location.href = "/account";
+    window.location.href = "/home";
   }
 
   if (needsMfa) {

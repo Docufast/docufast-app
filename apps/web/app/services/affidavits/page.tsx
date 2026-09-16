@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AFFIDAVIT_TYPES, AffidavitCategory } from "@/lib/affidavitTypes";
+import AuthNavLink from "@/components/ui/AuthNavLink";
 
 const CATEGORY_LABELS: Record<AffidavitCategory, string> = {
   name: "Name",

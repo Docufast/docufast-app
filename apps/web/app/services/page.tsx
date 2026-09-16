@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import AuthNavLink from "@/components/ui/AuthNavLink";
 
 // Full service catalogue — 43 services across 5 categories, per the Platform Playbook.
 const CATEGORIES = [
