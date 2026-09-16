@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 // Real account starts with only "Personal" — no fake companies until an
@@ -27,6 +28,7 @@ export default function AccountSettingsPage() {
   const [user, setUser] = useState<{ fullName: string; email: string; phone: string } | null>(
     null
   );
+  const [has2fa, setHas2fa] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +47,9 @@ export default function AccountSettingsPage() {
         email: authUser.email || "",
         phone: authUser.user_metadata?.phone || "Not provided",
       });
+
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      setHas2fa((factors?.totp?.length || 0) > 0);
       setLoading(false);
     }
     loadUser();
@@ -132,10 +137,16 @@ export default function AccountSettingsPage() {
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Two-factor authentication</span>
-                <span className="mr-3 border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
-                  Off
+                <span
+                  className={`mr-3 px-2 py-0.5 text-xs font-bold uppercase ${
+                    has2fa ? "bg-brand-yellow" : "border-2 border-brand-black"
+                  }`}
+                >
+                  {has2fa ? "On" : "Off"}
                 </span>
-                <span className="text-xs font-bold uppercase">Set up</span>
+                <Link href="/account/security/2fa" className="text-xs font-bold uppercase underline">
+                  {has2fa ? "Manage" : "Set up"}
+                </Link>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Recovery codes</span>

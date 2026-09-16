@@ -12,6 +12,9 @@ export default function SignInPage() {
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsMfa, setNeedsMfa] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [factorId, setFactorId] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,14 +37,79 @@ export default function SignInPage() {
         return;
       }
 
-      // TODO: once 2FA is configured, check for that requirement here
-      // before redirecting straight to /account.
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const totpFactor = factors?.totp?.[0];
+        if (totpFactor) {
+          setFactorId(totpFactor.id);
+          setNeedsMfa(true);
+          return;
+        }
+      }
+
       window.location.href = "/account";
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleMfaVerify(e: React.FormEvent) {
+    e.preventDefault();
+    if (!factorId || mfaCode.length !== 6) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId,
+    });
+    if (challengeError) {
+      setError(challengeError.message);
+      setSubmitting(false);
+      return;
+    }
+
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId: challenge.id,
+      code: mfaCode,
+    });
+    setSubmitting(false);
+
+    if (verifyError) {
+      setError("Incorrect code.");
+      return;
+    }
+    window.location.href = "/account";
+  }
+
+  if (needsMfa) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
+        <h1 className="text-2xl font-extrabold text-brand-black">Enter your 6-digit code</h1>
+        <p className="mt-1 text-sm text-brand-gray">From your authenticator app.</p>
+        <form onSubmit={handleMfaVerify} className="mt-6 flex flex-col gap-4">
+          <input
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="rounded-input border-4 border-brand-black px-3 py-3 text-center text-lg tracking-widest outline-none"
+            placeholder="000000"
+            inputMode="numeric"
+          />
+          {error && <p className="text-sm text-brand-error">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting || mfaCode.length !== 6}
+            className="rounded-card bg-brand-black px-4 py-3.5 text-base font-bold text-brand-white disabled:opacity-50"
+          >
+            {submitting ? "Verifying…" : "Verify and continue"}
+          </button>
+        </form>
+      </main>
+    );
   }
 
   return (
