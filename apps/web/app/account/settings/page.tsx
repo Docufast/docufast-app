@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-
-// Real account starts with only "Personal" — no fake companies until an
-// organisations table exists and the user actually adds a business.
-const REAL_ORGS = [{ name: "Personal", role: "Individual", highlight: false }];
+import { useOrg } from "@/contexts/OrgContext";
 
 function ToggleBox({ on }: { on: boolean }) {
   return (
@@ -25,10 +22,12 @@ export default function AccountSettingsPage() {
   const [emailNotif, setEmailNotif] = useState(true);
   const [smsNotif, setSmsNotif] = useState(false);
   const [whatsappNotif, setWhatsappNotif] = useState(true);
+  const { orgs } = useOrg();
   const [user, setUser] = useState<{ fullName: string; email: string; phone: string } | null>(
     null
   );
   const [has2fa, setHas2fa] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -76,8 +75,8 @@ export default function AccountSettingsPage() {
       <Sidebar
         active="Account"
         subItem={[
-          { label: "Settings", active: true },
-          { label: "Profile", active: false },
+          { label: "Settings", href: "/account/settings", active: true },
+          { label: "Profile", href: "/account", active: false },
         ]}
       />
 
@@ -106,15 +105,21 @@ export default function AccountSettingsPage() {
             <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span>{user.fullName}</span>
-                <span className="text-xs font-bold uppercase">Edit</span>
+                <Link href="/account" className="text-xs font-bold uppercase underline">
+                  Edit
+                </Link>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>{user.email}</span>
-                <span className="text-xs font-bold uppercase">Edit</span>
+                <Link href="/account" className="text-xs font-bold uppercase underline">
+                  Edit
+                </Link>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>{user.phone}</span>
-                <span className="text-xs font-bold uppercase">Edit</span>
+                <Link href="/account" className="text-xs font-bold uppercase underline">
+                  Edit
+                </Link>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Verification status</span>
@@ -133,7 +138,9 @@ export default function AccountSettingsPage() {
             <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Change password</span>
-                <span className="text-xs font-bold uppercase">Update</span>
+                <Link href="/forgot-password" className="text-xs font-bold uppercase underline">
+                  Update
+                </Link>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Two-factor authentication</span>
@@ -196,17 +203,20 @@ export default function AccountSettingsPage() {
               </span>
             </div>
             <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
-              {REAL_ORGS.map((org) => (
-                <div key={org.name} className="flex items-center justify-between px-4 py-3">
+              {orgs.map((org) => (
+                <div key={org.id} className="flex items-center justify-between px-4 py-3">
                   <span className="mr-auto">{org.name}</span>
                   <span className="border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
                     {org.role}
                   </span>
                 </div>
               ))}
-              <button className="flex items-center gap-2 px-4 py-3 text-sm font-bold">
+              <Link
+                href="/account/organizations/add"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-bold"
+              >
                 + Add a business
-              </button>
+              </Link>
             </div>
           </section>
 
@@ -223,8 +233,15 @@ export default function AccountSettingsPage() {
                   </div>
                   <div className="text-2xl font-extrabold tracking-wide">{referralCode}</div>
                 </div>
-                <button className="rounded-card bg-brand-black px-3 py-2.5 text-sm font-bold text-brand-white">
-                  Copy link
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://docufast.ng/r/${referralCode}`);
+                    setLinkCopied(true);
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }}
+                  className="rounded-card bg-brand-black px-3 py-2.5 text-sm font-bold text-brand-white"
+                >
+                  {linkCopied ? "Copied!" : "Copy link"}
                 </button>
               </div>
               <div className="mt-3 flex gap-6 border-t-2 border-brand-black pt-3">
@@ -260,7 +277,12 @@ export default function AccountSettingsPage() {
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Data & NDPR requests</span>
-                <span className="text-xs font-bold uppercase">Open</span>
+                <a
+                  href="mailto:help@docufast.ng?subject=Data%20%26%20NDPR%20Request"
+                  className="text-xs font-bold uppercase underline"
+                >
+                  Open
+                </a>
               </div>
             </div>
           </section>

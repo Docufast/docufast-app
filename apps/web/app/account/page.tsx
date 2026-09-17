@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/ui/Sidebar";
 import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 // TODO: replace with real data once an organisations table exists.
 // A real account starts with only "Personal" — no fake companies attached.
@@ -21,7 +22,7 @@ function formatMemberSince(dateString: string) {
 }
 
 export default function AccountHomePage() {
-  const [activeContext, setActiveContext] = useState("personal");
+  const { orgs, activeOrgId, setActiveOrgId } = useOrg();
   const [user, setUser] = useState<{
     fullName: string;
     email: string;
@@ -29,6 +30,11 @@ export default function AccountHomePage() {
     memberSince: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [showPhotoNote, setShowPhotoNote] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -51,6 +57,32 @@ export default function AccountHomePage() {
     }
     loadUser();
   }, []);
+
+  async function handleSaveField(field: "fullName" | "email" | "phone") {
+    setSaving(true);
+    setSaveError(null);
+
+    let updateError = null;
+    if (field === "email") {
+      const { error } = await supabase.auth.updateUser({ email: editValue });
+      updateError = error;
+    } else {
+      const metadataKey = field === "fullName" ? "full_name" : "phone";
+      const { error } = await supabase.auth.updateUser({
+        data: { [metadataKey]: editValue },
+      });
+      updateError = error;
+    }
+
+    setSaving(false);
+    if (updateError) {
+      setSaveError(updateError.message);
+      return;
+    }
+
+    setUser((prev) => (prev ? { ...prev, [field]: editValue } : prev));
+    setEditingField(null);
+  }
 
   if (loading || !user) {
     return (
@@ -94,30 +126,85 @@ export default function AccountHomePage() {
                   Not yet KYC verified
                 </span>
               </div>
-              <button className="border-4 border-brand-black px-3 py-2 text-sm font-bold rounded-card">
+              <button
+                onClick={() => setShowPhotoNote(!showPhotoNote)}
+                className="border-4 border-brand-black px-3 py-2 text-sm font-bold rounded-card"
+              >
                 Change photo
               </button>
             </div>
+            {showPhotoNote && (
+              <div className="rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
+                Photo upload isn't connected yet — this needs Cloudflare R2 storage set up first.
+              </div>
+            )}
 
             <div>
               <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 Personal details
               </h2>
               <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black rounded-card">
-                {[
-                  { label: "Full name", value: user.fullName, action: "Edit" },
-                  { label: "Email", value: user.email, action: "Edit" },
-                  { label: "Phone", value: user.phone, action: "Edit" },
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center gap-3 px-4 py-3">
-                    <span className="w-36 text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                      {row.label}
-                    </span>
-                    <span className="mr-auto text-sm">{row.value}</span>
-                    <span className="text-xs font-bold uppercase tracking-wide">{row.action}</span>
+                {(
+                  [
+                    { key: "fullName", label: "Full name", value: user.fullName },
+                    { key: "email", label: "Email", value: user.email },
+                    { key: "phone", label: "Phone", value: user.phone },
+                  ] as const
+                ).map((row) => (
+                  <div key={row.key} className="flex items-center gap-3 px-4 py-3">
+                    {editingField === row.key ? (
+                      <>
+                        <span className="w-36 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                          {row.label}
+                        </span>
+                        <input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="mr-auto flex-1 rounded-input border-2 border-brand-black px-2 py-1 text-sm outline-none"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleSaveField(row.key)}
+                          disabled={saving}
+                          className="text-xs font-bold uppercase tracking-wide text-brand-success disabled:opacity-50"
+                        >
+                          {saving ? "Saving…" : "Save"}
+                        </button>
+                        <button
+                          onClick={() => setEditingField(null)}
+                          className="text-xs font-bold uppercase tracking-wide text-brand-gray"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-36 text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                          {row.label}
+                        </span>
+                        <span className="mr-auto text-sm">{row.value}</span>
+                        <button
+                          onClick={() => {
+                            setEditingField(row.key);
+                            setEditValue(row.value);
+                            setSaveError(null);
+                          }}
+                          className="text-xs font-bold uppercase tracking-wide underline"
+                        >
+                          Edit
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
+              {saveError && <p className="mt-2 text-sm text-brand-error">{saveError}</p>}
+              {editingField === "email" && (
+                <p className="mt-2 text-xs text-brand-gray">
+                  Changing your email sends a confirmation link to the new address before it
+                  takes effect.
+                </p>
+              )}
             </div>
           </div>
 
@@ -131,21 +218,19 @@ export default function AccountHomePage() {
                 <span className="text-xs text-brand-gray">Click to switch</span>
               </div>
               <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black rounded-card">
-                {REAL_ORGS.map((org) => (
+                {orgs.map((org) => (
                   <button
                     key={org.id}
-                    onClick={() => setActiveContext(org.id)}
+                    onClick={() => setActiveOrgId(org.id)}
                     className={`flex w-full items-center justify-between px-4 py-3 text-left ${
-                      activeContext === org.id ? "border-l-4 border-brand-yellow bg-brand-yellow/10" : ""
+                      activeOrgId === org.id ? "border-l-4 border-brand-yellow bg-brand-yellow/10" : ""
                     }`}
                   >
                     <div>
                       <div className="text-sm font-bold">{org.name}</div>
-                      <div className="text-xs text-brand-gray">
-                        {org.role} · {org.detail}
-                      </div>
+                      <div className="text-xs text-brand-gray">{org.role}</div>
                     </div>
-                    {activeContext === org.id && <span>✓</span>}
+                    {activeOrgId === org.id && <span>✓</span>}
                   </button>
                 ))}
                 <Link

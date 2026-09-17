@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/ui/Sidebar";
 import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 interface Org {
   name: string;
@@ -12,12 +13,15 @@ interface Org {
 }
 
 export default function AddOrganizationPage() {
+  const { addOrg } = useOrg();
   const [loading, setLoading] = useState(true);
   const [businessName, setBusinessName] = useState("");
   const [rcNumber, setRcNumber] = useState("");
   const [role, setRole] = useState<"owner" | "member">("owner");
   const [added, setAdded] = useState<Org[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -33,9 +37,21 @@ export default function AddOrganizationPage() {
     checkAuth();
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!businessName) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const { error } = await addOrg(businessName, rcNumber);
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
+
     setAdded([...added, { name: businessName, rcNumber, role }]);
     setBusinessName("");
     setRcNumber("");
@@ -131,19 +147,21 @@ export default function AddOrganizationPage() {
                 place.
               </p>
             </div>
+            {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
             <button
               type="submit"
-              className="rounded-card bg-brand-black px-4 py-3 text-sm font-bold text-brand-white"
+              disabled={submitting}
+              className="rounded-card bg-brand-black px-4 py-3 text-sm font-bold text-brand-white disabled:opacity-50"
             >
-              Add business →
+              {submitting ? "Adding…" : "Add business →"}
             </button>
           </div>
         </form>
 
         {submitted && (
           <div className="mt-4 max-w-xl rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't saved to a live database yet — it's only shown for this session.
-            Organisations become permanent once the entities table is connected.
+            Added and saved to your account — you'll see it in the sidebar switcher, and it'll
+            follow you to any device you sign in from.
           </div>
         )}
 
