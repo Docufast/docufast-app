@@ -8,6 +8,7 @@ import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
 import { FileText, Landmark, Newspaper, Video, Calendar, FolderOpen, Upload } from "lucide-react";
+import AppFooter from "@/components/ui/AppFooter";
 
 const QUICK_ACTIONS = [
   { label: "Affidavit", href: "/services/affidavits", desc: "32 types, court-ready", category: "affidavit", icon: FileText },
@@ -263,6 +264,7 @@ export default function HomeDashboardPage() {
               )}
             </div>
           </section>
+          <AppFooter />
         </div>
       </div>
     </main>

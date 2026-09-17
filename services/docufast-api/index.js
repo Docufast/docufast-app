@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import healthRoute from "./routes/health.js";
+import uploadRoute from "./routes/upload.js";
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/health", healthRoute);
+app.use("/upload", uploadRoute);
 
 // Placeholder routers for Phase 3 build-out — Order, Auth, Vault, Payment,
 // KYC, Compliance, Admin APIs, plus CAC-specific sub-routes.

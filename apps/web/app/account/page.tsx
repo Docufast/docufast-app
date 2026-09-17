@@ -6,6 +6,7 @@ import Sidebar from "@/components/ui/Sidebar";
 import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
+import AppFooter from "@/components/ui/AppFooter";
 
 // TODO: replace with real data once an organisations table exists.
 // A real account starts with only "Personal" — no fake companies attached.
@@ -270,6 +271,7 @@ export default function AccountHomePage() {
             </div>
           </div>
         </div>
+          <AppFooter />
         </div>
       </div>
     </main>

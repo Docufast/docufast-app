@@ -6,6 +6,7 @@ import TopBar from "@/components/ui/TopBar";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
+import AppFooter from "@/components/ui/AppFooter";
 
 function ToggleBox({ on }: { on: boolean }) {
   return (
@@ -328,6 +329,7 @@ export default function AccountSettingsPage() {
             </div>
           </section>
         </div>
+          <AppFooter />
         </div>
       </div>
     </main>
