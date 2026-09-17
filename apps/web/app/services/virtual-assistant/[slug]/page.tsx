@@ -18,6 +18,7 @@ export default function VaOrderPage() {
   const [turnaround, setTurnaround] = useState<"standard" | "rush">("standard");
   const [instructions, setInstructions] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [fileKey, setFileKey] = useState<string | null>(null);
   const { activeOrgId } = useOrg();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export default function VaOrderPage() {
       service_category: "virtual_assistant",
       order_type: slug,
       status: "quote_pending",
-      form_data: { source_file: fileName, output_format: format, turnaround, instructions },
+      form_data: { source_file: fileName, source_file_r2_key: fileKey, output_format: format, turnaround, instructions },
     });
 
     setSubmitting(false);
@@ -112,7 +113,10 @@ export default function VaOrderPage() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Source file
               </label>
-              <FileUpload onFileSelect={(file) => setFileName(file?.name || null)} />
+              <FileUpload
+                onFileSelect={(file) => setFileName(file?.name || null)}
+                onUploadComplete={(key) => setFileKey(key)}
+              />
             </div>
 
             <div>

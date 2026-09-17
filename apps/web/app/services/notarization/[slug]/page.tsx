@@ -117,6 +117,9 @@ export default function PlatformNativeOrderPage() {
                   </label>
                   <FileUpload
                     onFileSelect={(file) => setValues({ ...values, docFile: file?.name || "" })}
+                    onUploadComplete={(key) =>
+                      setValues((prev) => ({ ...prev, docFile_r2_key: key }))
+                    }
                   />
                 </div>
                 <div>

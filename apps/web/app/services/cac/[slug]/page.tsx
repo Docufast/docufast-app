@@ -123,6 +123,9 @@ export default function CacOrderPage() {
                     onFileSelect={(file) =>
                       setValues({ ...values, [field.label]: file?.name || "" })
                     }
+                    onUploadComplete={(key) =>
+                      setValues((prev) => ({ ...prev, [`${field.label}_r2_key`]: key }))
+                    }
                   />
                 ) : (
                   <input
