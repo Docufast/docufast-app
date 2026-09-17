@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 import { supabase } from "@/lib/supabase";
 
-export default function SignInPage() {
+function SignInForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/home";
   const [identifier, setIdentifier] = useState("");
@@ -41,7 +41,7 @@ export default function SignInPage() {
       }
 
       const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
+      if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
         const { data: factors } = await supabase.auth.mfa.listFactors();
         const totpFactor = factors?.totp?.[0];
         if (totpFactor) {
@@ -199,5 +199,13 @@ export default function SignInPage() {
 
       <HeroPanel src="/images/hero-signin.png" alt="Docufast — secure sign in" bg="dark" />
     </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }
