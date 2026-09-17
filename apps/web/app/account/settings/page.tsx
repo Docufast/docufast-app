@@ -28,6 +28,9 @@ export default function AccountSettingsPage() {
     null
   );
   const [has2fa, setHas2fa] = useState(false);
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [turningOff, setTurningOff] = useState(false);
+  const [twoFaError, setTwoFaError] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -49,11 +52,33 @@ export default function AccountSettingsPage() {
       });
 
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      setHas2fa((factors?.totp?.length || 0) > 0);
+      const totpFactor = factors?.totp?.[0];
+      setHas2fa(!!totpFactor);
+      setFactorId(totpFactor?.id || null);
       setLoading(false);
     }
     loadUser();
   }, []);
+
+  async function handleTurnOff2fa() {
+    if (!factorId) return;
+    const confirmed = window.confirm(
+      "Turn off two-factor authentication? Your account will only need a password to sign in."
+    );
+    if (!confirmed) return;
+
+    setTurningOff(true);
+    setTwoFaError(null);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId });
+    setTurningOff(false);
+
+    if (error) {
+      setTwoFaError(error.message);
+      return;
+    }
+    setHas2fa(false);
+    setFactorId(null);
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -154,10 +179,23 @@ export default function AccountSettingsPage() {
                 >
                   {has2fa ? "On" : "Off"}
                 </span>
-                <Link href="/account/security/2fa" className="text-xs font-bold uppercase underline">
-                  {has2fa ? "Manage" : "Set up"}
-                </Link>
+                {has2fa ? (
+                  <button
+                    onClick={handleTurnOff2fa}
+                    disabled={turningOff}
+                    className="text-xs font-bold uppercase text-brand-error underline disabled:opacity-50"
+                  >
+                    {turningOff ? "Turning off…" : "Turn off"}
+                  </button>
+                ) : (
+                  <Link href="/account/security/2fa" className="text-xs font-bold uppercase underline">
+                    Set up
+                  </Link>
+                )}
               </div>
+              {twoFaError && (
+                <p className="px-4 pb-2 text-xs text-brand-error">{twoFaError}</p>
+              )}
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="mr-auto">Recovery codes</span>
                 <span className="border-2 border-brand-black px-2 py-0.5 text-xs font-bold uppercase">
