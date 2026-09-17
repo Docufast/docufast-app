@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getCacType } from "@/lib/cacTypes";
 import FileUpload from "@/components/ui/FileUpload";
+import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 export default function CacOrderPage() {
   const params = useParams();
@@ -13,6 +15,9 @@ export default function CacOrderPage() {
   const cacType = getCacType(slug);
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
+  const { activeOrgId } = useOrg();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!cacType) {
     return (
@@ -25,8 +30,34 @@ export default function CacOrderPage() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = `/sign-in?redirect=/services/cac/${slug}`;
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      entity_id: activeOrgId === "personal" ? null : activeOrgId,
+      service_category: "cac",
+      order_type: slug,
+      status: "quote_pending",
+      form_data: values,
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -34,20 +65,17 @@ export default function CacOrderPage() {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 text-center">
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Quote request captured</h1>
+          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            For {cacType!.label.toLowerCase()}, you'd normally receive a quote by email and
-            WhatsApp within 2 business hours, including any government fees.
-          </p>
-          <p className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't connected to a live backend yet — name checking, filing, and
-            payment go live once Phase 3–4 are built.
+            Your request for {cacType!.label.toLowerCase()} has been saved. You'll receive a
+            quote by email and WhatsApp within 2 business hours, including any government
+            fees.
           </p>
           <Link
-            href="/services/cac"
+            href="/orders"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back to CAC & Compliance
+            View your orders →
           </Link>
         </div>
       </main>
@@ -116,11 +144,13 @@ export default function CacOrderPage() {
           </div>
         )}
 
+        {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
         <button
           type="submit"
-          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white"
+          disabled={submitting}
+          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          Request quote →
+          {submitting ? "Submitting…" : "Request quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
           Quote arrives within 2 business hours, itemising any government fees. No payment

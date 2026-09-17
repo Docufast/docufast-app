@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/ui/Sidebar";
+import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
 
@@ -96,7 +97,9 @@ export default function AccountHomePage() {
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[260px_1fr]">
       <Sidebar active="Account" />
 
-      <div className="px-6 py-6 lg:px-12 lg:py-8">
+      <div>
+        <TopBar userName={user.fullName} />
+        <div className="px-6 py-6 lg:px-12 lg:py-8">
         <div className="flex items-end justify-between border-b-4 border-brand-black pb-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
@@ -266,6 +269,7 @@ export default function AccountHomePage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </main>

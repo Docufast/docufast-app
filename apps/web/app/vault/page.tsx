@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
+import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 
 export default function VaultPage() {
   const [loading, setLoading] = useState(true);
+  const [fullName, setFullName] = useState("");
 
   useEffect(() => {
     async function checkAuth() {
@@ -17,6 +19,7 @@ export default function VaultPage() {
         window.location.href = "/sign-in";
         return;
       }
+      setFullName(user.user_metadata?.full_name || "Your account");
       setLoading(false);
     }
     checkAuth();
@@ -34,7 +37,9 @@ export default function VaultPage() {
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[260px_1fr]">
       <Sidebar active="Vault" />
 
-      <div className="px-6 py-6 lg:px-12 lg:py-8">
+      <div>
+        <TopBar userName={fullName} />
+        <div className="px-6 py-6 lg:px-12 lg:py-8">
         <div className="border-b-4 border-brand-black pb-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
             Vault
@@ -76,6 +81,7 @@ export default function VaultPage() {
               permanently and includes ongoing compliance reminders for your entities.
             </p>
           </div>
+        </div>
         </div>
       </div>
     </main>

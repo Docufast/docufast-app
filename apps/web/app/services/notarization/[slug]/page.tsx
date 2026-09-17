@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPlatformNativeType } from "@/lib/platformNativeTypes";
 import FileUpload from "@/components/ui/FileUpload";
+import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 export default function PlatformNativeOrderPage() {
   const params = useParams();
@@ -13,6 +15,9 @@ export default function PlatformNativeOrderPage() {
   const item = getPlatformNativeType(slug);
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
+  const { activeOrgId } = useOrg();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!item) {
     return (
@@ -25,8 +30,34 @@ export default function PlatformNativeOrderPage() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = `/sign-in?redirect=/services/notarization/${slug}`;
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      entity_id: activeOrgId === "personal" ? null : activeOrgId,
+      service_category: "platform_native",
+      order_type: slug,
+      status: "quote_pending",
+      form_data: values,
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -34,20 +65,16 @@ export default function PlatformNativeOrderPage() {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 text-center">
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Request captured</h1>
+          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            For {item!.label.toLowerCase()}, you'd normally receive next steps by email and
-            WhatsApp within 2 business hours.
-          </p>
-          <p className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't connected to a live backend yet — scheduling, subscriptions, and
-            payment go live once Phase 9–10 are built.
+            Your request for {item!.label.toLowerCase()} has been saved. You'll receive next
+            steps by email and WhatsApp within 2 business hours.
           </p>
           <Link
-            href="/services/notarization"
+            href="/orders"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back
+            View your orders →
           </Link>
         </div>
       </main>
@@ -183,11 +210,13 @@ export default function PlatformNativeOrderPage() {
           </div>
         )}
 
+        {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
         <button
           type="submit"
-          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white"
+          disabled={submitting}
+          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          {slug === "digital_notarization" ? "Schedule session →" : "Continue →"}
+          {submitting ? "Submitting…" : slug === "digital_notarization" ? "Schedule session →" : "Continue →"}
         </button>
       </form>
     </main>

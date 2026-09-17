@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 import { supabase } from "@/lib/supabase";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/home";
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [keepSignedIn, setKeepSignedIn] = useState(false);
@@ -48,7 +51,7 @@ export default function SignInPage() {
         }
       }
 
-      window.location.href = "/home";
+      window.location.href = redirectTo;
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -83,7 +86,7 @@ export default function SignInPage() {
       setError("Incorrect code.");
       return;
     }
-    window.location.href = "/home";
+    window.location.href = redirectTo;
   }
 
   if (needsMfa) {

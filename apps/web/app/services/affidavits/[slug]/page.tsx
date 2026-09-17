@@ -5,39 +5,41 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getAffidavitType, AffidavitCategory } from "@/lib/affidavitTypes";
+import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 // Extra fields shown depending on the affidavit's category — the pattern
 // repeats across all types, only the category-specific block changes.
-const CATEGORY_FIELDS: Record<AffidavitCategory, { label: string; placeholder: string }[]> = {
+const CATEGORY_FIELDS: Record<AffidavitCategory, { key: string; label: string; placeholder: string }[]> = {
   name: [
-    { label: "Current/old name", placeholder: "As it appears on your ID" },
-    { label: "New/correct name", placeholder: "The name to be used going forward" },
-    { label: "Reason for change", placeholder: "e.g. marriage, personal preference" },
+    { key: "old_name", label: "Current/old name", placeholder: "As it appears on your ID" },
+    { key: "new_name", label: "New/correct name", placeholder: "The name to be used going forward" },
+    { key: "reason", label: "Reason for change", placeholder: "e.g. marriage, personal preference" },
   ],
   birth_age: [
-    { label: "Declared date of birth", placeholder: "DD/MM/YYYY" },
-    { label: "Supporting context", placeholder: "Why this declaration is needed" },
+    { key: "declared_dob", label: "Declared date of birth", placeholder: "DD/MM/YYYY" },
+    { key: "context", label: "Supporting context", placeholder: "Why this declaration is needed" },
   ],
   loss: [
-    { label: "Item lost", placeholder: "Describe what was lost" },
-    { label: "Approximate date lost", placeholder: "e.g. Early September 2026" },
-    { label: "Where it was lost", placeholder: "e.g. In transit, Oshodi to Ikeja" },
+    { key: "item_lost", label: "Item lost", placeholder: "Describe what was lost" },
+    { key: "date_lost", label: "Approximate date lost", placeholder: "e.g. Early September 2026" },
+    { key: "location_lost", label: "Where it was lost", placeholder: "e.g. In transit, Oshodi to Ikeja" },
   ],
   marriage: [
-    { label: "Spouse's full name", placeholder: "If applicable" },
-    { label: "Relevant date", placeholder: "Marriage or dissolution date" },
+    { key: "spouse_name", label: "Spouse's full name", placeholder: "If applicable" },
+    { key: "relevant_date", label: "Relevant date", placeholder: "Marriage or dissolution date" },
   ],
   death: [
-    { label: "Deceased's full name", placeholder: "" },
-    { label: "Date of death", placeholder: "DD/MM/YYYY" },
+    { key: "deceased_name", label: "Deceased's full name", placeholder: "" },
+    { key: "date_of_death", label: "Date of death", placeholder: "DD/MM/YYYY" },
   ],
   student: [
-    { label: "Institution name", placeholder: "" },
-    { label: "Matriculation/registration number", placeholder: "" },
+    { key: "institution", label: "Institution name", placeholder: "" },
+    { key: "reg_number", label: "Matriculation/registration number", placeholder: "" },
   ],
   status: [
-    { label: "Previous detail", placeholder: "e.g. old address, old vehicle owner" },
-    { label: "New detail", placeholder: "e.g. new address, new vehicle owner" },
+    { key: "previous_detail", label: "Previous detail", placeholder: "e.g. old address, old vehicle owner" },
+    { key: "new_detail", label: "New detail", placeholder: "e.g. new address, new vehicle owner" },
   ],
 };
 
@@ -45,13 +47,17 @@ export default function AffidavitOrderPage() {
   const params = useParams();
   const slug = params.slug as string;
   const affidavitType = getAffidavitType(slug);
+  const { activeOrgId } = useOrg();
 
   const [deponentName, setDeponentName] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [purpose, setPurpose] = useState("");
   const [authenticatedBy, setAuthenticatedBy] = useState<"commissioner" | "notary">("commissioner");
   const [copies, setCopies] = useState(1);
+  const [extraValues, setExtraValues] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!affidavitType) {
     return (
@@ -66,9 +72,45 @@ export default function AffidavitOrderPage() {
 
   const extraFields = CATEGORY_FIELDS[affidavitType.category];
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
+
     if (!deponentName || !jurisdiction || !purpose) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Orders require an account — send them to sign in, then back here.
+      window.location.href = `/sign-in?redirect=/services/affidavits/${slug}`;
+      return;
+    }
+
+    setSubmitting(true);
+
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      entity_id: activeOrgId === "personal" ? null : activeOrgId,
+      service_category: "affidavit",
+      order_type: slug,
+      status: "quote_pending",
+      form_data: {
+        deponent_name: deponentName,
+        jurisdiction,
+        purpose,
+        authenticated_by: authenticatedBy,
+        copies,
+        ...extraValues,
+      },
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -76,20 +118,16 @@ export default function AffidavitOrderPage() {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 text-center">
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Quote request captured</h1>
+          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            For {affidavitType.label.toLowerCase()}, you'd normally receive a quote by email
-            and WhatsApp within 2 business hours.
-          </p>
-          <p className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't connected to a live backend yet — orders, quoting, and payment
-            go live once Supabase's orders table and the Woven integration are built.
+            Your request for {affidavitType.label.toLowerCase()} has been saved. You'll
+            receive a quote by email and WhatsApp within 2 business hours.
           </p>
           <Link
-            href="/services/affidavits"
+            href="/orders"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back to affidavits
+            View your orders →
           </Link>
         </div>
       </main>
@@ -151,12 +189,14 @@ export default function AffidavitOrderPage() {
           </div>
           <div className="flex flex-col gap-4 p-4">
             {extraFields.map((field) => (
-              <div key={field.label}>
+              <div key={field.key}>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                   {field.label}
                 </label>
                 <input
                   placeholder={field.placeholder}
+                  value={extraValues[field.key] || ""}
+                  onChange={(e) => setExtraValues({ ...extraValues, [field.key]: e.target.value })}
                   className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
                 />
               </div>
@@ -231,11 +271,14 @@ export default function AffidavitOrderPage() {
           </div>
         </div>
 
+        {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
+
         <button
           type="submit"
-          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white"
+          disabled={submitting}
+          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          Request quote →
+          {submitting ? "Submitting…" : "Request quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
           Quote arrives within 2 business hours. No payment at this step.

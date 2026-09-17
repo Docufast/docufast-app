@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getVaType } from "@/lib/virtualAssistantTypes";
 import FileUpload from "@/components/ui/FileUpload";
+import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 export default function VaOrderPage() {
   const params = useParams();
@@ -15,6 +17,10 @@ export default function VaOrderPage() {
   const [format, setFormat] = useState<string | null>(null);
   const [turnaround, setTurnaround] = useState<"standard" | "rush">("standard");
   const [instructions, setInstructions] = useState("");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const { activeOrgId } = useOrg();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!vaType) {
     return (
@@ -27,8 +33,34 @@ export default function VaOrderPage() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = `/sign-in?redirect=/services/virtual-assistant/${slug}`;
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      entity_id: activeOrgId === "personal" ? null : activeOrgId,
+      service_category: "virtual_assistant",
+      order_type: slug,
+      status: "quote_pending",
+      form_data: { source_file: fileName, output_format: format, turnaround, instructions },
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -36,20 +68,17 @@ export default function VaOrderPage() {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 text-center">
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Quote request captured</h1>
+          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            For {vaType!.label.toLowerCase()}, you'd normally receive a quote within 2
-            business hours. No identity verification is needed for this service.
-          </p>
-          <p className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't connected to a live backend yet — file upload and payment go
-            live once Phase 3 and 10 are built.
+            Your request for {vaType!.label.toLowerCase()} has been saved. You'll receive a
+            quote within 2 business hours. No identity verification is needed for this
+            service.
           </p>
           <Link
-            href="/services/virtual-assistant"
+            href="/orders"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back
+            View your orders →
           </Link>
         </div>
       </main>
@@ -83,7 +112,7 @@ export default function VaOrderPage() {
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Source file
               </label>
-              <FileUpload />
+              <FileUpload onFileSelect={(file) => setFileName(file?.name || null)} />
             </div>
 
             <div>
@@ -149,11 +178,13 @@ export default function VaOrderPage() {
           </div>
         </div>
 
+        {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
         <button
           type="submit"
-          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white"
+          disabled={submitting}
+          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          Request quote →
+          {submitting ? "Submitting…" : "Request quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
           Quote arrives within 2 business hours. No payment at this step.

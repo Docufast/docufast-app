@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getPublicationType } from "@/lib/publicationTypes";
+import { supabase } from "@/lib/supabase";
+import { useOrg } from "@/contexts/OrgContext";
 
 export default function PublicationOrderPage() {
   const params = useParams();
@@ -12,6 +14,9 @@ export default function PublicationOrderPage() {
   const pubType = getPublicationType(slug);
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
+  const { activeOrgId } = useOrg();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (!pubType) {
     return (
@@ -24,8 +29,34 @@ export default function PublicationOrderPage() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitError(null);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = `/sign-in?redirect=/services/publications/${slug}`;
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").insert({
+      user_id: user.id,
+      entity_id: activeOrgId === "personal" ? null : activeOrgId,
+      service_category: "publication",
+      order_type: slug,
+      status: "quote_pending",
+      form_data: values,
+    });
+
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -33,21 +64,17 @@ export default function PublicationOrderPage() {
     return (
       <main className="mx-auto max-w-xl px-6 py-16 text-center">
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Quote request captured</h1>
+          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            For {pubType!.label.toLowerCase()}, you'd normally receive a quote within 2
-            business hours — this order is paired with its supporting affidavit or CAC
-            filing under one parent order.
-          </p>
-          <p className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-xs text-brand-gray">
-            Note: this isn't connected to a live backend yet — pairing with a parent order
-            and payment go live once Phase 3–5 are built.
+            Your request for {pubType!.label.toLowerCase()} has been saved. You'll receive a
+            quote within 2 business hours — this order is paired with its supporting
+            affidavit or CAC filing under one parent order.
           </p>
           <Link
-            href="/services/publications"
+            href="/orders"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back to publications
+            View your orders →
           </Link>
         </div>
       </main>
@@ -115,11 +142,13 @@ export default function PublicationOrderPage() {
           </div>
         </div>
 
+        {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
         <button
           type="submit"
-          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white"
+          disabled={submitting}
+          className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          Request quote →
+          {submitting ? "Submitting…" : "Request quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
           Quote arrives within 2 business hours. No payment at this step.

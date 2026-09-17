@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
+import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 
 // Real obligation types tracked by the compliance automation engine.
@@ -24,6 +25,7 @@ const REMINDER_SCHEDULE = [
 
 export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
+  const [fullName, setFullName] = useState("");
 
   useEffect(() => {
     async function checkAuth() {
@@ -35,6 +37,7 @@ export default function CalendarPage() {
         window.location.href = "/sign-in";
         return;
       }
+      setFullName(user.user_metadata?.full_name || "Your account");
       setLoading(false);
     }
     checkAuth();
@@ -52,7 +55,9 @@ export default function CalendarPage() {
     <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[260px_1fr]">
       <Sidebar active="Calendar" />
 
-      <div className="px-6 py-6 lg:px-12 lg:py-8">
+      <div>
+        <TopBar userName={fullName} />
+        <div className="px-6 py-6 lg:px-12 lg:py-8">
         <div className="border-b-4 border-brand-black pb-4">
           <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
             Calendar
@@ -60,6 +65,7 @@ export default function CalendarPage() {
           <h1 className="text-3xl font-extrabold text-brand-black">Compliance calendar</h1>
         </div>
 
+        {/* The real headline feature statement */}
         <div className="mt-6 rounded-card border-4 border-brand-black bg-brand-yellow/10 p-5">
           <p className="text-sm text-brand-black">
             <span className="font-bold">
@@ -70,6 +76,7 @@ export default function CalendarPage() {
           </p>
         </div>
 
+        {/* Honest empty state — no entities/deadlines exist yet, no fake dates */}
         <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10 text-center">
           <p className="font-bold text-brand-black">No deadlines tracked yet.</p>
           <p className="mt-1 text-sm text-brand-gray">
@@ -79,6 +86,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* What gets tracked */}
           <section>
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               What we track
@@ -93,6 +101,7 @@ export default function CalendarPage() {
             </div>
           </section>
 
+          {/* Reminder schedule */}
           <section>
             <h2 className="border-b-4 border-brand-black pb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-gray">
               How reminders work
@@ -108,6 +117,7 @@ export default function CalendarPage() {
               ))}
             </div>
           </section>
+        </div>
         </div>
       </div>
     </main>
