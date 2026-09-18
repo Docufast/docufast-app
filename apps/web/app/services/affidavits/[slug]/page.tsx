@@ -8,6 +8,7 @@ import { getAffidavitType, AffidavitCategory } from "@/lib/affidavitTypes";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
 
+import HomeLink from "@/components/ui/HomeLink";
 // Extra fields shown depending on the affidavit's category — the pattern
 // repeats across all types, only the category-specific block changes.
 const CATEGORY_FIELDS: Record<AffidavitCategory, { key: string; label: string; placeholder: string }[]> = {
@@ -137,10 +138,7 @@ export default function AffidavitOrderPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-6 lg:px-16 lg:py-10">
       <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/images/logo-black.png" alt="Docufast" width={28} height={28} />
-          <span className="text-xl font-extrabold tracking-wide text-brand-black">DOCUFAST</span>
-        </Link>
+        <HomeLink />
         <Link href="/services/affidavits" className="text-sm font-semibold uppercase tracking-wide">
           ← Affidavits
         </Link>

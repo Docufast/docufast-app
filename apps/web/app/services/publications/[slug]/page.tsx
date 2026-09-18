@@ -8,6 +8,7 @@ import { getPublicationType } from "@/lib/publicationTypes";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
 
+import HomeLink from "@/components/ui/HomeLink";
 export default function PublicationOrderPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -84,10 +85,7 @@ export default function PublicationOrderPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-6 lg:px-16 lg:py-10">
       <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/images/logo-black.png" alt="Docufast" width={28} height={28} />
-          <span className="text-xl font-extrabold tracking-wide text-brand-black">DOCUFAST</span>
-        </Link>
+        <HomeLink />
         <Link href="/services/publications" className="text-sm font-semibold uppercase tracking-wide">
           ← Publications
         </Link>

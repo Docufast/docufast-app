@@ -7,7 +7,7 @@ import Sidebar from "@/components/ui/Sidebar";
 import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
-import { FileText, Landmark, Newspaper, Video, Calendar, FolderOpen, Upload } from "lucide-react";
+import { FileText, Landmark, Newspaper, Video, Calendar, FolderOpen } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
 
 const QUICK_ACTIONS = [
@@ -61,7 +61,6 @@ export default function HomeDashboardPage() {
   const [firstName, setFirstName] = useState("");
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [showUploadNote, setShowUploadNote] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -249,19 +248,14 @@ export default function HomeDashboardPage() {
             </div>
             <div className="mt-3 rounded-card border-2 border-dashed border-brand-gray-light p-8 text-center">
               <p className="text-sm text-brand-gray">
-                Your vault is empty. Completed documents will appear here.
+                Your vault is empty. Documents from completed orders will appear here automatically.
               </p>
-              <button
-                onClick={() => setShowUploadNote(!showUploadNote)}
-                className="mt-3 inline-flex items-center gap-2 rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black"
+              <Link
+                href="/services/affidavits"
+                className="mt-3 inline-block text-sm font-bold underline"
               >
-                <Upload size={16} /> Upload document
-              </button>
-              {showUploadNote && (
-                <p className="mt-3 text-xs text-brand-gray">
-                  Upload isn't connected yet — this needs Cloudflare R2 storage set up first.
-                </p>
-              )}
+                Start an order →
+              </Link>
             </div>
           </section>
           <AppFooter />
