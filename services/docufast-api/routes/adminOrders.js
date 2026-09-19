@@ -73,22 +73,17 @@ router.patch("/:id", async (req, res) => {
     status === "quote_sent" && existingOrder?.status !== "quote_sent";
   const amountToEmail = data.quote_amount;
 
-  console.log("DEBUG:", { status, existingStatus: existingOrder?.status, isNewlyQuoteSent, amountToEmail });
-
   if (isNewlyQuoteSent && amountToEmail) {
-    const { data: authUser, error: authLookupError } = await supabaseAdmin.auth.admin.getUserById(
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(
       existingOrder.user_id
     );
-    console.log("DEBUG email lookup:", { email: authUser?.user?.email, authLookupError });
-
     if (authUser?.user?.email) {
-      const emailResult = await sendQuoteEmail(
+      await sendQuoteEmail(
         authUser.user.email,
         orderTypeLabel(existingOrder.order_type),
         amountToEmail,
         shortRef(req.params.id)
       );
-      console.log("DEBUG email send result:", emailResult);
     }
   }
 
