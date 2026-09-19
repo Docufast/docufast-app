@@ -82,7 +82,7 @@ router.post("/:id/deliver", async (req, res) => {
       entity_id: order.entity_id,
       file_url: r2_key,
       file_name,
-      status: "delivered",
+      status: "active",
       delivered_at: new Date().toISOString(),
     })
     .select()

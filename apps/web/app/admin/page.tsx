@@ -6,10 +6,10 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
 
-// NOTE: this page currently only checks that someone is logged in — it does
-// NOT yet check for a Founder/Admin role, since there's no roles table in
-// Supabase yet. Any signed-in user can reach this URL directly right now.
-// Real role-based access control needs to be added before this goes live.
+// NOTE: this page checks the caller's role in `profiles` (must be
+// 'founder') and redirects everyone else to /home. The backend API
+// route independently re-checks this too — the frontend check alone
+// is not what protects the data.
 
 const STATUS_LABELS: Record<string, string> = {
   quote_pending: "Quote pending",
@@ -223,7 +223,11 @@ export default function AdminDashboardPage() {
               ) : (
                 <div className="flex flex-col divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
                   {summary.liveQueue.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                    <Link
+                      key={order.id}
+                      href={`/admin/orders/${order.id}`}
+                      className="flex items-center justify-between px-3 py-2 text-sm hover:bg-brand-yellow/10"
+                    >
                       <div>
                         <div className="font-semibold">
                           {orderTypeLabel(order.service_category, order.order_type)}
@@ -233,7 +237,7 @@ export default function AdminDashboardPage() {
                       <span className="rounded-card bg-brand-yellow px-2 py-1 text-xs font-bold uppercase">
                         {STATUS_LABELS[order.status] || order.status}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
