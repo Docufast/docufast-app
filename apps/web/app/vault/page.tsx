@@ -9,6 +9,8 @@ import { supabase } from "@/lib/supabase";
 import { ShieldCheck, Clock, RefreshCw, FolderOpen, Download } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 interface Document {
   id: string;
   file_name: string | null;
@@ -20,6 +22,7 @@ export default function VaultPage() {
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -33,8 +36,6 @@ export default function VaultPage() {
       }
       setFullName(user.user_metadata?.full_name || "Your account");
 
-      // Real query against the documents table — currently returns nothing
-      // since no order has reached "delivered" status yet.
       const { data } = await supabase
         .from("documents")
         .select("id, file_name, delivered_at, expires_at")
@@ -45,6 +46,31 @@ export default function VaultPage() {
     }
     loadData();
   }, []);
+
+  async function handleDownload(documentId: string) {
+    setDownloadingId(documentId);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const res = await fetch(`${API_URL}/documents/${documentId}/download`, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to generate download link.");
+        return;
+      }
+      window.open(data.url, "_blank");
+    } catch (err) {
+      alert("Failed to generate download link.");
+    } finally {
+      setDownloadingId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -62,7 +88,7 @@ export default function VaultPage() {
         <TopBar userName={fullName} />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
           {/* Hero banner */}
-          <div className="flex items-center justify-between overflow-hidden rounded-card border-4 border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
+          <div className="flex items-center justify-between overflow-hidden rounded-card border-4border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
                 Vault
@@ -98,7 +124,7 @@ export default function VaultPage() {
 
           {/* Documents list or honest empty state */}
           {documents.length === 0 ? (
-            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10 text-center">
+            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10text-center">
               <FolderOpen size={32} className="mx-auto text-brand-gray" />
               <p className="mt-2 font-bold text-brand-black">Your vault is empty.</p>
               <p className="mt-1 text-sm text-brand-gray">
@@ -130,8 +156,13 @@ export default function VaultPage() {
                       })}
                     </div>
                   </div>
-                  <button className="flex items-center gap-2 rounded-card bg-brand-black px-4 py-2.5 text-sm font-bold text-brand-white">
-                    <Download size={16} /> Download
+                  <button
+                    onClick={() => handleDownload(doc.id)}
+                    disabled={downloadingId === doc.id}
+                    className="flex items-center gap-2 rounded-card bg-brand-black px-4 py-2.5 text-sm font-bold text-brand-white disabled:opacity-50"
+                  >
+                    <Download size={16} />
+                    {downloadingId === doc.id ? "Preparing…" : "Download"}
                   </button>
                 </div>
               ))}
