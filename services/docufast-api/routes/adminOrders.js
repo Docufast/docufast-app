@@ -18,7 +18,6 @@ function shortRef(id) {
   return `DF-${id.slice(0, 8).toUpperCase()}`;
 }
 
-// GET /admin/orders/:id — full order detail for the admin view.
 router.get("/:id", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
@@ -42,8 +41,6 @@ router.get("/:id", async (req, res) => {
   res.json({ order, documents: documents || [] });
 });
 
-// PATCH /admin/orders/:id — update status and/or quote amount.
-// Automatically emails the customer if status is newly set to "quote_sent".
 router.patch("/:id", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
@@ -79,24 +76,25 @@ router.patch("/:id", async (req, res) => {
   console.log("DEBUG:", { status, existingStatus: existingOrder?.status, isNewlyQuoteSent, amountToEmail });
 
   if (isNewlyQuoteSent && amountToEmail) {
-    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(
+    const { data: authUser, error: authLookupError } = await supabaseAdmin.auth.admin.getUserById(
       existingOrder.user_id
     );
+    console.log("DEBUG email lookup:", { email: authUser?.user?.email, authLookupError });
+
     if (authUser?.user?.email) {
-      await sendQuoteEmail(
+      const emailResult = await sendQuoteEmail(
         authUser.user.email,
         orderTypeLabel(existingOrder.order_type),
         amountToEmail,
         shortRef(req.params.id)
       );
+      console.log("DEBUG email send result:", emailResult);
     }
   }
 
   res.json({ order: data });
 });
 
-// POST /admin/orders/:id/deliver — record a delivered document.
-// Expects { r2_key, file_name } from a prior /upload call.
 router.post("/:id/deliver", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
@@ -138,8 +136,6 @@ router.post("/:id/deliver", async (req, res) => {
   res.json({ document });
 });
 
-// GET /admin/orders/documents/:documentId/download — generates a short-lived
-// signed link to the actual file, valid for 5 minutes.
 router.get("/documents/:documentId/download", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
