@@ -76,6 +76,8 @@ router.patch("/:id", async (req, res) => {
     status === "quote_sent" && existingOrder?.status !== "quote_sent";
   const amountToEmail = data.quote_amount;
 
+  console.log("DEBUG:", { status, existingStatus: existingOrder?.status, isNewlyQuoteSent, amountToEmail });
+
   if (isNewlyQuoteSent && amountToEmail) {
     const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(
       existingOrder.user_id
