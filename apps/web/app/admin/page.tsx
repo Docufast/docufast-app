@@ -96,10 +96,30 @@ export default function AdminDashboardPage() {
         window.location.href = "/sign-in";
         return;
       }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role !== "founder") {
+        window.location.href = "/home";
+        return;
+      }
+
       setLoading(false);
 
       try {
-        const res = await fetch("/api/admin/summary");
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        const res = await fetch("/api/admin/summary", {
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+        });
         const data = await res.json();
         if (!res.ok) {
           setSummaryError(data.error || "Failed to load dashboard data.");

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
-// Server-only route. Uses the service role key (never exposed to the
-// browser) so the Founder Dashboard can see orders across ALL users,
-// bypassing the per-user Row Level Security that the rest of the app uses.
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -11,7 +9,34 @@ const supabaseAdmin = createClient(
 
 const TERMINAL_STATUSES = ["delivered", "cancelled"];
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Verify the caller is a signed-in founder before returning anything.
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.replace("Bearer ", "");
+
+  if (!token) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabaseAdmin.auth.getUser(token);
+
+  if (authError || !user) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "founder") {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
   const { data: orders, error } = await supabaseAdmin
     .from("orders")
     .select("id, service_category, order_type, status, created_at")
