@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
+import HomeLink from "@/components/ui/HomeLink";
 // Full service catalogue — 43 services across 5 categories, per the Platform Playbook.
 const CATEGORIES = [
   {
@@ -46,12 +47,7 @@ export default function ServicesPage() {
     <>
       <main className="mx-auto max-w-6xl px-6 py-6 lg:px-16 lg:py-10">
         <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/images/logo-black.png" alt="Docufast" width={28} height={28} />
-            <span className="text-xl font-extrabold tracking-wide text-brand-black">
-              DOCUFAST
-            </span>
-          </Link>
+          <HomeLink />
           <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
           <Link
             href="/sign-in"
