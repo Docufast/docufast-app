@@ -35,10 +35,10 @@ router.patch("/:id", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
 
-  const { status, quoted_price } = req.body;
+  const { status, quote_amount } = req.body;
   const updates = {};
   if (status !== undefined) updates.status = status;
-  if (quoted_price !== undefined) updates.quoted_price = quoted_price;
+  if (quote_amount !== undefined) updates.quote_amount = quote_amount;
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Nothing to update." });

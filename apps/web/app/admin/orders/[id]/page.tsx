@@ -41,7 +41,7 @@ interface Order {
   service_category: string;
   order_type: string;
   status: string;
-  quoted_price: number | null;
+  quote_amount: number | null;
   form_data: Record<string, string>;
   created_at: string;
   user_id: string;
@@ -127,7 +127,7 @@ export default function AdminOrderDetailPage() {
       setOrder(data.order);
       setDocuments(data.documents);
       setStatusDraft(data.order.status);
-      setPriceDraft(data.order.quoted_price != null ? String(data.order.quoted_price) : "");
+      setPriceDraft(data.order.quote_amount != null ? String(data.order.quote_amount) : "");
     } catch (err) {
       setError("Failed to load order.");
     }
@@ -149,7 +149,7 @@ export default function AdminOrderDetailPage() {
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({
           status: statusDraft,
-          quoted_price: priceDraft === "" ? null : Number(priceDraft),
+          quote_amount: priceDraft === "" ? null : Number(priceDraft),
         }),
       });
       const data = await res.json();
