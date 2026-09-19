@@ -4,11 +4,54 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { getAffidavitType } from "@/lib/affidavitTypes";
 
 // NOTE: this page currently only checks that someone is logged in — it does
 // NOT yet check for a Founder/Admin role, since there's no roles table in
 // Supabase yet. Any signed-in user can reach this URL directly right now.
 // Real role-based access control needs to be added before this goes live.
+
+const STATUS_LABELS: Record<string, string> = {
+  quote_pending: "Quote pending",
+  quote_sent: "Quote sent",
+  paid: "Paid",
+  sent_to_partner: "Sent to partner",
+  in_processing: "In processing",
+  qa_review: "QA review",
+  ready_for_delivery: "Ready for delivery",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  name_rejected: "Name rejected",
+};
+
+interface Order {
+  id: string;
+  service_category: string;
+  order_type: string;
+  status: string;
+  created_at: string;
+}
+
+interface Summary {
+  totalOrders: number;
+  ordersThisMonth: number;
+  statusBreakdown: Record<string, number>;
+  liveQueue: Order[];
+}
+
+function orderTypeLabel(serviceCategory: string, orderType: string) {
+  if (serviceCategory === "affidavit") {
+    return getAffidavitType(orderType)?.label || orderType;
+  }
+  return orderType
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function shortRef(id: string) {
+  return `DF-${id.slice(0, 8).toUpperCase()}`;
+}
 
 function MetricCard({ label, value, sublabel }: { label: string; value: string; sublabel?: string }) {
   return (
@@ -41,6 +84,8 @@ function EmptyRow({ text }: { text: string }) {
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
@@ -52,6 +97,18 @@ export default function AdminDashboardPage() {
         return;
       }
       setLoading(false);
+
+      try {
+        const res = await fetch("/api/admin/summary");
+        const data = await res.json();
+        if (!res.ok) {
+          setSummaryError(data.error || "Failed to load dashboard data.");
+          return;
+        }
+        setSummary(data);
+      } catch (err) {
+        setSummaryError("Failed to load dashboard data.");
+      }
     }
     checkAuth();
   }, []);
@@ -80,10 +137,20 @@ export default function AdminDashboardPage() {
       </nav>
 
       <div className="mx-auto max-w-6xl px-6 py-8 lg:px-12">
+        {summaryError && (
+          <div className="mb-6 rounded-card border-2 border-brand-error bg-brand-error/5 px-4 py-3 text-sm text-brand-error">
+            {summaryError}
+          </div>
+        )}
+
         {/* Four core metrics — always visible */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Monthly net revenue" value="₦0" sublabel="Month-to-date · ₦0 YTD" />
-          <MetricCard label="Orders this month" value="0" />
+          <MetricCard
+            label="Orders this month"
+            value={summary ? String(summary.ordersThisMonth) : "—"}
+            sublabel={summary ? `${summary.totalOrders} total, all time` : undefined}
+          />
           <MetricCard label="Cash runway" value="Not set" sublabel="Manual input required" />
           <MetricCard label="Open issues" value="0" />
         </div>
@@ -92,7 +159,21 @@ export default function AdminDashboardPage() {
           {/* Module 1 — Commercial & Revenue */}
           <Module title="Commercial & Revenue">
             <div className="flex flex-col gap-3">
-              <EmptyRow text="No orders yet — breakdown by status appears once orders exist." />
+              {!summary || Object.keys(summary.statusBreakdown).length === 0 ? (
+                <EmptyRow text="No orders yet — breakdown by status appears once orders exist." />
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {Object.entries(summary.statusBreakdown).map(([status, count]) => (
+                    <div
+                      key={status}
+                      className="flex items-center justify-between rounded-card border-2 border-brand-black px-3 py-2 text-sm"
+                    >
+                      <span>{STATUS_LABELS[status] || status}</span>
+                      <span className="font-bold">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-card border-2 border-brand-black p-3">
                   <div className="text-xs text-brand-gray">Average order value</div>
@@ -117,7 +198,25 @@ export default function AdminDashboardPage() {
           {/* Module 2 — Operations & Quality (incl. QR Verification Feed) */}
           <Module title="Operations & Quality">
             <div className="flex flex-col gap-3">
-              <EmptyRow text="Live order queue is empty." />
+              {!summary || summary.liveQueue.length === 0 ? (
+                <EmptyRow text="Live order queue is empty." />
+              ) : (
+                <div className="flex flex-col divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
+                  {summary.liveQueue.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                      <div>
+                        <div className="font-semibold">
+                          {orderTypeLabel(order.service_category, order.order_type)}
+                        </div>
+                        <div className="text-xs text-brand-gray">{shortRef(order.id)}</div>
+                      </div>
+                      <span className="rounded-card bg-brand-yellow px-2 py-1 text-xs font-bold uppercase">
+                        {STATUS_LABELS[order.status] || order.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-card border-2 border-brand-black p-3">
                   <div className="text-xs text-brand-gray">QA pass rate</div>
