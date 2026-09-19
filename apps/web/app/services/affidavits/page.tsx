@@ -108,15 +108,6 @@ export default function AffidavitsPage() {
           <span>© 2026 Docufast Integrated Services Ltd</span>
         </div>
       </footer>
-
-      <a
-        href="https://wa.me/2347085918205"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-card bg-brand-yellow px-4 py-3 text-sm font-bold text-brand-black shadow-lg hover:bg-brand-yellow-dark"
-      >
-        Chat with us on WhatsApp
-      </a>
-    </>
+</>
   );
 }
