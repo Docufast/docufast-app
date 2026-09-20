@@ -40,8 +40,13 @@ export default function TwoFactorSetupPage() {
         await supabase.auth.mfa.unenroll({ factorId: factor.id });
       }
 
+      // Explicit issuer/friendlyName so the authenticator app always shows
+      // "Docufast" (with the account email) rather than whatever the Site
+      // URL happens to be set to, and to avoid friendly-name collisions.
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: "totp",
+        issuer: "Docufast",
+        friendlyName: `Docufast ${Date.now()}`,
       });
 
       if (enrollError) {
@@ -50,8 +55,6 @@ export default function TwoFactorSetupPage() {
         return;
       }
 
-      // Supabase returns qr_code as a complete data: URI already — use it
-      // directly rather than re-encoding it.
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
       setFactorId(data.id);

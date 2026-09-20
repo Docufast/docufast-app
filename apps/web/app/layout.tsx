@@ -3,6 +3,7 @@ import "./globals.css";
 import { OrgProvider } from "@/contexts/OrgContext";
 import SupportChat from "@/components/ui/SupportChat";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
+import InactivityLogout from "@/components/ui/InactivityLogout";
 
 export const metadata: Metadata = {
   title: "Docufast — Documents. Faster.",
@@ -20,6 +21,7 @@ export default function RootLayout({
         <OrgProvider>{children}</OrgProvider>
         <SupportChat />
         <WhatsAppButton />
+        <InactivityLogout />
       </body>
     </html>
   );
