@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Home, FileText, FolderOpen, Calendar, User } from "lucide-react";
@@ -20,6 +21,21 @@ export default function Sidebar({
   active: string;
   subItem?: { label: string; href: string; active: boolean }[];
 }) {
+  useEffect(() => {
+    // Two-factor authentication is mandatory. Any signed-in user without a
+    // verified TOTP factor gets sent to set one up before using the app —
+    // this catches both new sign-ups mid-flow and pre-existing accounts
+    // that predate this requirement.
+    async function checkTwoFactor() {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const hasVerifiedFactor = data?.totp?.some((f) => f.status === "verified");
+      if (!hasVerifiedFactor) {
+        window.location.href = "/account/security/2fa";
+      }
+    }
+    checkTwoFactor();
+  }, []);
+
   async function handleSignOut() {
     await supabase.auth.signOut();
     window.location.href = "/sign-in";

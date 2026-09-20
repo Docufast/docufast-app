@@ -46,9 +46,9 @@ export default function SignUpPage() {
         return;
       }
 
-      // TODO: once email confirmation is configured, redirect to a
-      // "check your email" screen instead of /account directly.
-      window.location.href = "/home";
+      // Two-factor authentication is mandatory — every new account sets it
+      // up immediately after registering, before reaching the main app.
+      window.location.href = "/account/security/2fa";
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -155,7 +155,8 @@ export default function SignUpPage() {
             </button>
 
             <p className="text-xs text-brand-gray">
-              Businesses are added later, when you place an order under one.
+              Businesses are added later, when you place an order under one. You'll set up
+              two-factor authentication next, for account security.
             </p>
           </div>
         </form>

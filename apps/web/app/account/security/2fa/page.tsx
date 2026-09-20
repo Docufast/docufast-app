@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function TwoFactorSetupPage() {
@@ -22,6 +21,15 @@ export default function TwoFactorSetupPage() {
 
       if (!user) {
         window.location.href = "/sign-in";
+        return;
+      }
+
+      // If already enrolled and verified, there's nothing to set up —
+      // send them straight into the app.
+      const { data: factorsData } = await supabase.auth.mfa.listFactors();
+      const verifiedFactor = factorsData?.totp?.find((f) => f.status === "verified");
+      if (verifiedFactor) {
+        window.location.href = "/home";
         return;
       }
 
@@ -90,12 +98,12 @@ export default function TwoFactorSetupPage() {
             You'll now be asked for a 6-digit code from your authenticator app whenever you
             sign in.
           </p>
-          <Link
-            href="/account/settings"
+          <a
+            href="/home"
             className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
           >
-            ← Back to settings
-          </Link>
+            Continue to Docufast →
+          </a>
         </div>
       </main>
     );
@@ -103,11 +111,12 @@ export default function TwoFactorSetupPage() {
 
   return (
     <main className="mx-auto max-w-md px-6 py-10">
-      <Link href="/account/settings" className="text-sm font-bold uppercase tracking-wide">
-        ← Settings
-      </Link>
+      <div className="rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-4 py-3 text-sm text-brand-black">
+        Two-factor authentication is required on every Docufast account to keep your
+        documents secure.
+      </div>
 
-      <h1 className="mt-4 text-2xl font-extrabold text-brand-black">Set up two-factor authentication</h1>
+      <h1 className="mt-6 text-2xl font-extrabold text-brand-black">Set up two-factor authentication</h1>
       <p className="mt-2 text-sm text-brand-gray">
         Scan this QR code with Google Authenticator, Authy, or 1Password.
       </p>
