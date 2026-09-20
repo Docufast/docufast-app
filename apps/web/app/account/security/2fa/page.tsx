@@ -24,13 +24,20 @@ export default function TwoFactorSetupPage() {
         return;
       }
 
-      // If already enrolled and verified, there's nothing to set up —
-      // send them straight into the app.
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
+
+      // Already have a verified factor — nothing to do.
       const verifiedFactor = factorsData?.totp?.find((f) => f.status === "verified");
       if (verifiedFactor) {
         window.location.href = "/home";
         return;
+      }
+
+      // A leftover unverified factor from a previous incomplete attempt
+      // blocks re-enrollment — clean it up before starting fresh.
+      const unverifiedFactors = factorsData?.totp?.filter((f) => f.status !== "verified") || [];
+      for (const factor of unverifiedFactors) {
+        await supabase.auth.mfa.unenroll({ factorId: factor.id });
       }
 
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
@@ -43,6 +50,8 @@ export default function TwoFactorSetupPage() {
         return;
       }
 
+      // Supabase returns qr_code as a complete data: URI already — use it
+      // directly rather than re-encoding it.
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
       setFactorId(data.id);
@@ -125,11 +134,7 @@ export default function TwoFactorSetupPage() {
 
       {qrCode && (
         <div className="mt-6 flex justify-center rounded-card border-4 border-brand-black p-6">
-          <img
-            src={`data:image/svg+xml;utf-8,${encodeURIComponent(qrCode)}`}
-            alt="2FA QR code"
-            className="h-48 w-48"
-          />
+          <img src={qrCode} alt="2FA QR code" className="h-48 w-48" />
         </div>
       )}
 
