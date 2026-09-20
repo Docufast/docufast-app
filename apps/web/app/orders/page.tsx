@@ -24,7 +24,7 @@ const ORDER_STAGES = [
   { label: "Quote requested", desc: "Submitted — quote arrives within 2 business hours", icon: FileText },
   { label: "Quote sent", desc: "Review and accept via email or WhatsApp", icon: Mail },
   { label: "Paid", desc: "Order confirmed, sent to processing", icon: CreditCard },
-  { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings },
+  { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings},
   { label: "QA review", desc: "Checked against your order before sealing", icon: ShieldCheck },
   { label: "Delivered", desc: "Sealed with a QR code, added to your vault", icon: Package },
 ];
@@ -131,7 +131,7 @@ export default function OrdersPage() {
         <TopBar userName={fullName} />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
           {/* Hero banner */}
-          <div className="flex items-center justify-between overflow-hidden rounded-card border-4 border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
+          <div className="flex items-center justify-between overflow-hidden rounded-card border-4border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
                 Orders
@@ -155,7 +155,7 @@ export default function OrdersPage() {
 
           {/* Orders list */}
           {orders.length === 0 ? (
-            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10 text-center">
+            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10text-center">
               <p className="font-bold text-brand-black">You haven't placed any orders yet.</p>
               <p className="mt-1 text-sm text-brand-gray">
                 Once you do, you'll be able to track every stage right here.
@@ -187,13 +187,22 @@ export default function OrdersPage() {
                       })}
                     </div>
                   </div>
-                  <span className="flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-3 py-1.5 text-xs font-bold uppercase text-brand-yellow-dark">
+                  <span className="flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-3py-1.5 text-xs font-bold uppercase text-brand-yellow-dark">
                     <Clock size={13} /> {STATUS_LABELS[order.status] || order.status}
                   </span>
                   {order.quote_amount ? (
-                    <span className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black">
-                      ₦{order.quote_amount.toLocaleString()}
-                    </span>
+                    order.status === "quote_sent" ? (
+                      <Link
+                        href={`/orders/${order.id}/pay`}
+                        className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black hover:bg-brand-yellow-dark"
+                      >
+                        ₦{order.quote_amount.toLocaleString()} · Pay now
+                      </Link>
+                    ) : (
+                      <span className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black">
+                        ₦{order.quote_amount.toLocaleString()}
+                      </span>
+                    )
                   ) : null}
                   <button
                     onClick={() => setOpenMenuId(openMenuId === order.id ? null : order.id)}
@@ -236,7 +245,7 @@ export default function OrdersPage() {
                 href="https://wa.me/2347085918205"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bold uppercase"
+                className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bolduppercase"
               >
                 Learn more
               </a>
