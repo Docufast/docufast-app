@@ -16,16 +16,18 @@ export default function Home() {
               DOCUFAST
             </span>
           </div>
-          <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-            For business
-          </span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-            API
-          </span>
-          <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-            Pricing
-          </span>
+          <div className="hidden items-center gap-6 md:flex">
+            <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
+            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
+              For business
+            </span>
+            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
+              API
+            </span>
+            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
+              Pricing
+            </span>
+          </div>
           <Link
             href="/sign-in"
             className="ml-auto text-sm font-bold uppercase tracking-wide"
@@ -57,7 +59,7 @@ export default function Home() {
             </Link>
             <Link
               href="/services"
-              className="rounded-card border-4 border-brand-black px-5 py-3.5 text-base font-bold text-brand-black"
+              className="rounded-card border-4 border-brand-black px-5 py-3.5 text-base font-boldtext-brand-black"
             >
               Browse services
             </Link>
@@ -130,8 +132,6 @@ export default function Home() {
         <span>© 2026 Docufast Integrated Services Ltd</span>
       </div>
     </footer>
-
-    {/* Sticky WhatsApp CTA */}
 </>
   );
 }
