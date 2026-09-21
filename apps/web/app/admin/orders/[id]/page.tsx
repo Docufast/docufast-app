@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
-import FileUpload from "@/components/ui/FileUpload";
+import { encryptDocumentForRecipient } from "@/lib/vaultCrypto";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -76,6 +76,7 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<Order | null>(null);
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
+  const [recipientPublicKey, setRecipientPublicKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [statusDraft, setStatusDraft] = useState("");
@@ -83,8 +84,7 @@ export default function AdminOrderDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  const [deliverFileName, setDeliverFileName] = useState<string | null>(null);
-  const [deliverKey, setDeliverKey] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [delivering, setDelivering] = useState(false);
   const [deliverError, setDeliverError] = useState<string | null>(null);
 
@@ -126,6 +126,7 @@ export default function AdminOrderDetailPage() {
       }
       setOrder(data.order);
       setDocuments(data.documents);
+      setRecipientPublicKey(data.recipientPublicKey);
       setStatusDraft(data.order.status);
       setPriceDraft(data.order.quote_amount != null ? String(data.order.quote_amount) : "");
     } catch (err) {
@@ -167,24 +168,56 @@ export default function AdminOrderDetailPage() {
   }
 
   async function handleDeliver() {
-    if (!deliverKey || !deliverFileName) return;
+    if (!selectedFile) return;
+    if (!recipientPublicKey) {
+      setDeliverError(
+        "This customer hasn't set up vault encryption yet — documents can't be delivered securely."
+      );
+      return;
+    }
+
     setDelivering(true);
     setDeliverError(null);
     try {
-      const headers = await getAuthHeader();
-      const res = await fetch(`${API_URL}/admin/orders/${orderId}/deliver`, {
+      const fileBytes = await selectedFile.arrayBuffer();
+      const { ciphertext, iv, senderEphemeralPublicKey } = await encryptDocumentForRecipient(
+        fileBytes,
+        recipientPublicKey
+      );
+
+      const encryptedBlob = new Blob([ciphertext]);
+      const formData = new FormData();
+      formData.append("file", encryptedBlob, selectedFile.name);
+
+      const uploadRes = await fetch(`${API_URL}/upload`, {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ r2_key: deliverKey, file_name: deliverFileName }),
+        body: formData,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setDeliverError(data.error || "Failed to deliver document.");
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) {
+        setDeliverError(uploadData.error || "Upload failed.");
         return;
       }
-      setDocuments((prev) => [data.document, ...prev]);
-      setDeliverKey(null);
-      setDeliverFileName(null);
+
+      const headers = await getAuthHeader();
+      const deliverRes = await fetch(`${API_URL}/admin/orders/${orderId}/deliver`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          r2_key: uploadData.key,
+          file_name: selectedFile.name,
+          encryption_iv: iv,
+          sender_ephemeral_public_key: senderEphemeralPublicKey,
+        }),
+      });
+      const deliverData = await deliverRes.json();
+      if (!deliverRes.ok) {
+        setDeliverError(deliverData.error || "Failed to deliver document.");
+        return;
+      }
+
+      setDocuments((prev) => [deliverData.document, ...prev]);
+      setSelectedFile(null);
       setStatusDraft("delivered");
       await loadOrder();
     } catch (err) {
@@ -262,7 +295,6 @@ export default function AdminOrderDetailPage() {
           </p>
         </div>
 
-        {/* Status + Price */}
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Status & Quote
@@ -311,7 +343,6 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        {/* Filing details submitted by the customer */}
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Filing details submitted
@@ -326,29 +357,43 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        {/* Deliver a document */}
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Deliver final document
           </div>
           <div className="flex flex-col gap-3 p-4">
-            <FileUpload
-              label="Click or drag the finished document here"
-              onUploadComplete={(key) => setDeliverKey(key)}
-              onFileSelect={(file) => setDeliverFileName(file?.name || null)}
+            {!recipientPublicKey && (
+              <div className="rounded-card border-l-4 border-brand-error bg-brand-error/5 px-4 py-3 text-sm text-brand-error">
+                This customer's account doesn't have a vault encryption key yet. Documents
+                cannot be delivered securely until they do.
+              </div>
+            )}
+            <input
+              type="file"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              disabled={!recipientPublicKey}
+              className="rounded-input border-4 border-dashed border-brand-black px-3 py-4 text-sm disabled:opacity-50"
             />
+            {selectedFile && (
+              <p className="text-sm text-brand-gray">
+                Selected: <span className="font-semibold">{selectedFile.name}</span>
+              </p>
+            )}
             {deliverError && <p className="text-sm text-brand-error">{deliverError}</p>}
             <button
               onClick={handleDeliver}
-              disabled={!deliverKey || delivering}
+              disabled={!selectedFile || !recipientPublicKey || delivering}
               className="self-start rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black disabled:opacity-50"
             >
-              {delivering ? "Delivering…" : "Deliver to customer"}
+              {delivering ? "Encrypting & delivering…" : "Deliver to customer"}
             </button>
+            <p className="text-xs text-brand-gray">
+              The file is encrypted in your browser for this specific customer before it's
+              uploaded — Docufast never stores it in a readable form.
+            </p>
           </div>
         </div>
 
-        {/* Delivered documents */}
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Delivered documents
@@ -372,7 +417,7 @@ export default function AdminOrderDetailPage() {
                       onClick={() => handleDownload(doc.id)}
                       className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bold uppercase"
                     >
-                      Download
+                      Download (encrypted)
                     </button>
                   </div>
                 ))}

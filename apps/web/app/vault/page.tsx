@@ -6,6 +6,8 @@ import Image from "next/image";
 import Sidebar from "@/components/ui/Sidebar";
 import TopBar from "@/components/ui/TopBar";
 import { supabase } from "@/lib/supabase";
+import { decryptDocumentForRecipient, fromBase64 } from "@/lib/vaultCrypto";
+import { getUnlockedPrivateKey } from "@/lib/vaultSession";
 import { ShieldCheck, Clock, RefreshCw, FolderOpen, Download } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
 
@@ -21,8 +23,10 @@ interface Document {
 export default function VaultPage() {
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -34,6 +38,7 @@ export default function VaultPage() {
         window.location.href = "/sign-in";
         return;
       }
+      setUserId(user.id);
       setFullName(user.user_metadata?.full_name || "Your account");
 
       const { data } = await supabase
@@ -47,9 +52,19 @@ export default function VaultPage() {
     loadData();
   }, []);
 
-  async function handleDownload(documentId: string) {
+  async function handleDownload(documentId: string, fileName: string | null) {
+    if (!userId) return;
     setDownloadingId(documentId);
+    setDownloadError(null);
     try {
+      const privateKey = await getUnlockedPrivateKey(userId);
+      if (!privateKey) {
+        setDownloadError(
+          "Your vault is locked. Please sign out and sign back in with your password to unlock it."
+        );
+        return;
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -61,12 +76,31 @@ export default function VaultPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Failed to generate download link.");
+        setDownloadError(data.error || "Failed to generate download link.");
         return;
       }
-      window.open(data.url, "_blank");
+
+      const fileRes = await fetch(data.url);
+      const encryptedBytes = await fileRes.arrayBuffer();
+
+      const decryptedBytes = await decryptDocumentForRecipient(
+        encryptedBytes,
+        data.encryptionIv,
+        data.senderEphemeralPublicKey,
+        privateKey
+      );
+
+      const blob = new Blob([decryptedBytes]);
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName || data.fileName || "document";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      alert("Failed to generate download link.");
+      setDownloadError("Failed to decrypt this document. Please try again.");
     } finally {
       setDownloadingId(null);
     }
@@ -87,7 +121,6 @@ export default function VaultPage() {
       <div>
         <TopBar userName={fullName} />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
-          {/* Hero banner */}
           <div className="flex items-center justify-between overflow-hidden rounded-card border-4border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
@@ -110,19 +143,22 @@ export default function VaultPage() {
             </div>
           </div>
 
-          {/* Trust statement */}
           <div className="mt-6 flex items-start gap-3 rounded-card border-4 border-brand-black bg-brand-yellow/10 p-5">
             <ShieldCheck size={22} className="mt-0.5 shrink-0 text-brand-black" />
             <p className="text-sm text-brand-black">
               <span className="font-bold">Your documents are encrypted end-to-end.</span>{" "}
-              Docufast staff cannot read your uploaded documents. Input documents are
-              permanently deleted 30 days after your order is completed. Every document you
-              receive carries a QR code — so any institution can independently verify it's
-              genuine.
+              Docufast staff cannot read your delivered documents — they're decrypted only in
+              your browser, using a key only you hold. Every document you receive carries a
+              QR code — so any institution can independently verify it's genuine.
             </p>
           </div>
 
-          {/* Documents list or honest empty state */}
+          {downloadError && (
+            <div className="mt-4 rounded-card border-2 border-brand-error bg-brand-error/5 px-4 py-3 text-sm text-brand-error">
+              {downloadError}
+            </div>
+          )}
+
           {documents.length === 0 ? (
             <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10text-center">
               <FolderOpen size={32} className="mx-auto text-brand-gray" />
@@ -157,19 +193,18 @@ export default function VaultPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleDownload(doc.id)}
+                    onClick={() => handleDownload(doc.id, doc.file_name)}
                     disabled={downloadingId === doc.id}
                     className="flex items-center gap-2 rounded-card bg-brand-black px-4 py-2.5 text-sm font-bold text-brand-white disabled:opacity-50"
                   >
                     <Download size={16} />
-                    {downloadingId === doc.id ? "Preparing…" : "Download"}
+                    {downloadingId === doc.id ? "Decrypting…" : "Download"}
                   </button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Storage policy */}
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-card border-2 border-brand-black bg-white p-5">
               <div className="flex items-center gap-2">
