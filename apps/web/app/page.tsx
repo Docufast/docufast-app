@@ -42,7 +42,7 @@ export default function Home() {
             Regulated document infrastructure
           </span>
           <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-brand-black lg:text-6xl">
-            Affidavits, filings and notarisation — handled properly.
+            Your documents. Handled properly. Every time.
           </h1>
           <p className="max-w-md text-lg text-brand-gray">
             One account for sworn documents, CAC registrations, publications

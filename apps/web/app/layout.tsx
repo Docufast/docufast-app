@@ -6,8 +6,8 @@ import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import InactivityLogout from "@/components/ui/InactivityLogout";
 
 export const metadata: Metadata = {
-  title: "Docufast — Documents. Faster.",
-  description: "API-first document infrastructure for Nigeria.",
+  title: "Docufast — Nigeria's Document Platform",
+  description: "Sworn documents, CAC registration, publications and notarization — every matter quoted before work starts, tracked end to end, and stored encrypted.",
 };
 
 export default function RootLayout({
