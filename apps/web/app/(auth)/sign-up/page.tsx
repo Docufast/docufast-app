@@ -140,8 +140,15 @@ export default function SignUpPage() {
                 onChange={(e) => setAgreed(e.target.checked)}
                 className="mt-0.5 h-4 w-4 border-4 border-brand-black"
               />
-              I agree to the Terms of Service and Privacy Policy, including
-              NDPR data handling.
+              I agree to the{" "}
+              <Link href="/terms" className="font-bold underline" target="_blank">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" className="font-bold underline" target="_blank">
+                Privacy Policy
+              </Link>
+              , including NDPA 2023 data handling.
             </label>
 
             {error && <p className="text-sm text-brand-error">{error}</p>}
