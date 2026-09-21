@@ -8,7 +8,7 @@ const CATEGORIES = [
   {
     slug: "affidavits",
     name: "Affidavits",
-    count: 28,
+    count: 31,
     turnaround: "Standard 48h",
     desc: "Change of name, loss, marriage, birth/age, death, student and status affidavits.",
   },
