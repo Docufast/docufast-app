@@ -20,11 +20,13 @@ import {
 } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 const ORDER_STAGES = [
   { label: "Quote requested", desc: "Submitted — quote arrives within 2 business hours", icon: FileText },
   { label: "Quote sent", desc: "Review and accept via email or WhatsApp", icon: Mail },
   { label: "Paid", desc: "Order confirmed, sent to processing", icon: CreditCard },
-  { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings},
+  { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings },
   { label: "QA review", desc: "Checked against your order before sealing", icon: ShieldCheck },
   { label: "Delivered", desc: "Sealed with a QR code, added to your vault", icon: Package },
 ];
@@ -72,6 +74,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [fullName, setFullName] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadOrders() {
@@ -102,17 +105,33 @@ export default function OrdersPage() {
     const confirmed = window.confirm("Cancel this order? This can't be undone.");
     if (!confirmed) return;
 
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "cancelled" })
-      .eq("id", orderId);
+    setCancelling(orderId);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!error) {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o))
-      );
+      const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? { ...o, status: "cancelled" } : o))
+        );
+      } else {
+        alert(data.error || "Failed to cancel order.");
+      }
+    } catch (err) {
+      alert("Failed to cancel order.");
+    } finally {
+      setCancelling(null);
+      setOpenMenuId(null);
     }
-    setOpenMenuId(null);
   }
 
   if (loading) {
@@ -130,8 +149,7 @@ export default function OrdersPage() {
       <div>
         <TopBar userName={fullName} />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
-          {/* Hero banner */}
-          <div className="flex items-center justify-between overflow-hidden rounded-card border-4border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
+          <div className="flex items-center justify-between overflow-hidden rounded-card border-4 border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
                 Orders
@@ -153,9 +171,8 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          {/* Orders list */}
           {orders.length === 0 ? (
-            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10text-center">
+            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10 text-center">
               <p className="font-bold text-brand-black">You haven't placed any orders yet.</p>
               <p className="mt-1 text-sm text-brand-gray">
                 Once you do, you'll be able to track every stage right here.
@@ -187,7 +204,7 @@ export default function OrdersPage() {
                       })}
                     </div>
                   </div>
-                  <span className="flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-3py-1.5 text-xs font-bold uppercase text-brand-yellow-dark">
+                  <span className="flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-3 py-1.5 text-xs font-bold uppercase text-brand-yellow-dark">
                     <Clock size={13} /> {STATUS_LABELS[order.status] || order.status}
                   </span>
                   {order.quote_amount ? (
@@ -216,9 +233,10 @@ export default function OrdersPage() {
                       {CANCELLABLE_STATUSES.includes(order.status) ? (
                         <button
                           onClick={() => handleCancelOrder(order.id)}
-                          className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-brand-error"
+                          disabled={cancelling === order.id}
+                          className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-brand-error disabled:opacity-50"
                         >
-                          Cancel order
+                          {cancelling === order.id ? "Cancelling…" : "Cancel order"}
                         </button>
                       ) : (
                         <p className="px-4 py-2.5 text-xs text-brand-gray">
@@ -232,7 +250,6 @@ export default function OrdersPage() {
             </div>
           )}
 
-          {/* What happens after you order */}
           <div className="mt-10">
             <div className="flex items-center justify-between border-b-4 border-brand-black pb-1.5">
               <div>
@@ -245,7 +262,7 @@ export default function OrdersPage() {
                 href="https://wa.me/2347085918205"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bolduppercase"
+                className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bold uppercase"
               >
                 Learn more
               </a>
@@ -269,7 +286,6 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          {/* Bottom CTA */}
           <Link
             href="/services"
             className="mt-8 flex items-center justify-between rounded-card border-4 border-brand-black bg-brand-black px-6 py-5 text-brand-white hover:bg-neutral-900"
