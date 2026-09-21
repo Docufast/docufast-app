@@ -3,7 +3,7 @@ import Image from "next/image";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
-// Full service catalogue — 43 services across 5 categories, per the Platform Playbook.
+// Full service catalogue — 46 services across 5 categories, per the Platform Playbook.
 const CATEGORIES = [
   {
     slug: "affidavits",
@@ -59,7 +59,7 @@ export default function ServicesPage() {
 
         <div className="mt-10 max-w-2xl">
           <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            43 services · one platform
+            46 services · one platform
           </span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-brand-black">
             Every service quoted before work starts, tracked end to end.
