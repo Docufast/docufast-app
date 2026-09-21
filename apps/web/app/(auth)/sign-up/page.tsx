@@ -6,6 +6,12 @@ import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 import { supabase } from "@/lib/supabase";
+import * as bip39 from "bip39";
+import {
+  generateVaultKeyPair,
+  exportPublicKeyBase64,
+  wrapPrivateKey,
+} from "@/lib/vaultCrypto";
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
@@ -15,6 +21,9 @@ export default function SignUpPage() {
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [recoveryPhrase, setRecoveryPhrase] = useState<string | null>(null);
+  const [savedConfirmed, setSavedConfirmed] = useState(false);
 
   const strength = password ? getPasswordStrength(password) : null;
 
@@ -46,14 +55,99 @@ export default function SignUpPage() {
         return;
       }
 
-      // Two-factor authentication is mandatory — every new account sets it
-      // up immediately after registering, before reaching the main app.
-      window.location.href = "/account/security/2fa";
+      const user = data.user;
+      if (!user) {
+        setError("Something went wrong creating your account. Please try again.");
+        return;
+      }
+
+      // Set up this customer's zero-knowledge vault keypair. The private
+      // key is wrapped twice — once with their password, once with a
+      // one-time recovery phrase — and never leaves this browser unwrapped.
+      const keyPair = await generateVaultKeyPair();
+      const publicKeyBase64 = await exportPublicKeyBase64(keyPair.publicKey);
+      const phrase = bip39.generateMnemonic();
+
+      const wrappedWithPassword = await wrapPrivateKey(keyPair.privateKey, password);
+      const wrappedWithRecovery = await wrapPrivateKey(keyPair.privateKey, phrase);
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          vault_public_key: publicKeyBase64,
+          vault_encrypted_private_key_pw: wrappedWithPassword.ciphertext,
+          vault_pw_salt: wrappedWithPassword.salt,
+          vault_pw_iv: wrappedWithPassword.iv,
+          vault_encrypted_private_key_recovery: wrappedWithRecovery.ciphertext,
+          vault_recovery_salt: wrappedWithRecovery.salt,
+          vault_recovery_iv: wrappedWithRecovery.iv,
+        })
+        .eq("id", user.id);
+
+      if (profileError) {
+        setError("Account created, but vault setup failed: " + profileError.message);
+        return;
+      }
+
+      setRecoveryPhrase(phrase);
     } catch (err) {
       setError("Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleContinue() {
+    window.location.href = "/account/security/2fa";
+  }
+
+  if (recoveryPhrase) {
+    const words = recoveryPhrase.split(" ");
+    return (
+      <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-10">
+        <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-6">
+          <h1 className="text-2xl font-extrabold text-brand-black">
+            Save your recovery phrase
+          </h1>
+          <p className="mt-2 text-sm text-brand-gray">
+            This 12-word phrase is the only way to recover your vault documents if you ever
+            forget your password. It will only be shown once — write it down and keep it
+            somewhere safe.
+          </p>
+
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {words.map((word, i) => (
+              <div
+                key={i}
+                className="rounded-card border-2 border-brand-black bg-white px-3 py-2 text-sm"
+              >
+                <span className="mr-1.5 text-xs text-brand-gray">{i + 1}.</span>
+                <span className="font-bold text-brand-black">{word}</span>
+              </div>
+            ))}
+          </div>
+
+          <label className="mt-5 flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={savedConfirmed}
+              onChange={(e) => setSavedConfirmed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+            />
+            I've saved my recovery phrase somewhere safe. I understand Docufast cannot
+            recover it for me if I lose it.
+          </label>
+
+          <button
+            onClick={handleContinue}
+            disabled={!savedConfirmed}
+            className="mt-5 w-full rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
+          >
+            Continue →
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (
