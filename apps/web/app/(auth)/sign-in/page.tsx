@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import HeroPanel from "@/components/ui/HeroPanel";
 import { supabase } from "@/lib/supabase";
+import { unwrapPrivateKey } from "@/lib/vaultCrypto";
+import { storeUnlockedPrivateKey } from "@/lib/vaultSession";
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -18,6 +20,37 @@ function SignInForm() {
   const [needsMfa, setNeedsMfa] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
   const [factorId, setFactorId] = useState<string | null>(null);
+
+  async function unlockVaultKey(userId: string, plainPassword: string) {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("vault_encrypted_private_key_pw, vault_pw_salt, vault_pw_iv")
+        .eq("id", userId)
+        .single();
+
+      if (
+        profile?.vault_encrypted_private_key_pw &&
+        profile.vault_pw_salt &&
+        profile.vault_pw_iv
+      ) {
+        const unwrapped = await unwrapPrivateKey(
+          {
+            ciphertext: profile.vault_encrypted_private_key_pw,
+            salt: profile.vault_pw_salt,
+            iv: profile.vault_pw_iv,
+          },
+          plainPassword
+        );
+        await storeUnlockedPrivateKey(userId, unwrapped);
+      }
+    } catch (err) {
+      // Vault unlock is best-effort at sign-in — if it fails, the customer
+      // can still use the rest of the app; only Vault decryption would be
+      // affected, and that's handled gracefully on that page separately.
+      console.error("Vault key unlock failed:", err);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +71,10 @@ function SignInForm() {
       if (signInError) {
         setError(signInError.message);
         return;
+      }
+
+      if (data.user) {
+        await unlockVaultKey(data.user.id, password);
       }
 
       const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();

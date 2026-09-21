@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Home, FileText, FolderOpen, Calendar, User, Menu, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { clearUnlockedPrivateKey } from "@/lib/vaultSession";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: Home },
@@ -75,6 +76,12 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleSignOut() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await clearUnlockedPrivateKey(user.id);
+    }
     await supabase.auth.signOut();
     window.location.href = "/sign-in";
   }
