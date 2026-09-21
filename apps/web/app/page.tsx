@@ -67,7 +67,7 @@ export default function Home() {
 
           <div className="mt-4 grid grid-cols-3 gap-4 border-t-4 border-brand-black pt-4">
             <div>
-              <div className="text-3xl font-extrabold text-brand-black">32</div>
+              <div className="text-3xl font-extrabold text-brand-black">31</div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
                 Affidavit types
               </div>
