@@ -89,7 +89,7 @@ export default function Home() {
 
         {/* Trust badges — BluetentBC removed */}
         <div className="mt-6 flex items-center gap-4 text-xs text-brand-gray">
-          <span>NDPR compliant</span>
+          <span>NDPA 2023 compliant</span>
           <span className="h-1 w-1 bg-brand-yellow" />
           <span>SCUML registered</span>
         </div>
