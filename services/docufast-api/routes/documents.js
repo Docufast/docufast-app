@@ -7,7 +7,8 @@ import { supabaseAdmin } from "../lib/verifyFounder.js";
 const router = express.Router();
 
 // GET /documents/:id/download — any signed-in user can download a document,
-// but only if it's actually theirs. Generates a short-lived signed link.
+// but only if it's actually theirs. Returns a short-lived signed link plus
+// the encryption metadata needed to decrypt it client-side.
 router.get("/:id/download", async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace("Bearer ", "");
@@ -23,7 +24,7 @@ router.get("/:id/download", async (req, res) => {
 
   const { data: document } = await supabaseAdmin
     .from("documents")
-    .select("file_url, file_name, user_id")
+    .select("file_url, file_name, user_id, encryption_iv, sender_ephemeral_public_key")
     .eq("id", req.params.id)
     .single();
 
@@ -38,7 +39,12 @@ router.get("/:id/download", async (req, res) => {
   });
 
   const url = await getSignedUrl(r2Client, command, { expiresIn: 300 });
-  res.json({ url, fileName: document.file_name });
+  res.json({
+    url,
+    fileName: document.file_name,
+    encryptionIv: document.encryption_iv,
+    senderEphemeralPublicKey: document.sender_ephemeral_public_key,
+  });
 });
 
 export default router;

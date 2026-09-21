@@ -38,7 +38,20 @@ router.get("/:id", async (req, res) => {
     .eq("order_id", req.params.id)
     .order("created_at", { ascending: false });
 
-  res.json({ order, documents: documents || [] });
+  // The customer's vault public key, needed to encrypt any document we
+  // deliver to them. May be null for accounts created before vault
+  // encryption existed.
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("vault_public_key")
+    .eq("id", order.user_id)
+    .single();
+
+  res.json({
+    order,
+    documents: documents || [],
+    recipientPublicKey: profile?.vault_public_key || null,
+  });
 });
 
 router.patch("/:id", async (req, res) => {
@@ -90,13 +103,19 @@ router.patch("/:id", async (req, res) => {
   res.json({ order: data });
 });
 
+// POST /admin/orders/:id/deliver — records a delivered document. The
+// file itself has already been encrypted in the ADMIN's browser for the
+// specific customer before this is called; encryption_iv and
+// sender_ephemeral_public_key are needed for the customer to decrypt it.
 router.post("/:id/deliver", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
 
-  const { r2_key, file_name } = req.body;
-  if (!r2_key || !file_name) {
-    return res.status(400).json({ error: "r2_key and file_name are required." });
+  const { r2_key, file_name, encryption_iv, sender_ephemeral_public_key } = req.body;
+  if (!r2_key || !file_name || !encryption_iv || !sender_ephemeral_public_key) {
+    return res.status(400).json({
+      error: "r2_key, file_name, encryption_iv, and sender_ephemeral_public_key are required.",
+    });
   }
 
   const { data: order } = await supabaseAdmin
@@ -117,6 +136,8 @@ router.post("/:id/deliver", async (req, res) => {
       file_name,
       status: "active",
       delivered_at: new Date().toISOString(),
+      encryption_iv,
+      sender_ephemeral_public_key,
     })
     .select()
     .single();
