@@ -17,7 +17,7 @@ export default function Home() {
             </span>
           </div>
           <div className="hidden items-center gap-6 md:flex">
-            <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
+            <Link href="/services" className="text-sm font-semibold uppercase tracking-wide">Services</Link>
           </div>
           <Link
             href="/sign-in"
