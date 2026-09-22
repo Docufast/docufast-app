@@ -18,15 +18,6 @@ export default function Home() {
           </div>
           <div className="hidden items-center gap-6 md:flex">
             <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
-            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-              For business
-            </span>
-            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-              API
-            </span>
-            <span className="text-sm font-semibold uppercase tracking-wide text-brand-gray">
-              Pricing
-            </span>
           </div>
           <Link
             href="/sign-in"
