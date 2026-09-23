@@ -259,7 +259,7 @@ export default function OrdersPage() {
                 </p>
               </div>
               <a
-                href="https://wa.me/2347085918205"
+                href="https://wa.me/2347089325109"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bold uppercase"
