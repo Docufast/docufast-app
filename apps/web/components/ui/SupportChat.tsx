@@ -54,7 +54,7 @@ const MAIN_MENU: MenuOption[] = [
   {
     label: "Talk to a human",
     reply: "Our team is on WhatsApp, Monday–Saturday, 8am–6pm WAT.",
-    linkHref: "https://wa.me/2347089325109",
+    linkHref: "https://wa.me/2349054951918",
     linkLabel: "Chat on WhatsApp →",
   },
 ];
