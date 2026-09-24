@@ -207,19 +207,13 @@ export default function OrdersPage() {
                   <span className="flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-3 py-1.5 text-xs font-bold uppercase text-brand-yellow-dark">
                     <Clock size={13} /> {STATUS_LABELS[order.status] || order.status}
                   </span>
-                  {order.quote_amount ? (
-                    order.status === "quote_sent" ? (
-                      <Link
-                        href={`/orders/${order.id}/pay`}
-                        className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black hover:bg-brand-yellow-dark"
-                      >
-                        ₦{order.quote_amount.toLocaleString()} · Pay now
-                      </Link>
-                    ) : (
-                      <span className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black">
-                        ₦{order.quote_amount.toLocaleString()}
-                      </span>
-                    )
+                  {order.quote_amount && order.status === "quote_sent" ? (
+                    <Link
+                      href={`/orders/${order.id}/pay`}
+                      className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black hover:bg-brand-yellow-dark"
+                    >
+                      ₦{order.quote_amount.toLocaleString()} · Pay now
+                    </Link>
                   ) : null}
                   <button
                     onClick={() => setOpenMenuId(openMenuId === order.id ? null : order.id)}
@@ -259,7 +253,7 @@ export default function OrdersPage() {
                 </p>
               </div>
               <a
-                href="https://wa.me/2347089325109"
+                href="https://wa.me/2349054951918"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-card border-2 border-brand-black px-3 py-1.5 text-xs font-bold uppercase"
