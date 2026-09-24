@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+function formatSecretForDisplay(secret: string): string {
+  return secret.match(/.{1,4}/g)?.join(" ") || secret;
+}
+
 export default function TwoFactorSetupPage() {
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -26,23 +30,17 @@ export default function TwoFactorSetupPage() {
 
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
 
-      // Already have a verified factor — nothing to do.
       const verifiedFactor = factorsData?.totp?.find((f) => f.status === "verified");
       if (verifiedFactor) {
         window.location.href = "/home";
         return;
       }
 
-      // A leftover unverified factor from a previous incomplete attempt
-      // blocks re-enrollment — clean it up before starting fresh.
       const unverifiedFactors = factorsData?.totp?.filter((f) => f.status !== "verified") || [];
       for (const factor of unverifiedFactors) {
         await supabase.auth.mfa.unenroll({ factorId: factor.id });
       }
 
-      // Explicit issuer/friendlyName so the authenticator app always shows
-      // "Docufast" (with the account email) rather than whatever the Site
-      // URL happens to be set to, and to avoid friendly-name collisions.
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: "totp",
         issuer: "Docufast",
@@ -143,8 +141,10 @@ export default function TwoFactorSetupPage() {
 
       {secret && (
         <div className="mt-4 rounded-card border-2 border-dashed border-brand-gray-light p-3 text-center">
-          <p className="text-xs text-brand-gray">Or enter this key manually</p>
-          <p className="mt-1 break-all font-mono text-sm font-bold">{secret}</p>
+          <p className="text-xs text-brand-gray">Can't scan? Enter this key manually instead</p>
+          <p className="mt-1 break-all font-mono text-base font-bold tracking-wider">
+            {formatSecretForDisplay(secret)}
+          </p>
         </div>
       )}
 

@@ -61,9 +61,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Set up this customer's zero-knowledge vault keypair. The private
-      // key is wrapped twice — once with their password, once with a
-      // one-time recovery phrase — and never leaves this browser unwrapped.
       const keyPair = await generateVaultKeyPair();
       const publicKeyBase64 = await exportPublicKeyBase64(keyPair.publicKey);
       const phrase = bip39.generateMnemonic();
@@ -97,6 +94,31 @@ export default function SignUpPage() {
     }
   }
 
+  function handleDownloadPhrase() {
+    if (!recoveryPhrase) return;
+
+    const contents = [
+      "DOCUFAST VAULT RECOVERY PHRASE",
+      "",
+      "Keep this safe and private. Anyone with these words can unlock your",
+      "vault documents. Docufast cannot recover this phrase for you if lost.",
+      "",
+      recoveryPhrase,
+      "",
+      `Generated: ${new Date().toLocaleString("en-GB")}`,
+    ].join("\n");
+
+    const blob = new Blob([contents], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "docufast-recovery-phrase.txt";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function handleContinue() {
     window.location.href = "/account/security/2fa";
   }
@@ -111,8 +133,8 @@ export default function SignUpPage() {
           </h1>
           <p className="mt-2 text-sm text-brand-gray">
             This 12-word phrase is the only way to recover your vault documents if you ever
-            forget your password. It will only be shown once — write it down and keep it
-            somewhere safe.
+            forget your password. It will only be shown once — write it down, or download it,
+            and keep it somewhere safe.
           </p>
 
           <div className="mt-5 grid grid-cols-3 gap-2">
@@ -126,6 +148,13 @@ export default function SignUpPage() {
               </div>
             ))}
           </div>
+
+          <button
+            onClick={handleDownloadPhrase}
+            className="mt-4 w-full rounded-card border-4 border-brand-black bg-white px-4 py-3 text-sm font-bold text-brand-black"
+          >
+            ⬇ Download as file
+          </button>
 
           <label className="mt-5 flex items-start gap-2 text-sm">
             <input
