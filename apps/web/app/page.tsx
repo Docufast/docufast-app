@@ -56,7 +56,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-4 border-t-4 border-brand-black pt-4">
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t-4 border-brand-black pt-4">
             <div>
               <div className="text-3xl font-extrabold text-brand-black">31</div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
@@ -75,8 +75,13 @@ export default function Home() {
                 Vault encryption
               </div>
             </div>
-          </div>
-        </div>
+            <div>
+              <div className="text-3xl font-extrabold text-brand-black">46</div>
+              <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
+                Total services
+              </div>
+            </div>
+          </div>        </div>
 
         {/* Trust badges — BluetentBC removed */}
         <div className="mt-6 flex items-center gap-4 text-xs text-brand-gray">
@@ -96,7 +101,7 @@ export default function Home() {
           <Image src="/images/logo-yellow.png" alt="Docufast" width={32} height={32} />
           <div>
             <div className="text-lg font-extrabold tracking-wide">DOCUFAST</div>
-            <div className="text-xs text-neutral-400">Documents. Faster.</div>
+            <div className="text-xs text-neutral-400">Your documents. Handled properly. Every time.</div>
           </div>
         </div>
 

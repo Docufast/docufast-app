@@ -19,6 +19,7 @@ export default function SignUpPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,6 +79,7 @@ export default function SignUpPage() {
           vault_encrypted_private_key_recovery: wrappedWithRecovery.ciphertext,
           vault_recovery_salt: wrappedWithRecovery.salt,
           vault_recovery_iv: wrappedWithRecovery.iv,
+          marketing_consent: marketingConsent,
         })
         .eq("id", user.id);
 
@@ -272,6 +274,17 @@ export default function SignUpPage() {
                 Privacy Policy
               </Link>
               , including NDPA 2023 data handling.
+            </label>
+
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+              />
+              I agree to receive service updates and relevant offers from Docufast by email
+              and WhatsApp.
             </label>
 
             {error && <p className="text-sm text-brand-error">{error}</p>}
