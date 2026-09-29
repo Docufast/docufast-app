@@ -1,0 +1,8 @@
+# Docufast — Beta Phase Configuration
+# Last updated: September 2026
+# IMPORTANT: Update this file at launch — switch to Allow: /
+
+User-agent: *
+Disallow: /
+
+Sitemap: https://docufast.ng/sitemap.xml
