@@ -5,27 +5,28 @@ import { OrgProvider } from "@/contexts/OrgContext";
 import SupportChat from "@/components/ui/SupportChat";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import InactivityLogout from "@/components/ui/InactivityLogout";
+import { SITE_URL, isIndexable } from "../lib/site";
 
 export const metadata: Metadata = {
   title: "Docufast — Nigeria's Document Platform",
   description: "Sworn documents, CAC registration, publications and notarization — every matter quoted before work starts, tracked end to end, and stored encrypted.",
-  metadataBase: new URL("https://docufast.ng"),
-  // BETA PHASE: keep search engines from indexing until public launch.
-  // Switch both to true at launch (see public/robots.txt too).
+  metadataBase: new URL(SITE_URL),
+  // Indexing is controlled by the SITE_INDEXABLE env var (see lib/site.ts).
+  // app/robots.ts reads the same switch, so both always change together.
   robots: {
-    index: false,
-    follow: false,
+    index: isIndexable,
+    follow: isIndexable,
   },
   openGraph: {
     title: "Docufast — Nigeria's Regulated Compliance Platform",
     description:
       "Sworn documents, CAC filings, notarization and compliance services " +
       "for Nigerian individuals and businesses. Licenced by NDPC, SCUML, SMEDAN.",
-    url: "https://docufast.ng",
+    url: SITE_URL,
     siteName: "Docufast",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.png?v=2",
         width: 1200,
         height: 630,
         alt: "Docufast — Nigeria Document Platform",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
     description:
       "Sworn documents, CAC registration, notarization and compliance " +
       "services for Nigerian individuals and businesses.",
-    images: ["/og-image.png"],
+    images: ["/og-image.png?v=2"],
   },
 };
 
@@ -62,8 +63,8 @@ export default function RootLayout({
               "@type": "Organization",
               name: "Docufast Integrated Services Ltd",
               alternateName: ["Docufast", "Docufast NG", "docufast.ng"],
-              url: "https://docufast.ng",
-              logo: "https://docufast.ng/logo.png",
+              url: SITE_URL,
+              logo: `${SITE_URL}/logo.png`,
               foundingDate: "2022",
               founder: {
                 "@type": "Person",
