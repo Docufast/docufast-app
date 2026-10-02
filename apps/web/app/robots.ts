@@ -5,6 +5,7 @@ import { SITE_URL, isIndexable } from "../lib/site";
 const PRIVATE_PATHS = [
   "/admin",
   "/account",
+  "/home",
   "/vault",
   "/orders",
   "/calendar",
