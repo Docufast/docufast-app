@@ -30,7 +30,7 @@ export default function Home() {
         {/* Hero content */}
         <div className="mt-10 flex max-w-xl flex-1 flex-col gap-6">
           <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            Regulated document infrastructure
+            Regulatory document infrastructure
           </span>
           <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-brand-black lg:text-6xl">
             Your documents. Handled properly. Every time.
