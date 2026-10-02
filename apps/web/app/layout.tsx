@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     follow: isIndexable,
   },
   openGraph: {
-    title: "Docufast — Nigeria's Regulated Compliance Platform",
+    title: "Docufast — Nigeria's Regulatory Compliance Platform",
     description:
       "Sworn documents, CAC filings, notarization and compliance services " +
       "for Nigerian individuals and businesses. Licenced by NDPC, SCUML, SMEDAN.",
