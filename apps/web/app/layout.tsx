@@ -119,7 +119,7 @@ export default function RootLayout({
               hasOfferCatalog: {
                 "@type": "OfferCatalog",
                 name: "Docufast Services",
-                numberOfItems: 43,
+                numberOfItems: 46,
               },
             }),
           }}
