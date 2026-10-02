@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        // Old Vercel production URL -> real domain (same path, permanent 308).
+        // Matches ONLY this exact host; staging/preview URLs are unaffected.
+        source: "/:path*",
+        has: [{ type: "host", value: "web-three-wheat-56.vercel.app" }],
+        destination: "https://www.docufast.ng/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
