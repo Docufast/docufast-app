@@ -10,7 +10,28 @@ import paymentsRoute from "./routes/payments.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// ALLOWED_ORIGINS is a comma-separated list, set per Railway environment
+// (production vs staging each declare only their own frontend URL(s)).
+// Falls back to localhost for local development.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow requests with no origin (server-to-server, curl, health checks)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use("/health", healthRoute);
