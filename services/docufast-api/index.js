@@ -22,12 +22,11 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow requests with no origin (server-to-server, curl, health checks)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Not allowed by CORS: ${origin}`));
-      }
+      // Allow requests with no origin (server-to-server, curl, health checks).
+      // For disallowed origins, pass `false` (not an Error) so the request
+      // still completes normally -- just without the CORS header -- instead
+      // of triggering Express's default error handler (500) for everyone.
+      callback(null, !origin || allowedOrigins.includes(origin));
     },
     credentials: true,
   })
