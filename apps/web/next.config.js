@@ -14,6 +14,14 @@ const nextConfig = {
     ];
   },
   async headers() {
+    // Vercel sets VERCEL_ENV automatically: "production" only for the
+    // main-branch deployment, "preview" for staging and every other branch.
+    const isProduction = process.env.VERCEL_ENV === "production";
+
+    const backendUrl = isProduction
+      ? "https://docufast-app-production.up.railway.app"
+      : "https://docufast-app-staging.up.railway.app";
+
     return [
       {
         source: "/:path*",
@@ -22,18 +30,9 @@ const nextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
@@ -46,7 +45,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://docufast-app-production.up.railway.app https://docufast-app-staging.up.railway.app https://*.r2.cloudflarestorage.com",
+              `connect-src 'self' https://*.supabase.co ${backendUrl} https://*.r2.cloudflarestorage.com`,
               "frame-ancestors 'none'",
             ].join("; "),
           },
