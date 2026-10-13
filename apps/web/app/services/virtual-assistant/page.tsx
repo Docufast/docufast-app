@@ -22,8 +22,8 @@ export default function VirtualAssistantPage() {
             <span className="text-brand-gray">· {VA_TYPES.length} types</span>
           </h1>
           <p className="mt-2 text-brand-gray">
-            No identity verification required for these — lower regulatory burden, standard
-            48h turnaround.
+            No identity verification is required for these, so they are quicker to start.
+            Standard 48h turnaround.
           </p>
         </div>
 

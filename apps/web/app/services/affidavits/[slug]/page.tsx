@@ -148,7 +148,7 @@ export default function AffidavitOrderPage() {
         <div>
           <h1 className="text-3xl font-extrabold text-brand-black">{affidavitType.label}</h1>
           <p className="mt-1 text-sm text-brand-gray">
-            Fields adapt per affidavit type — this pattern repeats across all 31 types.
+            The fields adapt to the type of affidavit you choose.
           </p>
         </div>
 

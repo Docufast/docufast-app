@@ -59,7 +59,7 @@ export default function ServicesPage() {
 
         <div className="mt-10 max-w-2xl">
           <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            46 services · one platform
+            One platform for your documents
           </span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight text-brand-black">
             Every service quoted before work starts, tracked end to end.

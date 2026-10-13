@@ -16,7 +16,7 @@ const MAIN_MENU: MenuOption[] = [
   {
     label: "I need an Affidavit",
     reply:
-      "We handle 32 types of affidavits — court-ready, with same document standards nationwide.",
+      "We handle the full range of affidavits, court-ready, with the same document standards nationwide.",
     linkHref: "/services/affidavits",
     linkLabel: "Browse affidavit types →",
   },
