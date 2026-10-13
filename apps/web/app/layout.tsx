@@ -8,8 +8,9 @@ import InactivityLogout from "@/components/ui/InactivityLogout";
 import { SITE_URL, isIndexable } from "../lib/site";
 
 export const metadata: Metadata = {
-  title: "Docufast — Nigeria's Document Platform",
-  description: "Sworn documents, CAC registration, publications and notarization — every matter quoted before work starts, tracked end to end, and stored encrypted.",
+  title: "Docufast | Nigeria's Document Platform",
+  description:
+    "Sworn affidavits, CAC registration and newspaper publications in Nigeria. Every order is quoted before work starts, tracked end to end, and stored encrypted.",
   metadataBase: new URL(SITE_URL),
   // Indexing is controlled by the SITE_INDEXABLE env var (see lib/site.ts).
   // app/robots.ts reads the same switch, so both always change together.
@@ -18,10 +19,10 @@ export const metadata: Metadata = {
     follow: isIndexable,
   },
   openGraph: {
-    title: "Docufast — Nigeria's Regulatory Compliance Platform",
+    title: "Docufast | Nigeria's Document Platform",
     description:
-      "Sworn documents, CAC filings, notarization and compliance services " +
-      "for Nigerian individuals and businesses. Licenced by NDPC, SCUML, SMEDAN.",
+      "Sworn affidavits, CAC registration and newspaper publications in Nigeria. " +
+      "Every order is quoted before work starts, tracked end to end, and stored encrypted.",
     url: SITE_URL,
     siteName: "Docufast",
     images: [
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
         url: "/og-image.png?v=2",
         width: 1200,
         height: 630,
-        alt: "Docufast — Nigeria Document Platform",
+        alt: "Docufast, Nigeria's Document Platform",
       },
     ],
     locale: "en_NG",
@@ -37,10 +38,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Docufast — Nigeria's Document Platform",
+    title: "Docufast | Nigeria's Document Platform",
     description:
-      "Sworn documents, CAC registration, notarization and compliance " +
-      "services for Nigerian individuals and businesses.",
+      "Sworn affidavits, CAC registration and newspaper publications in Nigeria. " +
+      "Every order is quoted before work starts, tracked end to end, and stored encrypted.",
     images: ["/og-image.png?v=2"],
   },
 };
