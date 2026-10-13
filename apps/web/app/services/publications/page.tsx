@@ -1,3 +1,4 @@
+import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,8 +26,8 @@ export default function PublicationsPage() {
             <span className="text-brand-gray">· {PUBLICATION_TYPES.length} types</span>
           </h1>
           <p className="mt-2 text-brand-gray">
-            24–72 hour turnaround. Always paired with a supporting affidavit or CAC filing —
-            never ordered standalone.
+            24–72 hour turnaround. Already have an affidavit? Send it with your order. No
+            affidavit yet? We prepare it in the same order. {FACTS.quotePromise}.
           </p>
         </div>
 

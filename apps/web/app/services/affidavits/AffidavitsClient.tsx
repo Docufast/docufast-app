@@ -1,5 +1,6 @@
 "use client";
 
+import { FACTS } from "@/lib/seo/facts";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -56,11 +57,11 @@ export default function AffidavitsPage() {
 
         <div className="mt-8">
           <h1 className="text-3xl font-extrabold text-brand-black">
-            Affidavits <span className="text-brand-gray">· {AFFIDAVIT_TYPES.length} types</span>
+            Affidavits
           </h1>
           <p className="mt-2 text-brand-gray">
             Sworn before a Commissioner for Oaths, or a Notary Public for documents going
-            abroad. Standard turnaround 48 hours.
+            abroad. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
           </p>
 
           <input

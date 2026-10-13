@@ -1,3 +1,4 @@
+import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,7 +26,7 @@ export default function VirtualAssistantPage() {
           </h1>
           <p className="mt-2 text-brand-gray">
             No identity verification is required for these, so they are quicker to start.
-            Standard 48h turnaround.
+            Standard 48h turnaround. {FACTS.quotePromise}.
           </p>
         </div>
 

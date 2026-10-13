@@ -1,3 +1,4 @@
+import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
@@ -68,8 +69,7 @@ export default function ServicesPage() {
             Every service quoted before work starts, tracked end to end.
           </h1>
           <p className="mt-3 text-brand-gray">
-            Pick a category to see what's covered. No prices shown here — every order gets a
-            real quote within 2 business hours before anything is charged.
+            Pick a category to see what's covered. No prices are shown here. {FACTS.quotePromise}.
           </p>
         </div>
 
