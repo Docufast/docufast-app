@@ -35,7 +35,7 @@ const MAIN_MENU: MenuOption[] = [
   },
   {
     label: "I need Notarization",
-    reply: "Digital notarization via video session with a licensed Notary Public.",
+    reply: "Digital notarization is coming soon. It is not open for orders yet.",
     linkHref: "/services/notarization",
     linkLabel: "Browse notarization →",
   },
