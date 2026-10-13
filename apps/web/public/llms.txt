@@ -1,0 +1,33 @@
+# Docufast
+
+> Docufast (Docufast Integrated Services Limited, RC 1893484, Lagos) helps people and businesses in Nigeria get affidavits, newspaper notices, CAC registrations and filings, and birth and death registrations online. A person checks every document before it is delivered to the customer's encrypted Vault, where it carries a QR code anyone can verify.
+
+Key facts:
+
+- Founded 15 February 2022. Registered address: Suite 100, Adebola House, 38 Opebi Road, Ikeja, Lagos. Founder: Ajibola Adeboye.
+- CAC registered (RC1893484), SCUML registered (SC251840209), NDPC licensed (DCP/07770), SMEDAN registered (SUIN426476832438).
+- Docufast is not a law firm and does not give legal advice.
+- Every order follows six steps: service, details, quote, upload and verify, pay, done.
+- Customers pay only on docufast.ng, never into a personal account and never inside WhatsApp.
+- Support on WhatsApp: 0905 495 1918, Monday to Saturday, 8am to 6pm WAT.
+- Digital notarization is coming soon. Prices are not yet published.
+
+## Services
+
+- [All services](https://www.docufast.ng/services): every service in one place
+- [Affidavits](https://www.docufast.ng/services/affidavits): change of name, loss, age, marriage, student and status affidavits, sworn through the Lagos court system
+- [Newspaper publications](https://www.docufast.ng/services/publications): change of name, loss of documents and incorporated trustees notices
+- [CAC and compliance](https://www.docufast.ng/services/cac): business names, companies, incorporated trustees, annual returns, status reports and company changes
+- [Typing, data entry and transcription](https://www.docufast.ng/services/virtual-assistant)
+- [Vault, reminders and notarization (coming soon)](https://www.docufast.ng/services/notarization)
+
+## About and trust
+
+- [About Docufast](https://www.docufast.ng/about): the fact sheet, registrations and contacts
+- [Verify a Docufast document](https://www.docufast.ng/verify): check that a document is genuine, unchanged and not revoked
+- [Frequently asked questions](https://www.docufast.ng/faq)
+
+## Optional
+
+- [Privacy Policy](https://www.docufast.ng/privacy)
+- [Terms of Service](https://www.docufast.ng/terms)
