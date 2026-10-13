@@ -1,3 +1,4 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
 import AuthNavLink from "@/components/ui/AuthNavLink";
@@ -41,6 +42,8 @@ const CATEGORIES = [
     desc: "Digital notarization (coming soon), document vault subscription, compliance reminder setup.",
   },
 ];
+
+export const metadata = pageMetadata("/services");
 
 export default function ServicesPage() {
   return (

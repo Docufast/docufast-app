@@ -1,9 +1,12 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
 import { CAC_TYPES } from "@/lib/cacTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+export const metadata = pageMetadata("/services/cac");
+
 export default function CacPage() {
   return (
     <>

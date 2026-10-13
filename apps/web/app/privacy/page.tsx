@@ -1,5 +1,8 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
+
+export const metadata = pageMetadata("/privacy");
 
 export default function PrivacyPolicyPage() {
   return (

@@ -1,9 +1,12 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
 import { PUBLICATION_TYPES } from "@/lib/publicationTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+export const metadata = pageMetadata("/services/publications");
+
 export default function PublicationsPage() {
   return (
     <>

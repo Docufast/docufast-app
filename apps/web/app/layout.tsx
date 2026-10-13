@@ -1,50 +1,13 @@
-import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { OrgProvider } from "@/contexts/OrgContext";
 import SupportChat from "@/components/ui/SupportChat";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import InactivityLogout from "@/components/ui/InactivityLogout";
-import { SITE_URL, isIndexable } from "../lib/site";
+import { JsonLd } from "@/components/JsonLd";
+import { organization, website } from "@/lib/seo/schema";
+import { rootMetadata } from "@/lib/seo/pages";
 
-export const metadata: Metadata = {
-  title: "Docufast | Nigeria's Document Platform",
-  description:
-    "Sworn affidavits, CAC registration and newspaper publications in Nigeria. Every order is quoted before work starts, tracked end to end, and stored encrypted.",
-  metadataBase: new URL(SITE_URL),
-  // Indexing is controlled by the SITE_INDEXABLE env var (see lib/site.ts).
-  // app/robots.ts reads the same switch, so both always change together.
-  robots: {
-    index: isIndexable,
-    follow: isIndexable,
-  },
-  openGraph: {
-    title: "Docufast | Nigeria's Document Platform",
-    description:
-      "Sworn affidavits, CAC registration and newspaper publications in Nigeria. " +
-      "Every order is quoted before work starts, tracked end to end, and stored encrypted.",
-    url: SITE_URL,
-    siteName: "Docufast",
-    images: [
-      {
-        url: "/og-image.png?v=2",
-        width: 1200,
-        height: 630,
-        alt: "Docufast, Nigeria's Document Platform",
-      },
-    ],
-    locale: "en_NG",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Docufast | Nigeria's Document Platform",
-    description:
-      "Sworn affidavits, CAC registration and newspaper publications in Nigeria. " +
-      "Every order is quoted before work starts, tracked end to end, and stored encrypted.",
-    images: ["/og-image.png?v=2"],
-  },
-};
+export const metadata = rootMetadata;
 
 export default function RootLayout({
   children,
@@ -52,79 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en-NG">
       <body className="min-h-screen bg-brand-white text-brand-black antialiased">
-        <Script
-          id="schema-docufast"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "Docufast Integrated Services Ltd",
-              alternateName: ["Docufast", "Docufast NG", "docufast.ng"],
-              url: SITE_URL,
-              logo: `${SITE_URL}/logo.png`,
-              foundingDate: "2022",
-              founder: {
-                "@type": "Person",
-                name: "Ajibola Adeboye",
-                jobTitle: "Founder & CEO",
-                sameAs: "https://www.linkedin.com/in/jsb1218",
-              },
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "38 Opebi Road",
-                addressLocality: "Opebi",
-                addressRegion: "Lagos State",
-                addressCountry: "NG",
-              },
-              contactPoint: {
-                "@type": "ContactPoint",
-                telephone: "+234-905-495-1918",
-                contactType: "customer service",
-              },
-              sameAs: [
-                "https://www.wikidata.org/wiki/Q141570074",
-                "https://www.linkedin.com/company/docufast",
-                "https://twitter.com/docufastng",
-              ],
-              identifier: [
-                {
-                  "@type": "PropertyValue",
-                  name: "CAC Registration Number",
-                  value: "RC1893484",
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "SCUML Licence",
-                  value: "SC251840209",
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "NDPC Licence",
-                  value: "DCP/07770",
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "SMEDAN Registration",
-                  value: "SUIN426476832438",
-                },
-                {
-                  "@type": "PropertyValue",
-                  name: "Wikidata QID",
-                  value: "Q141570074",
-                },
-              ],
-              hasOfferCatalog: {
-                "@type": "OfferCatalog",
-                name: "Docufast Services",
-                numberOfItems: 46,
-              },
-            }),
-          }}
-        />
+        <JsonLd data={[organization(), website()]} />
         <OrgProvider>{children}</OrgProvider>
         <SupportChat />
         <WhatsAppButton />
