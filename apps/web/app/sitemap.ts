@@ -16,7 +16,7 @@ const PAGES: { path: string; lastModified: string }[] = [
   { path: '/services/notarization', lastModified: '2026-10-11' },
   { path: '/services/virtual-assistant', lastModified: '2026-10-11' },
   // { path: '/about', lastModified: '2026-10-11' }, // enable when the page is live
-  // { path: '/faq', lastModified: '2026-10-11' }, // enable when the page is live
+  { path: '/faq', lastModified: '2026-10-13' },
   // { path: '/verify', lastModified: '2026-10-11' }, // enable when the page is live
   // { path: '/guides', lastModified: '2026-10-11' }, // enable when the page is live
   { path: '/privacy', lastModified: '2026-10-02' },
