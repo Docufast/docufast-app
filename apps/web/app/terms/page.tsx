@@ -1,5 +1,8 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
+
+export const metadata = pageMetadata("/terms");
 
 export default function TermsOfServicePage() {
   return (

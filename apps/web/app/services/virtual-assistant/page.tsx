@@ -1,9 +1,12 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
 import { VA_TYPES } from "@/lib/virtualAssistantTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+export const metadata = pageMetadata("/services/virtual-assistant");
+
 export default function VirtualAssistantPage() {
   return (
     <>

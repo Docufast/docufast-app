@@ -1,9 +1,12 @@
+import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
 import { PLATFORM_NATIVE_TYPES } from "@/lib/platformNativeTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+export const metadata = pageMetadata("/services/notarization");
+
 export default function NotarizationPage() {
   return (
     <>
