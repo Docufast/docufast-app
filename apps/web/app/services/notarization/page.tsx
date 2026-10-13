@@ -18,8 +18,7 @@ export default function NotarizationPage() {
 
         <div className="mt-8">
           <h1 className="text-3xl font-extrabold text-brand-black">
-            Platform-Native{" "}
-            <span className="text-brand-gray">· {PLATFORM_NATIVE_TYPES.length} types</span>
+            Platform-Native
           </h1>
           <p className="mt-2 text-brand-gray">
             No third-party processing — these run entirely on Docufast's own platform.
@@ -37,7 +36,7 @@ export default function NotarizationPage() {
                 <h2 className="font-bold text-brand-black">{t.label}</h2>
                 <p className="mt-1 text-sm text-brand-gray">{t.desc}</p>
               </div>
-              <span className="text-brand-gray">→</span>
+              <span className="text-brand-gray">{t.slug === "digital_notarization" ? "Coming soon" : "→"}</span>
             </Link>
           ))}
         </div>

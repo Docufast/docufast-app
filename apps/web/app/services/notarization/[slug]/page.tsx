@@ -14,6 +14,7 @@ export default function PlatformNativeOrderPage() {
   const params = useParams();
   const slug = params.slug as string;
   const item = getPlatformNativeType(slug);
+  const comingSoon = slug === "digital_notarization";
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const { activeOrgId } = useOrg();
@@ -33,6 +34,7 @@ export default function PlatformNativeOrderPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (comingSoon) return;
     setSubmitError(null);
 
     const {
@@ -100,6 +102,9 @@ export default function PlatformNativeOrderPage() {
         {/* Digital Notarization — document + signer + session */}
         {slug === "digital_notarization" && (
           <>
+            <div className="rounded-card border-l-4 border-brand-black bg-brand-yellow/20 px-4 py-3 text-sm font-bold text-brand-black">
+              Coming soon. Digital notarization is not open for orders yet.
+            </div>
             <div className="rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-4 py-3 text-sm text-brand-black">
               A live video session with the notary is required by law. It takes about 10
               minutes. A registered Notary Public conducts every session.
@@ -214,10 +219,10 @@ export default function PlatformNativeOrderPage() {
         {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || comingSoon}
           className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          {submitting ? "Submitting…" : slug === "digital_notarization" ? "Schedule session →" : "Continue →"}
+          {comingSoon ? "Coming soon" : submitting ? "Submitting…" : "Continue →"}
         </button>
       </form>
     </main>

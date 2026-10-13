@@ -38,7 +38,7 @@ const CATEGORIES = [
     name: "Platform-Native",
     count: 3,
     turnaround: "Varies",
-    desc: "Digital notarization, document vault subscription, compliance reminder setup.",
+    desc: "Digital notarization (coming soon), document vault subscription, compliance reminder setup.",
   },
 ];
 

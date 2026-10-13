@@ -14,7 +14,7 @@ const QUICK_ACTIONS = [
   { label: "Affidavit", href: "/services/affidavits", desc: "32 types, court-ready", category: "affidavit", icon: FileText },
   { label: "CAC Registration", href: "/services/cac", desc: "Business name, LTD, trustees", category: "cac", icon: Landmark },
   { label: "Publications", href: "/services/publications", desc: "Newspaper notices", category: "publication", icon: Newspaper },
-  { label: "Notarization", href: "/services/notarization", desc: "Digital, video session", category: "platform_native", icon: Video },
+  { label: "Notarization", href: "/services/notarization", desc: "Coming soon", category: "platform_native", icon: Video },
 ];
 
 const STATUS_LABELS: Record<string, string> = {

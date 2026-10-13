@@ -18,8 +18,7 @@ export default function VirtualAssistantPage() {
 
         <div className="mt-8">
           <h1 className="text-3xl font-extrabold text-brand-black">
-            Virtual Office & Clerical{" "}
-            <span className="text-brand-gray">· {VA_TYPES.length} types</span>
+            Virtual Office & Clerical
           </h1>
           <p className="mt-2 text-brand-gray">
             No identity verification is required for these, so they are quicker to start.
