@@ -147,14 +147,15 @@ export default function OrderPaymentPage() {
           <CreditCard size={18} /> Proceed to payment
         </button>
         <p className="mt-3 text-center text-xs text-brand-gray">
-          Online payment isn't live yet — we're finishing setup with our payment partner.
-          You'll be notified by email as soon as this is ready.
+          Online payment opens soon. We will email you and message you as soon as you can pay
+          on docufast.ng.
         </p>
       </div>
 
       <div className="mt-6 rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-4 py-3 text-sm text-brand-black">
-        In the meantime, you can complete payment via bank transfer — message us on WhatsApp
-        for details and we'll confirm once received.
+        Pay only on docufast.ng. Docufast never asks you to pay into a personal account, and our
+        WhatsApp team will never send you bank details. If anyone does, do not pay, and report it
+        to us.
       </div>
     </main>
   );
