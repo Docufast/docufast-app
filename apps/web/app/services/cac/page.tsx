@@ -1,3 +1,4 @@
+import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,8 +25,8 @@ export default function CacPage() {
             CAC & Compliance <span className="text-brand-gray">· {CAC_TYPES.length} types</span>
           </h1>
           <p className="mt-2 text-brand-gray">
-            Government portal filings, handled end to end. Every filing is quoted after
-            review — government fees are itemised in your quote.
+            Government portal filings, handled end to end. {FACTS.quotePromise}. Government
+            fees are itemised in your quote.
           </p>
         </div>
 
