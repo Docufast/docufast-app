@@ -71,7 +71,7 @@ export default function PlatformNativeOrderPage() {
           <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
             Your request for {item!.label.toLowerCase()} has been saved. You'll receive next
-            steps by email and WhatsApp within 2 business hours.
+            steps by email and WhatsApp.
           </p>
           <Link
             href="/orders"

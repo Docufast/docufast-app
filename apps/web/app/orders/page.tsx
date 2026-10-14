@@ -1,5 +1,6 @@
 "use client";
 
+import { FACTS } from "@/lib/seo/facts";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -23,7 +24,7 @@ import AppFooter from "@/components/ui/AppFooter";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const ORDER_STAGES = [
-  { label: "Quote requested", desc: "Submitted — quote arrives within 2 business hours", icon: FileText },
+  { label: "Quote requested", desc: `Submitted. ${FACTS.quotePromise}`, icon: FileText },
   { label: "Quote sent", desc: "Review and accept via email or WhatsApp", icon: Mail },
   { label: "Paid", desc: "Order confirmed, sent to processing", icon: CreditCard },
   { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings },

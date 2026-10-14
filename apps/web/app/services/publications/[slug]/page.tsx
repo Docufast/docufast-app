@@ -1,5 +1,6 @@
 "use client";
 
+import { FACTS } from "@/lib/seo/facts";
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -67,9 +68,9 @@ export default function PublicationOrderPage() {
         <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
           <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
           <p className="mt-3 text-sm text-brand-gray">
-            Your request for {pubType!.label.toLowerCase()} has been saved. You'll receive a
-            quote within 2 business hours — this order is paired with its supporting
-            affidavit or CAC filing under one parent order.
+            Your request for {pubType!.label.toLowerCase()} has been saved.
+            {FACTS.quotePromise}. This order is paired with its supporting affidavit or CAC
+            filing under one parent order.
           </p>
           <Link
             href="/orders"
@@ -149,7 +150,7 @@ export default function PublicationOrderPage() {
           {submitting ? "Submitting…" : "Request quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
-          Quote arrives within 2 business hours. No payment at this step.
+          {FACTS.quotePromise}. No payment at this step.
         </p>
       </form>
     </main>

@@ -1,5 +1,6 @@
 "use client";
 
+import { FACTS } from "@/lib/seo/facts";
 import { useState } from "react";
 import Link from "next/link";
 import { MessageCircle, X, ChevronLeft } from "lucide-react";
@@ -42,12 +43,12 @@ const MAIN_MENU: MenuOption[] = [
   {
     label: "Pricing & turnaround times",
     reply:
-      "Every order is quoted after review — we itemise any government fees so there are no surprises. No payment is taken until you approve the quote. Turnaround varies by service, usually 48 hours to 5 working days.",
+      `${FACTS.quotePromise}. We itemise any government fees so there are no surprises. No payment is taken until you accept. ${FACTS.affidavitDelivery}.`,
   },
   {
     label: "Do I need an account?",
     reply:
-      "Yes — a free account lets you track orders, receive quotes, and access your document vault once things are ready. Sign-up takes under a minute.",
+      "Yes. A free account lets you track orders, receive quotes, and access your document vault once things are ready. Sign-up takes under a minute.",
     linkHref: "/sign-up",
     linkLabel: "Create an account →",
   },
