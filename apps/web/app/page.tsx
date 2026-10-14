@@ -1,3 +1,4 @@
+import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,15 +34,14 @@ export default function Home() {
         {/* Hero content */}
         <div className="mt-10 flex max-w-xl flex-1 flex-col gap-6">
           <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            Regulatory document infrastructure
+            Nigeria's document platform
           </span>
           <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-brand-black lg:text-6xl">
             Your documents. Handled properly. Every time.
           </h1>
           <p className="max-w-md text-lg text-brand-gray">
-            One account for sworn documents, CAC registrations, publications
-            and compliance deadlines. Every matter quoted before work starts,
-            tracked end to end, and stored encrypted.
+            {FACTS.servicesLine}, all in one account. {FACTS.quotePromise}. Tracked end to end
+            and stored encrypted.
           </p>
 
           <div className="flex items-center gap-3">
@@ -122,12 +122,7 @@ export default function Home() {
 
       <div className="mt-8 flex flex-col gap-2 border-t border-neutral-700 pt-6 text-xs text-neutral-400">
         <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
-        <p className="max-w-3xl">
-          Docufast facilitates document preparation and filing services in partnership with
-          accredited processing agents. Docufast is not a law firm and does not provide legal
-          advice. Services are processed by licensed Commissioners for Oaths, Notaries Public,
-          and accredited agents as applicable.
-        </p>
+        <p className="max-w-3xl">{FACTS.notALawFirm}</p>
         <span>© 2026 Docufast Integrated Services Ltd</span>
       </div>
     </footer>
