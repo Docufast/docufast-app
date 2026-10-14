@@ -14,14 +14,6 @@ const nextConfig = {
     ];
   },
   async headers() {
-    // Vercel sets VERCEL_ENV automatically: "production" only for the
-    // main-branch deployment, "preview" for staging and every other branch.
-    const isProduction = process.env.VERCEL_ENV === "production";
-
-    const backendUrl = isProduction
-      ? "https://docufast-app-production.up.railway.app"
-      : "https://docufast-app-staging.up.railway.app";
-
     return [
       {
         source: "/:path*",
@@ -36,21 +28,6 @@ const nextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
-              `connect-src 'self' https://*.supabase.co ${backendUrl} https://*.r2.cloudflarestorage.com`,
-              "frame-ancestors 'none'",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join("; "),
           },
         ],
       },
