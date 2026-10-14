@@ -9,6 +9,9 @@ import { rootMetadata } from "@/lib/seo/pages";
 
 export const metadata = rootMetadata;
 
+// Pages render per request so the CSP nonce from middleware.ts can be applied (#68 H1).
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: {
