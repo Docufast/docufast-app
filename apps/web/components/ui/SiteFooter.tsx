@@ -10,7 +10,7 @@ const heading = "text-sm font-semibold text-brand-white";
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-brand-black px-4 py-10 text-sm text-[#D9D9D9] md:px-12">
+    <footer className="bg-brand-black px-4 pb-40 pt-10 text-sm sm:pb-10 text-[#D9D9D9] md:px-12">
       <div className="mx-auto grid max-w-[1200px] gap-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2.5">
