@@ -1,131 +1,97 @@
 import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
-import Image from "next/image";
-import HeroPanel from "@/components/ui/HeroPanel";
-import AuthNavLink from "@/components/ui/AuthNavLink";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
 
 export const metadata = pageMetadata("/");
+
+// Blueprint D1 (#119). The chat panel and language pills are left out until they are
+// built. Only services that exist today get a card.
+const CARDS = [
+  {
+    href: "/services/affidavits",
+    title: "Affidavits",
+    text: "Change of name, loss, age, marriage and more, sworn through the Lagos court system.",
+  },
+  {
+    href: "/services/publications",
+    title: "Newspaper notices",
+    text: "Change of name and loss notices, with the proof saved to your Vault.",
+  },
+  {
+    href: "/services/cac",
+    title: "CAC filings",
+    text: "Business names, companies, incorporated trustees, annual returns and changes.",
+  },
+  {
+    href: "/services/notarization",
+    title: "Notarization",
+    text: "We will announce it here when it opens.",
+    soon: true,
+  },
+];
 
 export default function Home() {
   return (
     <>
-    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-      <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
-        {/* Nav */}
-        <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-          <div className="flex items-center gap-2">
-            <Image src="/images/logo-black.png" alt="Docufast" width={28} height={28} />
-            <span className="text-xl font-extrabold tracking-wide text-brand-black">
-              DOCUFAST
-            </span>
-          </div>
-          <div className="hidden items-center gap-6 md:flex">
-            <Link href="/services" className="text-sm font-semibold uppercase tracking-wide">Services</Link>
-          </div>
-          <Link
-            href="/sign-in"
-            className="ml-auto text-sm font-bold uppercase tracking-wide"
-          >
-            Sign in
-          </Link>
-        </nav>
-
-        {/* Hero content */}
-        <div className="mt-10 flex max-w-xl flex-1 flex-col gap-6">
-          <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            Nigeria's document platform
-          </span>
-          <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-brand-black lg:text-6xl">
-            Your documents. Handled properly. Every time.
-          </h1>
-          <p className="max-w-md text-lg text-brand-gray">
-            {FACTS.servicesLine}, all in one account. {FACTS.quotePromise}. Tracked end to end
-            and stored encrypted.
-          </p>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/sign-up"
-              className="flex items-center gap-2 rounded-card bg-brand-black px-6 py-4 text-base font-bold text-brand-white"
-            >
-              Get started →
-            </Link>
-            <Link
-              href="/services"
-              className="rounded-card border-4 border-brand-black px-5 py-3.5 text-base font-boldtext-brand-black"
-            >
-              Browse services
-            </Link>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t-4 border-brand-black pt-4">
-            <div>
-              <div className="text-3xl font-extrabold text-brand-black">31</div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                Affidavit types
-              </div>
+      <SiteHeader />
+      <main>
+        <section className="bg-brand-black px-4 py-14 md:px-12 md:py-20">
+          <div className="mx-auto max-w-[1200px]">
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-brand-yellow">
+              Online, in Nigeria
+            </p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.1] text-brand-white md:text-5xl">
+              Affidavits, newspaper notices, CAC filings and more, sorted online.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#D9D9D9]">
+              Tell us what you need. {FACTS.quotePromise}. Affidavits delivered within 48 hours,
+              checked by a person, sealed in your Vault.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/services"
+                className="inline-flex h-12 items-center rounded-[10px] bg-brand-yellow px-5 text-base font-semibold text-brand-black hover:bg-brand-yellow-hover"
+              >
+                Get your price
+              </Link>
+              <Link
+                href="/verify"
+                className="inline-flex h-12 items-center rounded-[10px] bg-brand-white px-5 text-base font-semibold text-brand-black hover:bg-brand-offwhite"
+              >
+                Verify a Docufast document
+              </Link>
             </div>
-            <div>
-              <div className="text-3xl font-extrabold text-brand-black">48h</div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                Standard turnaround
-              </div>
-            </div>
-            <div>
-              <div className="text-3xl font-extrabold text-brand-black">AES-256</div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                Vault encryption
-              </div>
-            </div>
-            <div>
-              <div className="text-3xl font-extrabold text-brand-black">46</div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-brand-gray">
-                Total services
-              </div>
-            </div>
-          </div>        </div>
-
-        {/* Trust badges — BluetentBC removed */}
-        <div className="mt-6 flex items-center gap-4 text-xs text-brand-gray">
-          <span>NDPA 2023 compliant</span>
-          <span className="h-1 w-1 bg-brand-yellow" />
-          <span>SCUML registered</span>
-        </div>
-      </div>
-
-      <HeroPanel src="/images/hero-home.png" alt="Docufast — documents made simple" bg="yellow" />
-    </main>
-
-    {/* Footer — mandatory elements per Playbook Section 03 */}
-    <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-center gap-2">
-          <Image src="/images/logo-yellow.png" alt="Docufast" width={32} height={32} />
-          <div>
-            <div className="text-lg font-extrabold tracking-wide">DOCUFAST</div>
-            <div className="text-xs text-neutral-400">Your documents. Handled properly. Every time.</div>
           </div>
-        </div>
+        </section>
 
-        <div className="flex flex-col gap-2 text-sm">
-          <Link href="/services" className="text-neutral-300 hover:text-brand-yellow">Services</Link>
-          <Link href="/privacy" className="text-neutral-300 hover:text-brand-yellow">Privacy Policy</Link>
-          <Link href="/terms" className="text-neutral-300 hover:text-brand-yellow">Terms of Service</Link>
-        </div>
-
-        <div className="flex flex-col gap-2 text-sm text-neutral-300">
-          <span>WhatsApp | Email</span>
-          <span>Mon–Sat, 8am–6pm WAT</span>
-        </div>
-      </div>
-
-      <div className="mt-8 flex flex-col gap-2 border-t border-neutral-700 pt-6 text-xs text-neutral-400">
-        <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
-        <p className="max-w-3xl">{FACTS.notALawFirm}</p>
-        <span>© 2026 Docufast Integrated Services Ltd</span>
-      </div>
-    </footer>
-</>
+        <section className="bg-brand-offwhite px-4 py-12 md:px-12">
+          <div className="mx-auto max-w-[1200px]">
+            <h2 className="text-2xl font-semibold text-brand-black">What we do</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {CARDS.map((card) => (
+                <Link
+                  key={card.href}
+                  href={card.href}
+                  className="rounded-[14px] border border-brand-gray-light bg-brand-white p-5 hover:border-brand-black"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-semibold text-brand-black">{card.title}</h3>
+                    {card.soon && (
+                      <span className="rounded-full bg-[#FDF0C4] px-2.5 py-0.5 text-xs font-semibold text-brand-black">
+                        Coming soon
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-brand-gray">{card.text}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </>
   );
 }
