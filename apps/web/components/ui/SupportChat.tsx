@@ -144,7 +144,7 @@ export default function SupportChat() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close help chat" : "Open help chat"}
-        className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-brand-black bg-brand-yellow text-brand-black shadow-lg hover:bg-brand-yellow-dark"
+        className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-brand-black bg-brand-yellow text-brand-black shadow-lg hover:bg-brand-yellow-hover"
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>

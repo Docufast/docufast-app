@@ -14,6 +14,7 @@ const config: Config = {
           offwhite: "#FAF9F5",
           yellow: "#EFB305",   // primary accent
           "yellow-dark": "#8A6400",
+          "yellow-hover": "#D9A004",
           black: "#0D0D0D", // Deep Navy — sampled directly from the generated hero images for an exact match; key name kept as "black" so every existing class updates automatically
           gray: "#5C5C5C",
           "gray-light": "#E4E4E0",
