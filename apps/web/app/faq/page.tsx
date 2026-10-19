@@ -1,15 +1,19 @@
-// app/faq/page.tsx
+// app/faq/page.tsx (Blueprint W4, #119)
 // Server component: every answer is plain HTML in the server response, and the FAQPage
 // structured data is built from the same items, so the markup says exactly what the page shows.
+// The search box is left out until it can filter questions.
 
-import HomeLink from "@/components/ui/HomeLink";
-import AuthNavLink from "@/components/ui/AuthNavLink";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
 import { JsonLd } from "@/components/JsonLd";
+import { FACTS } from "@/lib/seo/facts";
 import { FAQ_SECTIONS, liveFaq } from "@/lib/faq";
 import { breadcrumbs, faqPage } from "@/lib/seo/schema";
 import { pageMetadata } from "@/lib/seo/pages";
 
 export const metadata = pageMetadata("/faq");
+
+const card = "rounded-[14px] border border-brand-gray-light bg-brand-white p-5";
 
 export default function FaqPage() {
   const items = liveFaq();
@@ -26,74 +30,85 @@ export default function FaqPage() {
           ]),
         ]}
       />
-      <main className="mx-auto max-w-3xl px-6 py-6 lg:px-16 lg:py-10">
-        <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-          <HomeLink />
-          <AuthNavLink />
-        </nav>
-
-        <div className="mt-8">
-          <h1 className="text-3xl font-extrabold text-brand-black">Frequently asked questions</h1>
-          <p className="mt-2 text-brand-gray">
-            Plain answers about our services, your documents and how Docufast works. Can't find what you
-            need? Message us on WhatsApp at 0905 495 1918, Monday to Saturday, 8am to 6pm WAT.
+      <SiteHeader />
+      <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-14">
+        <div className="mx-auto max-w-[1104px]">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-brand-yellow-dark">
+            Frequently asked questions
           </p>
-        </div>
+          <h1 className="mt-3 text-4xl font-semibold leading-[1.1] text-brand-black md:text-5xl">
+            Questions, answered
+          </h1>
 
-        <nav aria-label="Topics" className="mt-6">
-          <ul className="flex flex-wrap gap-2">
-            {sections.map((s) => (
-              <li key={s.n}>
-                <a
-                  href={`#topic-${s.n}`}
-                  className="inline-block rounded-card border-2 border-brand-black px-3 py-1 text-sm font-semibold hover:bg-brand-yellow/10"
-                >
-                  {s.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {sections.map((s) => (
-          <section key={s.n} id={`topic-${s.n}`} className="mt-10">
-            <h2 className="text-2xl font-extrabold text-brand-black">{s.title}</h2>
-            {items
-              .filter((i) => i.section === s.n)
-              .map((i) => (
-                <div key={i.id} id={i.id} className="mt-6">
-                  <h3 className="font-bold text-brand-black">{i.q}</h3>
-                  {i.list === "ol" ? (
-                    <ol className="mt-2 list-decimal space-y-1 pl-6 text-brand-gray">
-                      {i.a.map((line) => (
-                        <li key={line}>{line}</li>
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
+            <div>
+              {sections.map((s) => (
+                <section key={s.n} id={`topic-${s.n}`} className="scroll-mt-6 pb-8">
+                  <h2 className="text-2xl font-semibold text-brand-black">{s.title}</h2>
+                  <div className="mt-4 flex flex-col gap-3">
+                    {items
+                      .filter((i) => i.section === s.n)
+                      .map((i) => (
+                        <details
+                          key={i.id}
+                          id={i.id}
+                          className="rounded-[10px] border border-brand-gray-light bg-brand-white"
+                        >
+                          <summary className="cursor-pointer px-4 py-3.5 text-sm font-semibold text-brand-black">
+                            {i.q}
+                          </summary>
+                          <div className="px-4 pb-4 text-sm leading-relaxed text-brand-gray">
+                            {i.list === "ol" ? (
+                              <ol className="list-decimal space-y-1 pl-5">
+                                {i.a.map((line) => (
+                                  <li key={line}>{line}</li>
+                                ))}
+                              </ol>
+                            ) : i.list === "ul" ? (
+                              <ul className="list-disc space-y-1 pl-5">
+                                {i.a.map((line) => (
+                                  <li key={line}>{line}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              i.a.map((line) => (
+                                <p key={line} className="mt-2 first:mt-0">
+                                  {line}
+                                </p>
+                              ))
+                            )}
+                          </div>
+                        </details>
                       ))}
-                    </ol>
-                  ) : i.list === "ul" ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-6 text-brand-gray">
-                      {i.a.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    i.a.map((line) => (
-                      <p key={line} className="mt-2 text-brand-gray">
-                        {line}
-                      </p>
-                    ))
-                  )}
-                </div>
+                  </div>
+                </section>
               ))}
-          </section>
-        ))}
-      </main>
+            </div>
 
-      <footer className="mt-10 border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
-        <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
-          <span>© 2026 Docufast Integrated Services Ltd</span>
+            <aside className="flex flex-col gap-4 lg:self-start">
+              <section className={card}>
+                <h2 className="text-base font-semibold text-brand-black">Still stuck?</h2>
+                <p className="mt-1 text-sm leading-relaxed text-brand-gray">
+                  WhatsApp {FACTS.support.whatsappDisplay}, {FACTS.support.hours}. Support only.
+                </p>
+              </section>
+              <nav aria-label="Topics" className={card}>
+                <h2 className="text-base font-semibold text-brand-black">Jump to</h2>
+                <ul className="mt-2 flex flex-col gap-1.5 text-sm">
+                  {sections.map((s) => (
+                    <li key={s.n}>
+                      <a href={`#topic-${s.n}`} className="text-brand-black underline">
+                        {s.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </aside>
+          </div>
         </div>
-      </footer>
+      </main>
+      <SiteFooter />
     </>
   );
 }
