@@ -1,46 +1,39 @@
 import { FACTS } from "@/lib/seo/facts";
 import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
-import Image from "next/image";
-import AuthNavLink from "@/components/ui/AuthNavLink";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
 
-import HomeLink from "@/components/ui/HomeLink";
-// Full service catalogue — 46 services across 5 categories, per the Platform Playbook.
-const CATEGORIES = [
+// Blueprint W1 (#119). Only services that exist today get a card. Check my company,
+// Births and deaths, Vault and reminders and Virtual office are added when they ship.
+// The For individuals / For businesses filter and the Ask Docufast band wait for the
+// chat feature.
+const CARDS = [
   {
-    slug: "affidavits",
-    name: "Affidavits",
-    count: 31,
-    turnaround: "Standard 48h",
-    desc: "Change of name, loss, marriage, birth/age, death, student and status affidavits.",
+    href: "/services/affidavits",
+    title: "Affidavits",
+    text: "Change of name, loss, age, marriage, student and status affidavits.",
   },
   {
-    slug: "cac",
-    name: "CAC & Compliance",
-    count: 6,
-    turnaround: "3–10 working days",
-    desc: "Business name, LTD incorporation, incorporated trustees, annual returns, amendments.",
+    href: "/services/publications",
+    title: "Newspaper notices",
+    text: "Change of name, loss of documents and incorporated trustees notices. Order on their own or with an affidavit.",
   },
   {
-    slug: "publications",
-    name: "Newspaper Publications",
-    count: 3,
-    turnaround: "24–72 hours",
-    desc: "Name change, loss of documents, and incorporated trustees public notices.",
+    href: "/services/cac",
+    title: "CAC registration",
+    text: "Business names, companies, incorporated trustees, annual returns and changes.",
   },
   {
-    slug: "virtual-assistant",
-    name: "Virtual Office & Clerical",
-    count: 3,
-    turnaround: "Standard 48h",
-    desc: "Document typing, data entry, and audio/video transcription.",
+    href: "/services/virtual-assistant",
+    title: "Typing, data entry and transcription",
+    text: "Typed, checked and delivered to your Vault.",
   },
   {
-    slug: "notarization",
-    name: "Platform-Native",
-    count: 3,
-    turnaround: "Varies",
-    desc: "Digital notarization (coming soon), document vault subscription, compliance reminder setup.",
+    href: "/services/notarization",
+    title: "Notarization",
+    text: "We will announce it here when it opens.",
+    soon: true,
   },
 ];
 
@@ -49,58 +42,45 @@ export const metadata = pageMetadata("/services");
 export default function ServicesPage() {
   return (
     <>
-      <main className="mx-auto max-w-6xl px-6 py-6 lg:px-16 lg:py-10">
-        <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-          <HomeLink />
-          <span className="text-sm font-semibold uppercase tracking-wide">Services</span>
-          <Link
-            href="/sign-in"
-            className="ml-auto text-sm font-bold uppercase tracking-wide"
-          >
-            Sign in
-          </Link>
-        </nav>
-
-        <div className="mt-10 max-w-2xl">
-          <span className="w-fit rounded-card bg-brand-yellow px-2.5 py-1 text-xs font-bold uppercase tracking-widest">
-            One platform for your documents
-          </span>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-brand-black">
-            Every service quoted before work starts, tracked end to end.
-          </h1>
-          <p className="mt-3 text-brand-gray">
-            Pick a category to see what's covered. No prices are shown here. {FACTS.quotePromise}.
+      <SiteHeader />
+      <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-14">
+        <div className="mx-auto max-w-[1200px]">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-brand-yellow-dark">
+            Services
           </p>
-        </div>
+          <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-[1.1] text-brand-black md:text-5xl">
+            Affidavits, newspaper notices, CAC filings and more
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-brand-gray">
+            Every order follows the same six steps: service, details, quote, upload and verify,
+            pay, done. {FACTS.quotePromise}.
+          </p>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {CATEGORIES.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/services/${cat.slug}`}
-              className="rounded-card border-4 border-brand-black p-6 hover:bg-brand-yellow/10"
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-extrabold text-brand-black">{cat.name}</h2>
-                <span className="rounded-card bg-brand-black px-2.5 py-1 text-xs font-bold text-brand-white">
-                  {cat.count} types
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {CARDS.map((card) => (
+              <Link
+                key={card.href}
+                href={card.href}
+                className="flex min-h-[170px] flex-col rounded-[14px] border border-brand-gray-light bg-brand-white p-5 hover:border-brand-black"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-base font-semibold text-brand-black">{card.title}</h2>
+                  {card.soon && (
+                    <span className="rounded-full bg-[#FDF0C4] px-2.5 py-0.5 text-xs font-semibold text-brand-black">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-brand-gray">{card.text}</p>
+                <span className="mt-auto pt-4 text-sm font-semibold text-brand-black">
+                  {card.soon ? "See details" : "Get your price"}
                 </span>
-              </div>
-              <p className="mt-2 text-sm text-brand-gray">{cat.desc}</p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
-                {cat.turnaround}
-              </p>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </main>
-
-      <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
-        <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
-          <span>© 2026 Docufast Integrated Services Ltd</span>
-        </div>
-      </footer>
-</>
+      <SiteFooter />
+    </>
   );
 }
