@@ -62,8 +62,7 @@ export default function AffidavitsPage() {
             Affidavits
           </h1>
           <p className="mt-2 text-brand-gray">
-            Sworn before a Commissioner for Oaths, or a Notary Public for documents going
-            abroad. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
+            {FACTS.affidavitRoute}. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
           </p>
 
           <p className="mt-4 rounded-card border-2 border-brand-black bg-brand-yellow/10 px-4 py-3 text-sm font-medium text-brand-black">
@@ -84,7 +83,7 @@ export default function AffidavitsPage() {
           {grouped.map((g) => (
             <div key={g.category}>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
-                {g.label} <span className="text-brand-gray">· {g.types.length}</span>
+                {g.label}
               </h2>
               <div className="mt-2 divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
                 {g.types.map((t) => (
