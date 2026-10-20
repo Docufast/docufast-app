@@ -47,7 +47,7 @@ export default function NotarizationPage() {
 
       <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
         <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
+          <span>SCUML SC251840209 | NDPC registered (NDPC/DCP/07770) | SMEDAN SUIN426476832438 | RC1893484</span>
           <span>© 2026 Docufast Integrated Services Ltd</span>
         </div>
       </footer>

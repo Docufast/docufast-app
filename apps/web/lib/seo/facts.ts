@@ -22,11 +22,11 @@ export const FACTS = {
     country: 'NG',
   },
   founder: { name: 'Ajibola Adeboye', jobTitle: 'Founder', linkedin: 'https://www.linkedin.com/in/jsb1218' },
-  // Registration wording is fixed: never "regulated", SCUML and SMEDAN are registrations, NDPC is a licence.
+  // Registration wording is fixed: never "regulated", SCUML and SMEDAN are registrations, NDPC is a registration (NDPC/DCP/07770).
   registrations: [
     { name: 'CAC registration number', value: 'RC1893484' },
     { name: 'SCUML registration', value: 'SC251840209' },
-    { name: 'NDPC licence', value: 'DCP/07770' },
+    { name: 'NDPC registration', value: 'NDPC/DCP/07770' },
     { name: 'SMEDAN registration', value: 'SUIN426476832438' },
   ],
   notALawFirm: 'Docufast is not a law firm and does not give legal advice.',

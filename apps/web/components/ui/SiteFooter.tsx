@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FACTS } from "@/lib/seo/facts";
 
-// Blueprint footer (#119). Wording follows the house rules: NDPC licensed,
+// Blueprint footer (#119). Wording follows the house rules: NDPC registered,
 // SCUML/SMEDAN/CAC registered, online only, no walk-ins. No data-location line
 // until #128 is approved. Registration numbers stay (Playbook Section 03).
 const link = "text-sm text-brand-white hover:underline";
@@ -47,7 +47,7 @@ export default function SiteFooter() {
       </div>
 
       <p className="mx-auto mt-8 max-w-[1200px] text-xs text-[#A6A6A6]">
-        Docufast Integrated Services Ltd · RC 1893484 · CAC registered · SCUML registered (SC251840209) · NDPC licensed (DCP/07770) · SMEDAN registered (SUIN426476832438) · Suite 100, Adebola House, 38 Opebi Road, Ikeja, Lagos (online only, no walk-ins)
+        Docufast Integrated Services Ltd · RC 1893484 · CAC registered · SCUML registered (SC251840209) · NDPC registered (NDPC/DCP/07770) · SMEDAN registered (SUIN426476832438) · Suite 100, Adebola House, 38 Opebi Road, Ikeja, Lagos (online only, no walk-ins)
       </p>
     </footer>
   );

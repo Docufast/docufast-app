@@ -122,7 +122,7 @@ export const FAQ: FaqItem[] = [
     "section": 1,
     "q": "Is Docufast a registered company?",
     "a": [
-      "Yes. Docufast Integrated Services Ltd is CAC registered (RC 1893484), SCUML registered (SC251840209), NDPC licensed (DCP/07770) and SMEDAN registered. You can check our CAC record yourself on the CAC public search."
+      "Yes. Docufast Integrated Services Ltd is CAC registered (RC 1893484), SCUML registered (SC251840209), NDPC registered (NDPC/DCP/07770) and SMEDAN registered. You can check our CAC record yourself on the CAC public search."
     ],
     "status": "live"
   },
@@ -1036,9 +1036,9 @@ export const FAQ: FaqItem[] = [
   {
     "id": "is-docufast-licensed-to-handle-my-personal-data",
     "section": 13,
-    "q": "Is Docufast licensed to handle my personal data?",
+    "q": "Is Docufast registered to handle my personal data?",
     "a": [
-      "Yes. Docufast is licensed by the Nigeria Data Protection Commission (DCP/07770) and follows the Nigeria Data Protection Act 2023."
+      "Yes. Docufast is registered with the Nigeria Data Protection Commission (NDPC/DCP/07770) and follows the Nigeria Data Protection Act 2023."
     ],
     "status": "live"
   },

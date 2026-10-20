@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
             Docufast Integrated Services Ltd ("Docufast", "we", "us") operates a document
             infrastructure platform for affidavits, CAC registration, publications,
             notarization, and related services in Nigeria. We are registered under RC1893484,
-            SCUML SC251840209, and NDPC DCP/07770.
+            SCUML SC251840209, and NDPC registered (NDPC/DCP/07770).
           </p>
         </section>
 
