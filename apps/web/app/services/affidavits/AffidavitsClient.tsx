@@ -8,6 +8,8 @@ import { AFFIDAVIT_TYPES, AffidavitCategory } from "@/lib/affidavitTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+const naira = (n: number) => `NGN ${n.toLocaleString("en-US")}`;
+
 const CATEGORY_LABELS: Record<AffidavitCategory, string> = {
   name: "Name",
   birth_age: "Birth / Age",
@@ -62,6 +64,11 @@ export default function AffidavitsPage() {
           <p className="mt-2 text-brand-gray">
             Sworn before a Commissioner for Oaths, or a Notary Public for documents going
             abroad. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
+          </p>
+
+          <p className="mt-4 rounded-card border-2 border-brand-black bg-brand-yellow/10 px-4 py-3 text-sm font-medium text-brand-black">
+            Standard {naira(FACTS.pricing.affidavitStandard)} · Express {naira(FACTS.pricing.affidavitExpress)} ·
+            Affidavit with newspaper notice, for a change of name or loss, {naira(FACTS.pricing.affidavitAndNoticePack)}
           </p>
 
           <input
