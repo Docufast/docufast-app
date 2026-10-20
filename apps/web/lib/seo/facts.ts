@@ -33,7 +33,23 @@ export const FACTS = {
   affidavitRoute: 'Sworn through the Lagos court system', // never call LagosCoMiS "approved"
   // Decided by JSB, 11 Oct 2026. Delivery times for other services to follow.
   quotePromise: 'Your price within 1 minute, fixed once you accept',
-  affidavitDelivery: 'Affidavits delivered within 48 hours',
+  // Delivery and prices: JSB, 19 Oct 2026 (Register #166, #82). Prices are in naira. VAT position: Sheriff to confirm (#24).
+  affidavitDelivery:
+    'Standard affidavits are delivered within 2 working days. Express is the same day when the order is confirmed before 2 PM on a working day',
+  affidavitDeliveryShort: 'Affidavits delivered within 2 working days, or the same day with Express',
+  pricing: {
+    currency: 'NGN',
+    affidavitStandard: 4000,
+    affidavitExpress: 5000,
+    affidavitAndNoticePack: 14000,
+    quoteValidHours: 48,
+  },
+  vault: {
+    freeDays: 30,
+    reminderDaysBefore: [7, 1],
+    verificationRecordMinYears: 5,
+    accessLogYears: 2,
+  },
   // D5, decided 11 Oct 2026: no service count in any public copy. Never print a number of services.
   servicesLine: 'Affidavits, newspaper notices, CAC filings and more',
   notarization: 'Coming soon',

@@ -46,8 +46,7 @@ export default function Home() {
               Affidavits, newspaper notices, CAC filings and more, sorted online.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#D9D9D9]">
-              Tell us what you need. {FACTS.quotePromise}. Affidavits delivered within 48 hours,
-              checked by a person, sealed in your Vault.
+              Tell us what you need. {FACTS.quotePromise}. {FACTS.affidavitDeliveryShort}. Checked by a person, sealed in your Vault.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
