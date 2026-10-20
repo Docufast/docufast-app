@@ -22,7 +22,7 @@ export default function CacPage() {
 
         <div className="mt-8">
           <h1 className="text-3xl font-extrabold text-brand-black">
-            CAC & Compliance <span className="text-brand-gray">· {CAC_TYPES.length} types</span>
+            CAC & Compliance
           </h1>
           <p className="mt-2 text-brand-gray">
             Government portal filings, handled end to end. {FACTS.quotePromise}. Government
