@@ -196,6 +196,72 @@ router.get("/documents/:documentId/download", async (req, res) => {
   res.json({ url, fileName: document.file_name });
 });
 
+// GET /admin/orders/:id/filing — the staff filing record for an affidavit order (#185).
+router.get("/:id/filing", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+
+  const { data, error } = await supabaseAdmin
+    .from("affidavit_filings")
+    .select("*")
+    .eq("order_id", req.params.id)
+    .maybeSingle();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ filing: data });
+});
+
+// PUT /admin/orders/:id/filing — create or update the filing record. Only the listed
+// fields can be set; times are ISO strings or null.
+const FILING_FIELDS = ["court_route", "court_form", "court_division", "filing_id", "filed_at", "commissioned_at", "video_requested", "notes"];
+router.put("/:id/filing", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+
+  const { data: order } = await supabaseAdmin
+    .from("orders")
+    .select("id, service_category")
+    .eq("id", req.params.id)
+    .single();
+  if (!order) return res.status(404).json({ error: "Order not found." });
+  if (order.service_category !== "affidavit") {
+    return res.status(400).json({ error: "Filing records are for affidavit orders." });
+  }
+
+  const row = { order_id: req.params.id, updated_by: user.id };
+  for (const field of FILING_FIELDS) {
+    if (req.body[field] === undefined) continue;
+    const value = req.body[field];
+    if (field === "video_requested") row[field] = value === true;
+    else if (field === "filed_at" || field === "commissioned_at") {
+      if (value === null || value === "") row[field] = null;
+      else if (Number.isNaN(Date.parse(value))) return res.status(400).json({ error: `${field} is not a valid date and time.` });
+      else row[field] = new Date(value).toISOString();
+    } else row[field] = value === "" ? null : String(value).trim();
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("affidavit_filings")
+    .upsert(row, { onConflict: "order_id" })
+    .select()
+    .single();
+  if (error) return res.status(400).json({ error: error.message });
+  res.json({ filing: data });
+});
+
+// GET /admin/orders/:id/payments — every payment attempt for this order (#109).
+router.get("/:id/payments", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+
+  const { data, error } = await supabaseAdmin
+    .from("payments")
+    .select("reference, amount_kobo, currency, status, channel, paid_at, created_at")
+    .eq("order_id", req.params.id)
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ payments: data });
+});
+
 // GET /admin/orders/:id/access-log — every logged access to this order's documents,
 // newest first, for the Founder Dashboard (#153).
 router.get("/:id/access-log", async (req, res) => {

@@ -10,6 +10,7 @@ import { decryptDocumentForRecipient, fromBase64 } from "@/lib/vaultCrypto";
 import { getUnlockedPrivateKey } from "@/lib/vaultSession";
 import { ShieldCheck, Clock, RefreshCw, FolderOpen, Download } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
+import VaultActivity from "@/components/VaultActivity";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -204,6 +205,8 @@ export default function VaultPage() {
               ))}
             </div>
           )}
+
+          <VaultActivity />
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-card border-2 border-brand-black bg-white p-5">

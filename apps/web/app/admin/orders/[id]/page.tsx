@@ -7,6 +7,10 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
 import { encryptDocumentForRecipient } from "@/lib/vaultCrypto";
+import { cleanCopyProblem } from "@/lib/cleanCopy";
+import FilingSheet from "@/components/admin/FilingSheet";
+import OrderPayments from "@/components/admin/OrderPayments";
+import OrderAccessLog from "@/components/admin/OrderAccessLog";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -87,8 +91,9 @@ export default function AdminOrderDetailPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [delivering, setDelivering] = useState(false);
   const [deliverError, setDeliverError] = useState<string | null>(null);
+  const [logRefresh, setLogRefresh] = useState(0);
 
-  async function getAuthHeader() {
+  async function getAuthHeader(): Promise<Record<string, string>> {
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -179,6 +184,17 @@ export default function AdminOrderDetailPage() {
     setDelivering(true);
     setDeliverError(null);
     try {
+      // Clean copy rule (#185): no LagosCoMiS addresses or session details in the final file.
+      const problem = await cleanCopyProblem(selectedFile);
+      if (problem) {
+        setDeliverError(problem);
+        return;
+      }
+      // Name the delivered file by order number, never the customer's name (#185).
+      const dot = selectedFile.name.lastIndexOf(".");
+      const extension = dot > -1 ? selectedFile.name.slice(dot).toLowerCase() : "";
+      const deliveredName = `${shortRef(orderId)}-final${extension}`;
+
       const fileBytes = await selectedFile.arrayBuffer();
       const { ciphertext, iv, senderEphemeralPublicKey } = await encryptDocumentForRecipient(
         fileBytes,
@@ -187,7 +203,7 @@ export default function AdminOrderDetailPage() {
 
       const encryptedBlob = new Blob([ciphertext]);
       const formData = new FormData();
-      formData.append("file", encryptedBlob, selectedFile.name);
+      formData.append("file", encryptedBlob, deliveredName);
 
       const uploadRes = await fetch(`${API_URL}/upload`, {
         method: "POST",
@@ -205,7 +221,7 @@ export default function AdminOrderDetailPage() {
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({
           r2_key: uploadData.key,
-          file_name: selectedFile.name,
+          file_name: deliveredName,
           encryption_iv: iv,
           sender_ephemeral_public_key: senderEphemeralPublicKey,
         }),
@@ -219,6 +235,7 @@ export default function AdminOrderDetailPage() {
       setDocuments((prev) => [deliverData.document, ...prev]);
       setSelectedFile(null);
       setStatusDraft("delivered");
+      setLogRefresh((n) => n + 1);
       await loadOrder();
     } catch (err) {
       setDeliverError("Failed to deliver document.");
@@ -239,6 +256,7 @@ export default function AdminOrderDetailPage() {
         return;
       }
       window.open(data.url, "_blank");
+      setLogRefresh((n) => n + 1);
     } catch (err) {
       alert("Failed to generate download link.");
     }
@@ -357,6 +375,19 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
+        <OrderPayments apiUrl={API_URL} orderId={order.id} getAuthHeader={getAuthHeader} />
+
+        {order.service_category === "affidavit" && (
+          <FilingSheet
+            apiUrl={API_URL}
+            orderId={order.id}
+            orderRef={shortRef(order.id)}
+            orderType={order.order_type}
+            formData={order.form_data}
+            getAuthHeader={getAuthHeader}
+          />
+        )}
+
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Deliver final document
@@ -425,6 +456,7 @@ export default function AdminOrderDetailPage() {
             )}
           </div>
         </div>
+        <OrderAccessLog apiUrl={API_URL} orderId={order.id} getAuthHeader={getAuthHeader} refreshKey={logRefresh} />
       </div>
     </main>
   );
