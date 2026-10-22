@@ -46,7 +46,7 @@ export default function SignUpPage() {
       return;
     }
     if (!agreed) {
-      setError("You need to agree to the Terms and Privacy Policy to continue.");
+      setError("You need to agree to the Terms and Privacy Notice to continue.");
       return;
     }
 
@@ -264,7 +264,7 @@ export default function SignUpPage() {
                 </Link>{" "}
                 and{" "}
                 <Link href="/privacy" className="font-semibold underline" target="_blank">
-                  Privacy Policy
+                  Privacy Notice
                 </Link>
                 , including NDPA 2023 data handling.
               </span>
@@ -277,8 +277,13 @@ export default function SignUpPage() {
                 onChange={(e) => setMarketingConsent(e.target.checked)}
                 className="mt-0.5 h-4 w-4 accent-brand-black"
               />
-              I agree to receive service updates and relevant offers from Docufast by email
-              and WhatsApp.
+              <span>
+                Send me tips, deadline news and offers from Docufast by email, SMS or WhatsApp.
+                I can stop at any time.
+                <span className="mt-1 block text-xs text-brand-gray">
+                  Order updates come either way. Change this any time in Privacy choices.
+                </span>
+              </span>
             </label>
 
             {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
