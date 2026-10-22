@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
 import SiteFooter from "@/components/ui/SiteFooter";
+import WaitlistForm from "@/components/WaitlistForm";
 
 export const metadata = pageMetadata("/");
 
@@ -86,6 +87,18 @@ export default function Home() {
                   <p className="mt-2 text-sm leading-relaxed text-brand-gray">{card.text}</p>
                 </Link>
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="waitlist" className="bg-brand-offwhite px-4 pb-14 md:px-12">
+          <div className="mx-auto max-w-[1200px] rounded-[14px] border border-brand-gray-light bg-[#FDF0C4] p-6 md:p-8">
+            <h2 className="text-2xl font-semibold text-brand-black">Be first to know when Docufast opens to you</h2>
+            <p className="mt-2 max-w-2xl text-base leading-relaxed text-brand-black">
+              We are opening to people in stages. Leave your email and we will tell you when you can place your first order.
+            </p>
+            <div className="mt-6 max-w-2xl">
+              <WaitlistForm source="home" />
             </div>
           </div>
         </section>
