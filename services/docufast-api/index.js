@@ -6,6 +6,7 @@ import uploadRoute from "./routes/upload.js";
 import adminOrdersRoute from "./routes/adminOrders.js";
 import documentsRoute from "./routes/documents.js";
 import paymentsRoute from "./routes/payments.js";
+import paystackWebhookRoute from "./routes/paystackWebhook.js";
 
 dotenv.config();
 
@@ -31,6 +32,10 @@ app.use(
     credentials: true,
   })
 );
+// Paystack webhook needs the raw body to check its signature, so it is mounted before
+// express.json(). It is server-to-server: no CORS and no user token.
+app.use("/webhooks/paystack", express.raw({ type: "application/json", limit: "1mb" }), paystackWebhookRoute);
+
 app.use(express.json());
 
 app.use("/health", healthRoute);
