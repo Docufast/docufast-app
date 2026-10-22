@@ -749,10 +749,9 @@ export const FAQ: FaqItem[] = [
     "section": 9,
     "q": "Do prices include VAT?",
     "a": [
-      "[CONFIRM VAT position with Sheriff.]"
+      "Yes. The price on your quote includes VAT."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "when-do-i-create-an-account",
@@ -1084,10 +1083,9 @@ export const FAQ: FaqItem[] = [
     "section": 13,
     "q": "Can I see or delete the data you hold about me?",
     "a": [
-      "Yes. Under the Nigeria Data Protection Act you can ask for a copy of your data, a correction, or deletion. Email [PRIVACY EMAIL]. Some records must be kept by law, and we will explain which."
+      "Yes. Under the Nigeria Data Protection Act you can ask for a copy of your data, a correction, or deletion. Email privacy@docufast.ng. Some records must be kept by law, and we will explain which."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "where-can-i-read-the-full-privacy-notice",
@@ -1150,10 +1148,9 @@ export const FAQ: FaqItem[] = [
     "section": 14,
     "q": "How do I make a complaint?",
     "a": [
-      "Message us on WhatsApp at 0905 495 1918 or email [SUPPORT EMAIL] with your order number. We reply within [X] working hours and aim to resolve within [X] working days."
+      "Message us on WhatsApp at 0905 495 1918 or email support@docufast.ng with your order number. We reply within 1 working day and aim to resolve within 5 working days."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "do-you-work-with-businesses-and-hr-teams",

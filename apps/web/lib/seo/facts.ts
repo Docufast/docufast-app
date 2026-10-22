@@ -33,7 +33,7 @@ export const FACTS = {
   affidavitRoute: 'Sworn through the Lagos court system', // never call LagosCoMiS "approved"
   // Decided by JSB, 11 Oct 2026. Delivery times for other services to follow.
   quotePromise: 'Your price within 1 minute, fixed once you accept',
-  // Delivery and prices: JSB, 19 Oct 2026 (Register #166, #82). Prices are in naira. VAT position: Sheriff to confirm (#24).
+  // Delivery and prices: JSB, 19 Oct 2026 (Register #166, #82). Prices are in naira and VAT-inclusive (JSB, 21 Oct 2026, #24).
   affidavitDelivery:
     'Standard affidavits are delivered within 2 working days. Express is the same day when the order is confirmed before 2 PM on a working day',
   affidavitDeliveryShort: 'Affidavits delivered within 2 working days, or the same day with Express',
@@ -58,6 +58,12 @@ export const FACTS = {
     whatsappDisplay: '0905 495 1918',
     telephone: '+234-905-495-1918',
     hours: 'Monday to Saturday, 8am to 6pm WAT',
+    // Decided by JSB, 21 Oct 2026 (#168). Both are forwarders on the docufast.ng mail.
+    email: 'support@docufast.ng',
+    privacyEmail: 'privacy@docufast.ng',
+    // Complaints: reply within 1 working day, resolve within 5 (JSB, 21 Oct 2026).
+    replyWorkingDays: 1,
+    resolveWorkingDays: 5,
     opens: '08:00',
     closes: '18:00',
   },
