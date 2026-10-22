@@ -72,7 +72,7 @@ export default function TermsOfServicePage() {
 
       <Section title="7. Delivery times">
         <p>
-          Standard affidavits are delivered within 2 working days of a confirmed order with everything we need.
+          Standard affidavits are delivered within 2 to 3 working days of a confirmed order with everything we need.
           Express affidavits are delivered the same day when the order is confirmed before 2 PM on a working
           day. Some affidavit types need a short identification video; if yours does, we contact you on
           WhatsApp, email or another Docufast channel to arrange it. Other services show their usual time on

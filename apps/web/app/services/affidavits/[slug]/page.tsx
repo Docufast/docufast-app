@@ -279,7 +279,7 @@ export default function AffidavitOrderPage() {
           <div className="flex flex-col gap-2 p-4 sm:flex-row">
             {(
               [
-                ["standard", "Standard", `NGN ${FACTS.pricing.affidavitStandard.toLocaleString("en-US")}`, "Within 2 working days"],
+                ["standard", "Standard", `NGN ${FACTS.pricing.affidavitStandard.toLocaleString("en-US")}`, "Within 2 to 3 working days"],
                 [
                   "express",
                   "Express",

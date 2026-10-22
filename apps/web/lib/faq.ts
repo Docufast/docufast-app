@@ -297,7 +297,7 @@ export const FAQ: FaqItem[] = [
     "section": 3,
     "q": "How long does an affidavit take?",
     "a": [
-      "Standard affidavits are delivered within 2 working days of a confirmed order with everything we need. Express affidavits are delivered the same day when the order is confirmed before 2 PM on a working day."
+      "Standard affidavits are delivered within 2 to 3 working days of a confirmed order with everything we need. Express affidavits are delivered the same day when the order is confirmed before 2 PM on a working day."
     ],
     "status": "live"
   },
@@ -1101,7 +1101,7 @@ export const FAQ: FaqItem[] = [
     "section": 14,
     "q": "How long will my order take?",
     "a": [
-      "Each service shows its usual time on your quote. Affidavits: within 2 working days, or the same day with Express. Publications: usually 24 to 72 hours. CAC filings depend on CAC's processing times, and we update you at every step."
+      "Each service shows its usual time on your quote. Affidavits: within 2 to 3 working days, or the same day with Express. Publications: usually 24 to 72 hours. CAC filings depend on CAC's processing times, and we update you at every step."
     ],
     "status": "live"
   },
