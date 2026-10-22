@@ -71,7 +71,7 @@ export const PAGE_META: Record<string, PageMeta> = {
       'Plain-English guides to changing your name, replacing lost documents, registering a business and keeping your company in good standing with CAC.',
   },
   '/privacy': {
-    title: 'Privacy Policy',
+    title: 'Privacy Notice',
     description: 'How Docufast collects, uses, stores and protects your information, and how to use your rights.',
   },
   '/terms': {
