@@ -56,6 +56,7 @@ export default function AffidavitOrderPage() {
   const [purpose, setPurpose] = useState("");
   const [authenticatedBy, setAuthenticatedBy] = useState<"commissioner" | "notary">("commissioner");
   const [copies, setCopies] = useState(1);
+  const [speed, setSpeed] = useState<"standard" | "express">("standard");
   const [extraValues, setExtraValues] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -98,6 +99,7 @@ export default function AffidavitOrderPage() {
       service_category: "affidavit",
       order_type: slug,
       status: "quote_pending",
+      speed,
       form_data: {
         deponent_name: deponentName,
         jurisdiction,
@@ -268,6 +270,45 @@ export default function AffidavitOrderPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-card border-2 border-brand-black">
+          <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
+            Delivery speed
+          </div>
+          <div className="flex flex-col gap-2 p-4 sm:flex-row">
+            {(
+              [
+                ["standard", "Standard", `NGN ${FACTS.pricing.affidavitStandard.toLocaleString("en-US")}`, "Within 2 working days"],
+                [
+                  "express",
+                  "Express",
+                  `NGN ${FACTS.pricing.affidavitExpress.toLocaleString("en-US")}`,
+                  "Same day when confirmed before 2 PM on a working day",
+                ],
+              ] as const
+            ).map(([value, label, price, note]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSpeed(value)}
+                aria-pressed={speed === value}
+                className={`flex-1 rounded-card border-4 border-brand-black px-3 py-2 text-left ${
+                  speed === value ? "bg-brand-black text-brand-white" : ""
+                }`}
+              >
+                <span className="block text-sm font-bold">
+                  {label} · {price}
+                </span>
+                <span className="block text-xs opacity-80">{note}</span>
+              </button>
+            ))}
+          </div>
+          {speed === "express" && (
+            <p className="px-4 pb-4 text-xs text-brand-gray">
+              If we miss the Express time for a reason on our side, we refund the Express fee automatically.
+            </p>
+          )}
         </div>
 
         {submitError && <p className="text-sm text-brand-error">{submitError}</p>}

@@ -94,3 +94,31 @@ export async function sendPaymentReceiptEmail(toEmail, { orderRef, orderType, am
     return { success: false, error: error.response?.body || error.message };
   }
 }
+
+// Express fee refund (Terms section 7). Sent when Paystack accepts the refund.
+export async function sendExpressRefundEmail(toEmail, { orderRef, amountNaira }) {
+  const formattedAmount = Number(amountNaira).toLocaleString("en-NG");
+  const msg = {
+    to: toEmail,
+    from: { email: FROM_EMAIL, name: FROM_NAME },
+    subject: `Express fee refunded (${orderRef})`,
+    text: `We missed the Express delivery time for your order ${orderRef}, so we have refunded the Express fee of NGN ${formattedAmount} to your original payment method. Refunds usually arrive within 3 to 5 working days. We are sorry for the delay. Your order is still being completed and you can follow it in your Docufast account. Questions: support@docufast.ng or WhatsApp 0905 495 1918.`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2 style="color: #0D0D0D;">Express fee refunded</h2>
+        <p>We missed the Express delivery time for your order <strong>${orderRef}</strong>, so we have refunded the Express fee.</p>
+        <p style="font-size: 24px; font-weight: bold; color: #0D0D0D;">₦${formattedAmount}</p>
+        <p>It goes back to your original payment method, usually within 3 to 5 working days. We are sorry for the delay.</p>
+        <p>Your order is still being completed. You can follow it in your Docufast account.</p>
+        <p style="color: #666; font-size: 13px;">Questions: support@docufast.ng or WhatsApp 0905 495 1918. Docufast Integrated Services Ltd, RC 1893484.</p>
+      </div>
+    `,
+  };
+  try {
+    await sgMail.send(msg);
+    return { success: true };
+  } catch (error) {
+    console.error("SendGrid error:", error.response?.body || error.message);
+    return { success: false, error: error.response?.body || error.message };
+  }
+}

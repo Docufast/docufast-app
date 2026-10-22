@@ -11,6 +11,7 @@ import { cleanCopyProblem } from "@/lib/cleanCopy";
 import FilingSheet from "@/components/admin/FilingSheet";
 import OrderPayments from "@/components/admin/OrderPayments";
 import OrderAccessLog from "@/components/admin/OrderAccessLog";
+import ExpressPanel, { ExpressFields } from "@/components/admin/ExpressPanel";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -40,7 +41,7 @@ const STATUS_LABELS: Record<string, string> = {
   name_rejected: "Name rejected",
 };
 
-interface Order {
+interface Order extends Omit<ExpressFields, "id" | "status"> {
   id: string;
   service_category: string;
   order_type: string;
@@ -207,6 +208,7 @@ export default function AdminOrderDetailPage() {
 
       const uploadRes = await fetch(`${API_URL}/upload`, {
         method: "POST",
+        headers: await getAuthHeader(),
         body: formData,
       });
       const uploadData = await uploadRes.json();
@@ -376,6 +378,10 @@ export default function AdminOrderDetailPage() {
         </div>
 
         <OrderPayments apiUrl={API_URL} orderId={order.id} getAuthHeader={getAuthHeader} />
+
+        {order.service_category === "affidavit" && (
+          <ExpressPanel apiUrl={API_URL} order={order} getAuthHeader={getAuthHeader} onChanged={loadOrder} />
+        )}
 
         {order.service_category === "affidavit" && (
           <FilingSheet

@@ -48,8 +48,12 @@ export function verifyTransaction(reference) {
 }
 
 // https://paystack.com/docs/api/refund/#create
-export function createRefund(reference) {
-  return call("POST", "/refund", { transaction: reference });
+// amountKobo is optional: leave it out for a full refund, or pass it for a partial refund
+// (for example the Express fee only).
+export function createRefund(reference, amountKobo) {
+  const body = { transaction: reference };
+  if (amountKobo !== undefined) body.amount = amountKobo;
+  return call("POST", "/refund", body);
 }
 
 // Webhook signature: HMAC SHA512 of the raw request body with the secret key.

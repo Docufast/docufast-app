@@ -5,6 +5,7 @@ import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
 import { verifyFounder, supabaseAdmin } from "../lib/verifyFounder.js";
 import { sendQuoteEmail } from "../services/emailService.js";
 import { logDocumentAccess } from "../lib/accessLog.js";
+import { refundExpressFee, markExpressNotDue } from "../services/expressService.js";
 
 const router = express.Router();
 
@@ -59,10 +60,16 @@ router.patch("/:id", async (req, res) => {
   const user = await verifyFounder(req);
   if (!user) return res.status(403).json({ error: "Forbidden." });
 
-  const { status, quote_amount } = req.body;
+  const { status, quote_amount, speed } = req.body;
   const updates = {};
   if (status !== undefined) updates.status = status;
   if (quote_amount !== undefined) updates.quote_amount = quote_amount;
+  if (speed !== undefined) {
+    if (!["standard", "express"].includes(speed)) {
+      return res.status(400).json({ error: "Speed must be standard or express." });
+    }
+    updates.speed = speed;
+  }
 
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Nothing to update." });
@@ -70,9 +77,14 @@ router.patch("/:id", async (req, res) => {
 
   const { data: existingOrder } = await supabaseAdmin
     .from("orders")
-    .select("status, user_id, order_type, quote_amount")
+    .select("status, user_id, order_type, quote_amount, express_due_at")
     .eq("id", req.params.id)
     .single();
+
+  // Speed is part of the price: it cannot change once the order is paid and the clock is running.
+  if (updates.speed !== undefined && existingOrder?.express_due_at) {
+    return res.status(409).json({ error: "Speed cannot change after payment." });
+  }
 
   const { data, error } = await supabaseAdmin
     .from("orders")
@@ -159,6 +171,12 @@ router.post("/:id/deliver", async (req, res) => {
     .from("orders")
     .update({ status: "delivered" })
     .eq("id", req.params.id);
+  // First delivery time, used to judge the Express deadline. Later re-deliveries do not move it.
+  await supabaseAdmin
+    .from("orders")
+    .update({ delivered_at: document.delivered_at })
+    .eq("id", req.params.id)
+    .is("delivered_at", null);
 
   res.json({ document });
 });
@@ -260,6 +278,26 @@ router.get("/:id/payments", async (req, res) => {
     .order("created_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json({ payments: data });
+});
+
+// POST /admin/orders/:id/express-refund — refund the Express fee now (Terms section 7).
+// Allowed before the deadline too, when staff already know it will be missed.
+router.post("/:id/express-refund", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const result = await refundExpressFee(req.params.id, { force: true });
+  const statusCode = { refunded: 200, refund_needed: 502, already_handled: 409, not_express: 400, no_payment: 400 }[result.outcome] || 400;
+  res.status(statusCode).json(result);
+});
+
+// POST /admin/orders/:id/express-not-due — the delay was on the customer's side (for example an
+// identification video we asked for and did not receive). A note is required and is kept.
+router.post("/:id/express-not-due", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const result = await markExpressNotDue(req.params.id, req.body?.note);
+  const statusCode = { not_due: 200, note_required: 400, already_handled: 409 }[result.outcome] || 400;
+  res.status(statusCode).json(result);
 });
 
 // GET /admin/orders/:id/access-log — every logged access to this order's documents,

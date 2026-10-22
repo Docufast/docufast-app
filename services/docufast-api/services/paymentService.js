@@ -12,6 +12,7 @@ import crypto from "node:crypto";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initializeTransaction, verifyTransaction, createRefund } from "../lib/paystack.js";
 import { sendPaymentReceiptEmail } from "./emailService.js";
+import { startExpressClock } from "./expressService.js";
 
 const PAYABLE_STATUS = "quote_sent";
 
@@ -143,6 +144,9 @@ export async function confirmPayment(reference) {
       return { outcome: "duplicate_refund_needed", orderId: payment.order_id };
     }
   }
+
+  // Express orders: fix the delivery deadline and the fee we refund if we miss it.
+  await startExpressClock(paidOrder.id, verified.paid_at, payment.amount_kobo);
 
   const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(paidOrder.user_id);
   if (authUser?.user?.email) {
