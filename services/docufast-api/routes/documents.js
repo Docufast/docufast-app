@@ -3,6 +3,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
+import { logDocumentAccess } from "../lib/accessLog.js";
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ router.get("/:id/download", async (req, res) => {
 
   const { data: document } = await supabaseAdmin
     .from("documents")
-    .select("file_url, file_name, user_id, encryption_iv, sender_ephemeral_public_key")
+    .select("id, order_id, file_url, file_name, user_id, encryption_iv, sender_ephemeral_public_key")
     .eq("id", req.params.id)
     .single();
 
@@ -32,6 +33,17 @@ router.get("/:id/download", async (req, res) => {
   if (document.user_id !== user.id) {
     return res.status(403).json({ error: "Forbidden." });
   }
+
+  const logged = await logDocumentAccess(req, {
+    documentId: document.id,
+    orderId: document.order_id,
+    ownerUserId: document.user_id,
+    actorUserId: user.id,
+    actorRole: "customer",
+    action: "download",
+    channel: "vault",
+  });
+  if (!logged) return res.status(503).json({ error: "Please try again in a moment." });
 
   const command = new GetObjectCommand({
     Bucket: R2_BUCKET,

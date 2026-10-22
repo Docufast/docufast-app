@@ -4,6 +4,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
 import { verifyFounder, supabaseAdmin } from "../lib/verifyFounder.js";
 import { sendQuoteEmail } from "../services/emailService.js";
+import { logDocumentAccess } from "../lib/accessLog.js";
 
 const router = express.Router();
 
@@ -144,6 +145,16 @@ router.post("/:id/deliver", async (req, res) => {
 
   if (error) return res.status(500).json({ error: error.message });
 
+  await logDocumentAccess(req, {
+    documentId: document.id,
+    orderId: req.params.id,
+    ownerUserId: order.user_id,
+    actorUserId: user.id,
+    actorRole: "founder",
+    action: "deliver",
+    channel: "admin_panel",
+  });
+
   await supabaseAdmin
     .from("orders")
     .update({ status: "delivered" })
@@ -158,11 +169,23 @@ router.get("/documents/:documentId/download", async (req, res) => {
 
   const { data: document } = await supabaseAdmin
     .from("documents")
-    .select("file_url, file_name")
+    .select("id, order_id, user_id, file_url, file_name")
     .eq("id", req.params.documentId)
     .single();
 
   if (!document) return res.status(404).json({ error: "Document not found." });
+
+  // No exemptions: the Founder's own downloads are logged too (#153).
+  const logged = await logDocumentAccess(req, {
+    documentId: document.id,
+    orderId: document.order_id,
+    ownerUserId: document.user_id,
+    actorUserId: user.id,
+    actorRole: "founder",
+    action: "download",
+    channel: "admin_panel",
+  });
+  if (!logged) return res.status(503).json({ error: "Please try again in a moment." });
 
   const command = new GetObjectCommand({
     Bucket: R2_BUCKET,
@@ -171,6 +194,22 @@ router.get("/documents/:documentId/download", async (req, res) => {
 
   const url = await getSignedUrl(r2Client, command, { expiresIn: 300 });
   res.json({ url, fileName: document.file_name });
+});
+
+// GET /admin/orders/:id/access-log — every logged access to this order's documents,
+// newest first, for the Founder Dashboard (#153).
+router.get("/:id/access-log", async (req, res) => {
+  const user = await verifyFounder(req);
+  if (!user) return res.status(403).json({ error: "Forbidden." });
+
+  const { data, error } = await supabaseAdmin
+    .from("document_access_log")
+    .select("id, occurred_at, document_id, actor_user_id, actor_role, action, channel, ip")
+    .eq("order_id", req.params.id)
+    .order("id", { ascending: false })
+    .limit(500);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ entries: data });
 });
 
 export default router;
