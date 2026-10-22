@@ -11,6 +11,7 @@ import { getUnlockedPrivateKey } from "@/lib/vaultSession";
 import { ShieldCheck, Clock, RefreshCw, FolderOpen, Download } from "lucide-react";
 import AppFooter from "@/components/ui/AppFooter";
 import VaultActivity from "@/components/VaultActivity";
+import ShareLinks, { ShareRow } from "@/components/ShareLinks";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -28,6 +29,15 @@ export default function VaultPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [shares, setShares] = useState<ShareRow[]>([]);
+
+  async function loadShares() {
+    const { data } = await supabase
+      .from("document_shares")
+      .select("id, document_id, expires_at, revoked_at, open_count, last_opened_at, created_at")
+      .order("created_at", { ascending: false });
+    setShares(data || []);
+  }
 
   useEffect(() => {
     async function loadData() {
@@ -48,54 +58,69 @@ export default function VaultPage() {
         .order("delivered_at", { ascending: false });
 
       if (data) setDocuments(data);
+      await loadShares();
       setLoading(false);
     }
     loadData();
   }, []);
+
+  // Fetches and decrypts one document in this browser. Returns null (and shows why) on failure.
+  // Used for downloads and to make the encrypted copy behind a share link.
+  async function fetchDecrypted(documentId: string): Promise<{ bytes: ArrayBuffer; fileName: string } | null> {
+    if (!userId) return null;
+    setDownloadError(null);
+    const privateKey = await getUnlockedPrivateKey(userId);
+    if (!privateKey) {
+      setDownloadError(
+        "Your vault is locked. Please sign out and sign back in with your password to unlock it."
+      );
+      return null;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const res = await fetch(`${API_URL}/documents/${documentId}/download`, {
+      headers: {
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setDownloadError(data.error || "Failed to generate download link.");
+      return null;
+    }
+
+    try {
+      const fileRes = await fetch(data.url);
+      const encryptedBytes = await fileRes.arrayBuffer();
+      const bytes = await decryptDocumentForRecipient(
+        encryptedBytes,
+        data.encryptionIv,
+        data.senderEphemeralPublicKey,
+        privateKey
+      );
+      return { bytes, fileName: data.fileName };
+    } catch {
+      setDownloadError("Failed to decrypt this document. Please try again.");
+      return null;
+    }
+  }
 
   async function handleDownload(documentId: string, fileName: string | null) {
     if (!userId) return;
     setDownloadingId(documentId);
     setDownloadError(null);
     try {
-      const privateKey = await getUnlockedPrivateKey(userId);
-      if (!privateKey) {
-        setDownloadError(
-          "Your vault is locked. Please sign out and sign back in with your password to unlock it."
-        );
-        return;
-      }
+      const result = await fetchDecrypted(documentId);
+      if (!result) return;
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      const res = await fetch(`${API_URL}/documents/${documentId}/download`, {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setDownloadError(data.error || "Failed to generate download link.");
-        return;
-      }
-
-      const fileRes = await fetch(data.url);
-      const encryptedBytes = await fileRes.arrayBuffer();
-
-      const decryptedBytes = await decryptDocumentForRecipient(
-        encryptedBytes,
-        data.encryptionIv,
-        data.senderEphemeralPublicKey,
-        privateKey
-      );
-
-      const blob = new Blob([decryptedBytes]);
+      const blob = new Blob([result.bytes]);
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = fileName || data.fileName || "document";
+      link.download = fileName || result.fileName || "document";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -122,7 +147,7 @@ export default function VaultPage() {
       <div>
         <TopBar userName={fullName} />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
-          <div className="flex items-center justify-between overflow-hidden rounded-card border-4border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
+          <div className="flex items-center justify-between overflow-hidden rounded-card border-4 border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
                 Vault
@@ -161,7 +186,7 @@ export default function VaultPage() {
           )}
 
           {documents.length === 0 ? (
-            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10text-center">
+            <div className="mt-6 rounded-card border-2 border-dashed border-brand-gray-light p-10 text-center">
               <FolderOpen size={32} className="mx-auto text-brand-gray" />
               <p className="mt-2 font-bold text-brand-black">Your vault is empty.</p>
               <p className="mt-1 text-sm text-brand-gray">
@@ -178,7 +203,7 @@ export default function VaultPage() {
           ) : (
             <div className="mt-6 divide-y-2 divide-brand-black rounded-card border-2 border-brand-black bg-white">
               {documents.map((doc) => (
-                <div key={doc.id} className="flex items-center gap-4 px-4 py-4">
+                <div key={doc.id} className="flex flex-wrap items-center gap-4 px-4 py-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-yellow/20">
                     <FolderOpen size={20} className="text-brand-black" />
                   </div>
@@ -201,6 +226,14 @@ export default function VaultPage() {
                     <Download size={16} />
                     {downloadingId === doc.id ? "Decrypting…" : "Download"}
                   </button>
+                  <div className="basis-full sm:pl-16">
+                    <ShareLinks
+                      documentId={doc.id}
+                      shares={shares.filter((s) => s.document_id === doc.id)}
+                      getDecryptedBytes={async () => (await fetchDecrypted(doc.id))?.bytes ?? null}
+                      onChanged={loadShares}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

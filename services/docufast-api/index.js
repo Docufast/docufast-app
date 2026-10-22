@@ -7,6 +7,9 @@ import adminOrdersRoute from "./routes/adminOrders.js";
 import documentsRoute from "./routes/documents.js";
 import paymentsRoute from "./routes/payments.js";
 import paystackWebhookRoute from "./routes/paystackWebhook.js";
+import shareRoute from "./routes/share.js";
+import { sweepLateExpressOrders } from "./services/expressService.js";
+import { sweepExpiredShares } from "./services/shareService.js";
 
 dotenv.config();
 
@@ -43,8 +46,22 @@ app.use("/upload", uploadRoute);
 app.use("/admin/orders", adminOrdersRoute);
 app.use("/documents", documentsRoute);
 app.use("/orders", paymentsRoute);
+app.use("/share", shareRoute);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`docufast-api listening on port ${PORT}`);
 });
+
+// Background jobs, every 15 minutes. Both are safe to run on several instances at once.
+// - Late Express refunds: only when EXPRESS_AUTO_REFUND=on (turn on once tested on staging).
+// - Expired share links: their encrypted copies are deleted from storage.
+const SWEEP_MS = 15 * 60 * 1000;
+async function runSweeps() {
+  if (process.env.EXPRESS_AUTO_REFUND === "on") {
+    await sweepLateExpressOrders().catch((err) => console.error("Express sweep failed:", err.message));
+  }
+  await sweepExpiredShares().catch((err) => console.error("Share sweep failed:", err.message));
+}
+setTimeout(runSweeps, 60 * 1000);
+setInterval(runSweeps, SWEEP_MS);

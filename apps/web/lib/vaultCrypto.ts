@@ -202,4 +202,39 @@ export async function decryptDocumentForRecipient(
   return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as BufferSource }, sharedKey, ciphertext);
 }
 
+// --- Share links (Terms section 10) ---
+//
+// A share is a fresh copy of the document, encrypted with a new random AES-GCM key made only
+// for that share. The key is put in the link after "#" (base64url). Browsers never send that
+// part of a link to a server, so Docufast never holds the key to a shared copy either.
+
+function toBase64Url(buffer: ArrayBuffer): string {
+  return toBase64(buffer).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(value: string): ArrayBuffer {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  return fromBase64(base64 + "=".repeat((4 - (base64.length % 4)) % 4));
+}
+
+export async function encryptForShare(
+  fileBytes: ArrayBuffer
+): Promise<{ ciphertext: ArrayBuffer; iv: string; key: string }> {
+  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as BufferSource }, key, fileBytes);
+  const rawKey = await crypto.subtle.exportKey("raw", key);
+  return { ciphertext, iv: toBase64(iv.buffer), key: toBase64Url(rawKey) };
+}
+
+export async function decryptShared(
+  ciphertext: ArrayBuffer,
+  ivBase64: string,
+  keyBase64Url: string
+): Promise<ArrayBuffer> {
+  const key = await crypto.subtle.importKey("raw", fromBase64Url(keyBase64Url), "AES-GCM", false, ["decrypt"]);
+  const iv = new Uint8Array(fromBase64(ivBase64));
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as BufferSource }, key, ciphertext);
+}
+
 export { toBase64, fromBase64 };

@@ -18,6 +18,7 @@ const WHO: Record<string, string> = {
   founder: "Docufast (Founder)",
   staff: "Docufast staff",
   system: "Docufast system",
+  share_recipient: "Someone with your share link",
 };
 
 const WHAT: Record<string, string> = {
@@ -25,7 +26,7 @@ const WHAT: Record<string, string> = {
   download: "downloaded",
   deliver: "delivered to your Vault",
   upload: "uploaded",
-  share: "shared",
+  share: "created a share link for",
   print: "printed",
   delete: "deleted",
 };
@@ -61,6 +62,7 @@ export default function VaultActivity() {
             <li key={e.id} className="flex flex-wrap justify-between gap-2 py-2">
               <span>
                 <span className="font-semibold">{WHO[e.actor_role] || e.actor_role}</span> {WHAT[e.action] || e.action}
+                {e.action === "share" ? " a document" : ""}
               </span>
               <span className="text-xs text-brand-gray">
                 {new Date(e.occurred_at).toLocaleString("en-GB", { timeZone: "Africa/Lagos" })}
