@@ -21,7 +21,13 @@ const app = express();
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  // Never a wildcard: only exact https origins (http allowed for localhost only).
+  .filter((origin) => {
+    const ok = origin !== "*" && /^(https:\/\/[a-z0-9.-]+|http:\/\/localhost(:\d+)?)$/i.test(origin);
+    if (!ok) console.error(`ALLOWED_ORIGINS: ignoring "${origin}" (must be an exact https origin, no wildcard, no trailing slash).`);
+    return ok;
+  });
 
 app.use(
   cors({

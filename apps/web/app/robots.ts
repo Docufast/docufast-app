@@ -30,6 +30,7 @@ const PRIVATE = [
   '/reset-password',
   '/forgot-password',
   '/verify/',
+  '/s/', // share links (Terms s.10): private by design
 ];
 
 // Link previews on WhatsApp, LinkedIn, X, Facebook and Slack (kept from the current robots.txt).
