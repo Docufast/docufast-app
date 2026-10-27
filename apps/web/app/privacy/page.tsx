@@ -190,7 +190,7 @@ export default function PrivacyNoticePage() {
           only you hold, so our staff cannot open them. Documents we prepare are handled only by the staff
           working on your order. Every view, download, share and print of a document is logged for everyone,
           including our own leadership, and nobody can delete those entries. Accounts use{" "}
-          <Open>[SIGN-IN METHODS]</Open>. If a breach puts your data at risk, we tell the Nigeria Data
+          email and password, with two-step sign-in through an authenticator app on every account. If a breach puts your data at risk, we tell the Nigeria Data
           Protection Commission within 72 hours and tell you without delay.
         </p>
       </Section>
