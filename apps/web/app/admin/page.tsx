@@ -32,6 +32,17 @@ interface Order {
   created_at: string;
 }
 
+interface Enquiry {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  question: string;
+  page: string | null;
+  status: "new" | "answered";
+  created_at: string;
+}
+
 interface Summary {
   totalOrders: number;
   ordersThisMonth: number;
@@ -86,6 +97,36 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [enquiries, setEnquiries] = useState<Enquiry[] | null>(null);
+  const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  async function loadEnquiries(token: string | undefined) {
+    try {
+      const res = await fetch("/api/admin/enquiries", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEnquiriesError(data.error || "Failed to load questions.");
+        return;
+      }
+      setEnquiries(data.enquiries);
+    } catch {
+      setEnquiriesError("Failed to load questions.");
+    }
+  }
+
+  async function markAnswered(id: string) {
+    const res = await fetch("/api/admin/enquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      setEnquiries((list) => (list || []).map((e) => (e.id === id ? { ...e, status: "answered" } : e)));
+    }
+  }
 
   useEffect(() => {
     async function checkAuth() {
@@ -114,6 +155,8 @@ export default function AdminDashboardPage() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+        setAccessToken(session?.access_token ?? null);
+        loadEnquiries(session?.access_token);
 
         const res = await fetch("/api/admin/summary", {
           headers: {
@@ -173,6 +216,62 @@ export default function AdminDashboardPage() {
           />
           <MetricCard label="Cash runway" value="Not set" sublabel="Manual input required" />
           <MetricCard label="Open issues" value="0" />
+        </div>
+
+        {/* Help chat questions from the website (JSB, 27 Oct 2026) */}
+        <div className="mt-8">
+          <Module
+            title={`Customer questions${
+              enquiries ? ` (${enquiries.filter((e) => e.status === "new").length} new)` : ""
+            }`}
+          >
+            {enquiriesError ? (
+              <p className="text-sm text-brand-error">{enquiriesError}</p>
+            ) : !enquiries || enquiries.length === 0 ? (
+              <EmptyRow text="No questions yet. Questions typed into the website help chat appear here." />
+            ) : (
+              <div className="flex flex-col divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
+                {enquiries.map((e) => {
+                  const wa = e.phone ? e.phone.replace(/[^0-9]/g, "").replace(/^0/, "234") : "";
+                  return (
+                    <div key={e.id} className="flex flex-col gap-2 px-3 py-3 text-sm sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="whitespace-pre-wrap break-words font-semibold">{e.question}</div>
+                        <div className="mt-1 text-xs text-brand-gray">
+                          {e.name || "No name"} · {new Date(e.created_at).toLocaleString("en-NG")}
+                          {e.page ? ` · from ${e.page}` : ""}
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-3 text-xs font-semibold">
+                          {e.email && (
+                            <a className="underline" href={`mailto:${e.email}?subject=${encodeURIComponent("Your question to Docufast")}`}>
+                              {e.email}
+                            </a>
+                          )}
+                          {e.phone && (
+                            <a className="underline" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer">
+                              WhatsApp {e.phone}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      {e.status === "new" ? (
+                        <button
+                          onClick={() => markAnswered(e.id)}
+                          className="shrink-0 rounded-card bg-brand-yellow px-3 py-1 text-xs font-bold uppercase"
+                        >
+                          Mark answered
+                        </button>
+                      ) : (
+                        <span className="shrink-0 rounded-card border-2 border-brand-black px-3 py-1 text-xs font-bold uppercase">
+                          Answered
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Module>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
