@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // H4 (#68): no X-Powered-By: Next.js header.
+  poweredByHeader: false,
   async redirects() {
     return [
       {

@@ -12,7 +12,12 @@ export function middleware(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    "style-src 'self' 'unsafe-inline'",
+    // H1 (#192): <style> and <link> elements need our nonce or our own origin, so injected
+    // stylesheets are blocked. Inline style="" attributes are still allowed: React renders
+    // some on the server, and they cannot load anything or run script.
+    `style-src 'self' 'nonce-${nonce}'`,
+    `style-src-elem 'self' 'nonce-${nonce}'`,
+    "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     `connect-src 'self' https://*.supabase.co ${backendUrl} https://*.r2.cloudflarestorage.com`,
