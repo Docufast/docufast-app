@@ -7,6 +7,7 @@ import SiteFooter from "@/components/ui/SiteFooter";
 import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 import { supabase } from "@/lib/supabase";
 import * as bip39 from "bip39";
+import { checkAdult, AGE_MESSAGES, lagosToday } from "@/lib/consent";
 import {
   generateVaultKeyPair,
   exportPublicKeyBase64,
@@ -27,6 +28,8 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -41,8 +44,19 @@ export default function SignUpPage() {
     e.preventDefault();
     setError(null);
 
-    if (!fullName || !email || !phone || !password) {
+    if (!fullName || !email || !phone || !password || !dateOfBirth) {
       setError("Please fill in every field.");
+      return;
+    }
+    // Accounts are for adults only (Terms s.3, #199). Checked here first so no account is
+    // created for someone under 18, and again on the server.
+    const age = checkAdult(dateOfBirth);
+    if (!age.ok) {
+      setError(AGE_MESSAGES[age.reason]);
+      return;
+    }
+    if (!ageConfirmed) {
+      setError("Please confirm that you are 18 or over.");
       return;
     }
     if (!agreed) {
@@ -71,6 +85,29 @@ export default function SignUpPage() {
         return;
       }
 
+      // Record the age check and every consent on the server, with the wording version shown
+      // on this page (#75, #199). Append-only: later changes are new records, never edits.
+      const accessToken = data.session?.access_token;
+      const consentRes = accessToken
+        ? await fetch("/api/account/consents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({
+              dateOfBirth,
+              ageConfirmed,
+              termsAccepted: agreed,
+              marketingConsent,
+            }),
+          })
+        : null;
+      if (!consentRes || !consentRes.ok) {
+        const message = consentRes
+          ? ((await consentRes.json().catch(() => null)) as { error?: string } | null)?.error
+          : null;
+        setError(message ?? "Account created, but we could not record your choices. Please try again.");
+        return;
+      }
+
       const keyPair = await generateVaultKeyPair();
       const publicKeyBase64 = await exportPublicKeyBase64(keyPair.publicKey);
       const phrase = bip39.generateMnemonic();
@@ -88,7 +125,6 @@ export default function SignUpPage() {
           vault_encrypted_private_key_recovery: wrappedWithRecovery.ciphertext,
           vault_recovery_salt: wrappedWithRecovery.salt,
           vault_recovery_iv: wrappedWithRecovery.iv,
-          marketing_consent: marketingConsent,
         })
         .eq("id", user.id);
 
@@ -234,6 +270,21 @@ export default function SignUpPage() {
               </div>
             </div>
             <div>
+              <label htmlFor="date-of-birth" className={labelCls}>Date of birth</label>
+              <input
+                id="date-of-birth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className={inputCls}
+                max={lagosToday()}
+                autoComplete="bday"
+              />
+              <p className="mt-1.5 text-xs text-brand-gray">
+                Accounts are for adults (18 and over). A parent or guardian orders for a child.
+              </p>
+            </div>
+            <div>
               <label htmlFor="new-password" className={labelCls}>Password</label>
               <input
                 id="new-password"
@@ -249,6 +300,16 @@ export default function SignUpPage() {
                 </p>
               )}
             </div>
+
+            <label className="flex items-start gap-2 text-sm text-brand-black">
+              <input
+                type="checkbox"
+                checked={ageConfirmed}
+                onChange={(e) => setAgeConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-brand-black"
+              />
+              <span>I am 18 or over.</span>
+            </label>
 
             <label className="flex items-start gap-2 text-sm text-brand-black">
               <input
