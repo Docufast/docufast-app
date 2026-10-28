@@ -1,12 +1,9 @@
 // Document access log (#153). Call before releasing any client document. If the entry cannot
 // be written, the caller must refuse access: no log, no document (fail closed).
 import { supabaseAdmin } from "./verifyFounder.js";
-
-function clientIp(req) {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string" && forwarded.length > 0) return forwarded.split(",")[0].trim();
-  return req.socket?.remoteAddress || null;
-}
+// The first X-Forwarded-For entry is set by the caller and can be faked; clientIp reads the
+// entry our own proxy wrote.
+import { clientIp } from "./clientIp.js";
 
 export async function logDocumentAccess(req, { documentId, orderId, ownerUserId, actorUserId, actorRole, action, channel }) {
   const userAgent = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"].slice(0, 300) : null;

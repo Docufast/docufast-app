@@ -8,6 +8,7 @@ import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { logDocumentAccess } from "../lib/accessLog.js";
 import { hashShareToken, isWellFormedToken } from "../services/shareService.js";
+import { clientIp } from "../lib/clientIp.js";
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ const WINDOW_MS = 10 * 60 * 1000;
 const MAX_PER_WINDOW = 30;
 const hits = new Map();
 function limited(req) {
-  const forwarded = req.headers["x-forwarded-for"];
-  const ip = (typeof forwarded === "string" && forwarded.split(",")[0].trim()) || req.socket?.remoteAddress || "?";
+  // A faked X-Forwarded-For can no longer dodge the limit (clientIp reads our proxy's entry).
+  const ip = clientIp(req) || "?";
   const now = Date.now();
   const entry = hits.get(ip);
   if (!entry || now - entry.start > WINDOW_MS) {

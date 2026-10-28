@@ -8,12 +8,15 @@ import documentsRoute from "./routes/documents.js";
 import paymentsRoute from "./routes/payments.js";
 import paystackWebhookRoute from "./routes/paystackWebhook.js";
 import shareRoute from "./routes/share.js";
+import partnerRoute from "./routes/partner.js";
 import { sweepLateExpressOrders } from "./services/expressService.js";
 import { sweepExpiredShares } from "./services/shareService.js";
 
 dotenv.config();
 
 const app = express();
+// H4 (#68): do not advertise the framework in an X-Powered-By header.
+app.disable("x-powered-by");
 
 // ALLOWED_ORIGINS is a comma-separated list, set per Railway environment
 // (production vs staging each declare only their own frontend URL(s)).
@@ -53,6 +56,8 @@ app.use("/admin/orders", adminOrdersRoute);
 app.use("/documents", documentsRoute);
 app.use("/orders", paymentsRoute);
 app.use("/share", shareRoute);
+// Partner API (#41): every route needs an IP-allowlisted partner key. No CORS needed (server to server).
+app.use("/partner", partnerRoute);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
