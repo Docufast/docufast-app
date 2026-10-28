@@ -311,16 +311,16 @@ export default function AccountSettingsPage() {
             <div className="mt-3 divide-y-2 divide-brand-black border-2 border-brand-black text-sm rounded-card">
               <div className="flex items-center justify-between px-4 py-3">
                 <span>WhatsApp support</span>
-                <span className="text-xs text-brand-gray">Mon–Sat, 08:00–20:00</span>
+                <span className="text-xs text-brand-gray">Mon–Fri, 08:00–18:00 WAT</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Email support</span>
-                <span className="text-xs text-brand-gray">help@docufast.ng</span>
+                <span className="text-xs text-brand-gray">support@docufast.ng</span>
               </div>
               <div className="flex items-center justify-between px-4 py-3">
                 <span>Data & NDPR requests</span>
                 <a
-                  href="mailto:help@docufast.ng?subject=Data%20%26%20NDPR%20Request"
+                  href="mailto:support@docufast.ng?subject=Data%20%26%20NDPR%20Request"
                   className="text-xs font-bold uppercase underline"
                 >
                   Open

@@ -57,7 +57,7 @@ export const FACTS = {
   support: {
     whatsappDisplay: '0905 495 1918',
     telephone: '+234-905-495-1918',
-    hours: 'Monday to Saturday, 8am to 6pm WAT',
+    hours: 'Monday to Friday, 8am to 6pm WAT',
     // Decided by JSB, 21 Oct 2026 (#168). Both are forwarders on the docufast.ng mail.
     email: 'support@docufast.ng',
     privacyEmail: 'privacy@docufast.ng',

@@ -41,7 +41,7 @@ export default function SiteFooter() {
         <div className="flex flex-col gap-2">
           <p className={heading}>Support</p>
           <p className="text-brand-white">WhatsApp 0905 495 1918</p>
-          <p>Monday to Saturday, 8am to 6pm WAT</p>
+          <p>Monday to Friday, 8am to 6pm WAT</p>
           <p>Support only. Pay only on docufast.ng.</p>
         </div>
       </div>

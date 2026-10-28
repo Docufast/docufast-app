@@ -214,7 +214,7 @@ export const FAQ: FaqItem[] = [
     "section": 2,
     "q": "Can I talk to a person?",
     "a": [
-      "Yes. Message us on WhatsApp at 0905 495 1918, Monday to Saturday, 8am to 6pm WAT."
+      "Yes. Message us on WhatsApp at 0905 495 1918, Monday to Friday, 8am to 6pm WAT."
     ],
     "status": "live",
     "gate": "chat-and-quote"

@@ -154,7 +154,7 @@ export default function TermsOfServicePage() {
       <Section title="15. Changes and contact">
         <p>
           We may update these terms; the version in force when you place an order applies to that order.
-          Contact: support@docufast.ng, WhatsApp 0905 495 1918 (Monday to Saturday, 8am to 6pm WAT), or post to
+          Contact: support@docufast.ng, WhatsApp 0905 495 1918 (Monday to Friday, 8am to 6pm WAT), or post to
           our registered address.
         </p>
       </Section>
