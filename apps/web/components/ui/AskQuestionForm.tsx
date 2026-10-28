@@ -57,7 +57,7 @@ export default function AskQuestionForm() {
     return (
       <p role="status" className="mt-3 rounded-card border-2 border-brand-black bg-brand-yellow/10 p-3 text-sm text-brand-black">
         Thank you. Your question has reached our team, and we will reply by email or WhatsApp,
-        Monday to Saturday, 8am to 6pm WAT.
+        Monday to Friday, 8am to 6pm WAT.
       </p>
     );
   }
