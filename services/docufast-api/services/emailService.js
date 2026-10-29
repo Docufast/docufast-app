@@ -5,7 +5,7 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const FROM_EMAIL = "docufastng@gmail.com";
+const FROM_EMAIL = "noreply@docufast.ng";
 const FROM_NAME = "Docufast";
 
 export async function sendTestEmail(toEmail) {
@@ -15,7 +15,7 @@ export async function sendTestEmail(toEmail) {
       email: FROM_EMAIL,
       name: FROM_NAME,
     },
-    subject: "Docufast — Test Email",
+    subject: "Docufast test email",
     text: "This is a test email from Docufast. If you're reading this, SendGrid is working correctly.",
     html: "<p>This is a test email from Docufast. If you're reading this, SendGrid is working correctly.</p>",
   };
@@ -38,7 +38,7 @@ export async function sendQuoteEmail(toEmail, serviceLabel, amount, orderRef) {
       email: FROM_EMAIL,
       name: FROM_NAME,
     },
-    subject: `Your Docufast quote is ready — ${serviceLabel}`,
+    subject: `Your Docufast quote is ready: ${serviceLabel}`,
     text: `Your quote for ${serviceLabel} (${orderRef}) is ready: ₦${formattedAmount}. Sign in to your Docufast account to review and pay.`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
@@ -46,7 +46,7 @@ export async function sendQuoteEmail(toEmail, serviceLabel, amount, orderRef) {
         <p><strong>${serviceLabel}</strong> (${orderRef})</p>
         <p style="font-size: 24px; font-weight: bold; color: #013B65;">₦${formattedAmount}</p>
         <p>Sign in to your Docufast account to review this quote and continue.</p>
-        <p style="color: #666; font-size: 13px;">No payment has been taken yet — you'll confirm before anything is charged.</p>
+        <p style="color: #666; font-size: 13px;">No payment has been taken yet. You'll confirm before anything is charged.</p>
       </div>
     `,
   };
