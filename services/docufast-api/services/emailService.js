@@ -5,7 +5,8 @@ import sgMail from "@sendgrid/mail";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const FROM_EMAIL = "noreply@docufast.ng";
+// Switch to noreply@docufast.ng by setting EMAIL_FROM once docufast.ng is domain-authenticated in SendGrid.
+const FROM_EMAIL = process.env.EMAIL_FROM || "docufastng@gmail.com";
 const FROM_NAME = "Docufast";
 
 export async function sendTestEmail(toEmail) {
