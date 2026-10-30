@@ -103,6 +103,7 @@ export default function AccountSettingsPage() {
         active="Account"
         subItem={[
           { label: "Settings", href: "/account/settings", active: true },
+          { label: "Privacy choices", href: "/account/privacy-choices", active: false },
           { label: "Profile", href: "/account", active: false },
         ]}
       />
