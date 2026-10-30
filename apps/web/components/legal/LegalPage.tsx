@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 // Anything still in [BRACKETS] is an open item: the page shows it highlighted so reviewers
 // see it, and it must be filled before this ships to production.
 
-export const LEGAL_LAST_UPDATED = "[DATE]";
+export const LEGAL_LAST_UPDATED = "30 October 2026";
 
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   const isProduction = process.env.VERCEL_ENV === "production";

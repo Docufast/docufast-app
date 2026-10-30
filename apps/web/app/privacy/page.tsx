@@ -138,7 +138,7 @@ export default function PrivacyNoticePage() {
 
       <Section title="5. Transfers outside Nigeria">
         <p>
-          Some of our technology suppliers store or process data outside Nigeria, in <Open>[REGIONS]</Open>. We
+          Some of our technology suppliers store or process data outside Nigeria, in Ireland, Western Europe and the United States. We
           transfer personal data outside Nigeria only where the NDPA allows it, and we record the legal basis
           for each transfer before it happens. Where the destination country has not been approved by the
           Nigeria Data Protection Commission and no approved transfer instrument is in place, we rely on the
@@ -217,10 +217,7 @@ export default function PrivacyNoticePage() {
 
       <Section title="10. Analytics and cookies">
         <p>
-          We count how people move through our pages only if you allow it. Choose Allow or No thanks when you
-          first visit; the site works the same either way, and Privacy choices in the footer changes your
-          choice. Essential storage that keeps you signed in and your order saved does not need consent. We
-          use <Open>[ANALYTICS TOOL NAME]</Open>, which does not track you across other websites.
+          Analytics. If you agree, we use PostHog to measure how our website is used: pages visited, steps completed in an order, the language and type of device used, and how you reached us. We do this to improve the service (consent, NDPA s.25(1)(a)). PostHog stores this data in the European Union on our behalf. We do not record your screen, we discard your IP address, and we never send PostHog your name, contact details, identity numbers, payment details or the content of your documents. We keep analytics data for 13 months, and you can withdraw consent at any time in Privacy choices; withdrawing stops new analytics data being collected. Essential storage that keeps you signed in and your order saved does not need consent.
         </p>
       </Section>
 
