@@ -13,7 +13,7 @@ export default function Button({
   const base =
     "w-full rounded-card px-4 py-3 font-semibold transition-colors disabled:opacity-50";
   const variants = {
-    primary: "bg-brand-yellow text-brand-black hover:bg-brand-yellow-dark",
+    primary: "bg-brand-yellow text-brand-black hover:bg-brand-yellow-hover",
     secondary: "bg-brand-black text-brand-white hover:bg-neutral-800",
     outline:
       "border border-brand-gray-light text-brand-black hover:bg-brand-offwhite",

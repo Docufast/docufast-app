@@ -2,11 +2,13 @@
 
 import { FACTS } from "@/lib/seo/facts";
 import { useState } from "react";
+import AskQuestionForm from "@/components/ui/AskQuestionForm";
 import Link from "next/link";
 import { MessageCircle, X, ChevronLeft } from "lucide-react";
 
 type MenuOption = {
   label: string;
+  askForm?: boolean;
   reply?: string;
   linkHref?: string;
   linkLabel?: string;
@@ -14,6 +16,10 @@ type MenuOption = {
 };
 
 const MAIN_MENU: MenuOption[] = [
+  {
+    label: "Ask us a question",
+    askForm: true,
+  },
   {
     label: "I need an Affidavit",
     reply:
@@ -24,7 +30,7 @@ const MAIN_MENU: MenuOption[] = [
   {
     label: "I need CAC Registration",
     reply:
-      "Business name registration, LTD incorporation, trustee filings and more — we handle the government portal filing end to end.",
+      "Business name registration, LTD incorporation, trustee filings and more. We handle the government portal filing from start to finish.",
     linkHref: "/services/cac",
     linkLabel: "Browse CAC services →",
   },
@@ -54,7 +60,7 @@ const MAIN_MENU: MenuOption[] = [
   },
   {
     label: "Talk to a human",
-    reply: "Our team is on WhatsApp, Monday–Saturday, 8am–6pm WAT.",
+    reply: "Our team is on WhatsApp, Monday to Friday, 8am to 6pm WAT.",
     linkHref: "https://wa.me/2349054951918",
     linkLabel: "Chat on WhatsApp →",
   },
@@ -69,9 +75,9 @@ export default function SupportChat() {
   }
 
   return (
-    <div className="fixed bottom-24 right-6 z-50">
+    <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end">
       {open && (
-        <div className="mb-3 w-80 overflow-hidden rounded-card border-4 border-brand-black bg-brand-white shadow-xl">
+        <div className="mb-3 w-80 max-w-[calc(100vw-3rem)] overflow-hidden rounded-card border-4 border-brand-black bg-brand-white shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b-4 border-brand-black bg-brand-black px-4 py-3">
             <div className="flex items-center gap-2">
@@ -117,7 +123,8 @@ export default function SupportChat() {
             ) : (
               <div>
                 <p className="text-sm font-bold text-brand-black">{selected.label}</p>
-                <p className="mt-2 text-sm text-brand-gray">{selected.reply}</p>
+                {selected.askForm && <AskQuestionForm />}
+                {selected.reply && <p className="mt-2 text-sm text-brand-gray">{selected.reply}</p>}
                 {selected.linkHref && (
                   <Link
                     href={selected.linkHref}
@@ -144,7 +151,7 @@ export default function SupportChat() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close help chat" : "Open help chat"}
-        className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-brand-black bg-brand-yellow text-brand-black shadow-lg hover:bg-brand-yellow-dark"
+        className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-brand-black bg-brand-yellow text-brand-black shadow-lg hover:bg-brand-yellow-hover"
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>

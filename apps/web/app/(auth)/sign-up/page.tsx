@@ -2,22 +2,34 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import HeroPanel from "@/components/ui/HeroPanel";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
 import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 import { supabase } from "@/lib/supabase";
 import * as bip39 from "bip39";
+import { checkAdult, AGE_MESSAGES, lagosToday } from "@/lib/consent";
 import {
   generateVaultKeyPair,
   exportPublicKeyBase64,
   wrapPrivateKey,
 } from "@/lib/vaultCrypto";
 
+// Blueprint styling (#119). Sign-up logic below is unchanged.
+const labelCls = "mb-1.5 block text-sm font-semibold text-brand-black";
+const inputCls =
+  "h-12 w-full rounded-[10px] border border-[#BFBFBF] bg-brand-white px-3.5 text-base text-brand-black outline-none focus:border-brand-black";
+const goldBtn =
+  "inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-brand-yellow px-5 text-base font-semibold text-brand-black hover:bg-brand-yellow-hover disabled:opacity-50";
+const outlineBtn =
+  "inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-[#BFBFBF] bg-brand-white px-4 text-sm font-semibold text-brand-black hover:border-brand-black";
+
 export default function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -32,12 +44,23 @@ export default function SignUpPage() {
     e.preventDefault();
     setError(null);
 
-    if (!fullName || !email || !phone || !password) {
+    if (!fullName || !email || !phone || !password || !dateOfBirth) {
       setError("Please fill in every field.");
       return;
     }
+    // Accounts are for adults only (Terms s.3, #199). Checked here first so no account is
+    // created for someone under 18, and again on the server.
+    const age = checkAdult(dateOfBirth);
+    if (!age.ok) {
+      setError(AGE_MESSAGES[age.reason]);
+      return;
+    }
+    if (!ageConfirmed) {
+      setError("Please confirm that you are 18 or over.");
+      return;
+    }
     if (!agreed) {
-      setError("You need to agree to the Terms and Privacy Policy to continue.");
+      setError("You need to agree to the Terms and Privacy Notice to continue.");
       return;
     }
 
@@ -62,6 +85,29 @@ export default function SignUpPage() {
         return;
       }
 
+      // Record the age check and every consent on the server, with the wording version shown
+      // on this page (#75, #199). Append-only: later changes are new records, never edits.
+      const accessToken = data.session?.access_token;
+      const consentRes = accessToken
+        ? await fetch("/api/account/consents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({
+              dateOfBirth,
+              ageConfirmed,
+              termsAccepted: agreed,
+              marketingConsent,
+            }),
+          })
+        : null;
+      if (!consentRes || !consentRes.ok) {
+        const message = consentRes
+          ? ((await consentRes.json().catch(() => null)) as { error?: string } | null)?.error
+          : null;
+        setError(message ?? "Account created, but we could not record your choices. Please try again.");
+        return;
+      }
+
       const keyPair = await generateVaultKeyPair();
       const publicKeyBase64 = await exportPublicKeyBase64(keyPair.publicKey);
       const phrase = bip39.generateMnemonic();
@@ -79,7 +125,6 @@ export default function SignUpPage() {
           vault_encrypted_private_key_recovery: wrappedWithRecovery.ciphertext,
           vault_recovery_salt: wrappedWithRecovery.salt,
           vault_recovery_iv: wrappedWithRecovery.iv,
-          marketing_consent: marketingConsent,
         })
         .eq("id", user.id);
 
@@ -128,128 +173,126 @@ export default function SignUpPage() {
   if (recoveryPhrase) {
     const words = recoveryPhrase.split(" ");
     return (
-      <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-10">
-        <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-6">
-          <h1 className="text-2xl font-extrabold text-brand-black">
-            Save your recovery phrase
-          </h1>
-          <p className="mt-2 text-sm text-brand-gray">
-            This 12-word phrase is the only way to recover your vault documents if you ever
-            forget your password. It will only be shown once — write it down, or download it,
-            and keep it somewhere safe.
-          </p>
+      <>
+        <SiteHeader />
+        <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-16">
+          <div className="mx-auto max-w-lg rounded-[14px] border border-brand-yellow bg-[#FFF6D6] p-6 md:p-8">
+            <h1 className="text-3xl font-semibold text-brand-black">Save your recovery phrase</h1>
+            <p className="mt-2 text-sm leading-relaxed text-brand-black">
+              This 12-word phrase is the only way to recover your vault documents if you ever
+              forget your password. It will only be shown once. Write it down, or download it,
+              and keep it somewhere safe.
+            </p>
 
-          <div className="mt-5 grid grid-cols-3 gap-2">
-            {words.map((word, i) => (
-              <div
-                key={i}
-                className="rounded-card border-2 border-brand-black bg-white px-3 py-2 text-sm"
-              >
-                <span className="mr-1.5 text-xs text-brand-gray">{i + 1}.</span>
-                <span className="font-bold text-brand-black">{word}</span>
-              </div>
-            ))}
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {words.map((word, i) => (
+                <div
+                  key={i}
+                  className="rounded-[10px] border border-[#BFBFBF] bg-brand-white px-3 py-2 text-sm"
+                >
+                  <span className="mr-1.5 font-mono text-xs text-brand-gray">{i + 1}.</span>
+                  <span className="font-semibold text-brand-black">{word}</span>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={handleDownloadPhrase} className={`${outlineBtn} mt-4`}>
+              Download as file
+            </button>
+
+            <label className="mt-5 flex items-start gap-2 text-sm text-brand-black">
+              <input
+                type="checkbox"
+                checked={savedConfirmed}
+                onChange={(e) => setSavedConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-brand-black"
+              />
+              I've saved my recovery phrase somewhere safe. I understand Docufast cannot
+              recover it for me if I lose it.
+            </label>
+
+            <button onClick={handleContinue} disabled={!savedConfirmed} className={`${goldBtn} mt-5`}>
+              Continue
+            </button>
           </div>
-
-          <button
-            onClick={handleDownloadPhrase}
-            className="mt-4 w-full rounded-card border-4 border-brand-black bg-white px-4 py-3 text-sm font-bold text-brand-black"
-          >
-            ⬇ Download as file
-          </button>
-
-          <label className="mt-5 flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={savedConfirmed}
-              onChange={(e) => setSavedConfirmed(e.target.checked)}
-              className="mt-0.5 h-4 w-4 border-4 border-brand-black"
-            />
-            I've saved my recovery phrase somewhere safe. I understand Docufast cannot
-            recover it for me if I lose it.
-          </label>
-
-          <button
-            onClick={handleContinue}
-            disabled={!savedConfirmed}
-            className="mt-5 w-full rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
-          >
-            Continue →
-          </button>
-        </div>
-      </main>
+        </main>
+        <SiteFooter />
+      </>
     );
   }
 
   return (
-    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-      <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
-        <div className="flex items-center gap-2 border-b-4 border-brand-black pb-4">
-          <Image src="/images/logo-black.png" alt="Docufast" width={24} height={24} />
-          <span className="mr-auto text-xl font-extrabold tracking-wide text-brand-black">
-            DOCUFAST
-          </span>
-          <span className="text-sm text-brand-gray">Already registered?</span>
-          <Link href="/sign-in" className="text-sm font-bold uppercase tracking-wide">
-            Sign in
-          </Link>
-        </div>
+    <>
+      <SiteHeader />
+      <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-16">
+        <div className="mx-auto max-w-xl rounded-[14px] border border-brand-gray-light bg-brand-white p-6 md:p-8">
+          <h1 className="text-3xl font-semibold text-brand-black md:text-4xl">Create your account</h1>
+          <p className="mt-2 text-sm leading-relaxed text-brand-gray">
+            One account covers you personally and every business you manage.
+          </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 flex max-w-md flex-1 flex-col gap-6">
-          <div>
-            <h1 className="text-4xl font-extrabold text-brand-black">Create your account</h1>
-            <p className="mt-2 text-brand-gray">
-              One account covers you personally and every business you manage.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Full name
-              </label>
+              <label htmlFor="full-name" className={labelCls}>Full name</label>
               <input
+                id="full-name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className={inputCls}
                 placeholder="e.g. Nkem Chidinma Eze"
+                autoComplete="name"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                  Email
-                </label>
+                <label htmlFor="email" className={labelCls}>Email</label>
                 <input
+                  id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  className={inputCls}
                   placeholder="you@example.ng"
+                  autoComplete="email"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                  Phone
-                </label>
+                <label htmlFor="phone" className={labelCls}>Phone</label>
                 <input
+                  id="phone"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                  className={inputCls}
                   placeholder="+234 800 000 0000"
+                  autoComplete="tel"
                 />
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Password
-              </label>
+              <label htmlFor="date-of-birth" className={labelCls}>Date of birth</label>
               <input
+                id="date-of-birth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className={inputCls}
+                max={lagosToday()}
+                autoComplete="bday"
+              />
+              <p className="mt-1.5 text-xs text-brand-gray">
+                Accounts are for adults (18 and over). A parent or guardian orders for a child.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="new-password" className={labelCls}>Password</label>
+              <input
+                id="new-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className={inputCls}
+                autoComplete="new-password"
               />
               {strength && (
                 <p className="mt-1.5 text-xs font-semibold text-brand-black">
@@ -258,54 +301,73 @@ export default function SignUpPage() {
               )}
             </div>
 
-            <label className="flex items-start gap-2 text-sm">
+            <label className="flex items-start gap-2 text-sm text-brand-black">
+              <input
+                type="checkbox"
+                checked={ageConfirmed}
+                onChange={(e) => setAgeConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-brand-black"
+              />
+              <span>I am 18 or over.</span>
+            </label>
+
+            <label className="flex items-start gap-2 text-sm text-brand-black">
               <input
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+                className="mt-0.5 h-4 w-4 accent-brand-black"
               />
-              I agree to the{" "}
-              <Link href="/terms" className="font-bold underline" target="_blank">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="font-bold underline" target="_blank">
-                Privacy Policy
-              </Link>
-              , including NDPA 2023 data handling.
+              <span>
+                I agree to the{" "}
+                <Link href="/terms" className="font-semibold underline" target="_blank">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="font-semibold underline" target="_blank">
+                  Privacy Notice
+                </Link>
+                , including NDPA 2023 data handling.
+              </span>
             </label>
 
-            <label className="flex items-start gap-2 text-sm">
+            <label className="flex items-start gap-2 text-sm text-brand-black">
               <input
                 type="checkbox"
                 checked={marketingConsent}
                 onChange={(e) => setMarketingConsent(e.target.checked)}
-                className="mt-0.5 h-4 w-4 border-4 border-brand-black"
+                className="mt-0.5 h-4 w-4 accent-brand-black"
               />
-              I agree to receive service updates and relevant offers from Docufast by email
-              and WhatsApp.
+              <span>
+                Send me tips, deadline news and offers from Docufast by email, SMS or WhatsApp.
+                I can stop at any time.
+                <span className="mt-1 block text-xs text-brand-gray">
+                  Order updates come either way. Change this any time in Privacy choices.
+                </span>
+              </span>
             </label>
 
-            {error && <p className="text-sm text-brand-error">{error}</p>}
+            {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center justify-between rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
-            >
-              {submitting ? "Creating account…" : "Create account"} →
+            <button type="submit" disabled={submitting} className={goldBtn}>
+              {submitting ? "Creating account…" : "Create account"}
             </button>
 
-            <p className="text-xs text-brand-gray">
+            <p className="text-xs leading-relaxed text-brand-gray">
               Businesses are added later, when you place an order under one. You'll set up
               two-factor authentication next, for account security.
             </p>
-          </div>
-        </form>
-      </div>
+          </form>
 
-      <HeroPanel src="/images/hero-signup.png" alt="Docufast — start your journey" bg="yellow" />
-    </main>
+          <p className="mt-5 text-sm text-brand-gray">
+            Already registered?{" "}
+            <Link href="/sign-in" className="font-semibold text-brand-black underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

@@ -8,6 +8,8 @@ import { AFFIDAVIT_TYPES, AffidavitCategory } from "@/lib/affidavitTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
+const naira = (n: number) => `NGN ${n.toLocaleString("en-US")}`;
+
 const CATEGORY_LABELS: Record<AffidavitCategory, string> = {
   name: "Name",
   birth_age: "Birth / Age",
@@ -60,8 +62,12 @@ export default function AffidavitsPage() {
             Affidavits
           </h1>
           <p className="mt-2 text-brand-gray">
-            Sworn before a Commissioner for Oaths, or a Notary Public for documents going
-            abroad. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
+            {FACTS.affidavitRoute}. {FACTS.affidavitDelivery}. {FACTS.quotePromise}.
+          </p>
+
+          <p className="mt-4 rounded-card border-2 border-brand-black bg-brand-yellow/10 px-4 py-3 text-sm font-medium text-brand-black">
+            Standard {naira(FACTS.pricing.affidavitStandard)} · Express {naira(FACTS.pricing.affidavitExpress)} ·
+            Affidavit with newspaper notice, for a change of name or loss, {naira(FACTS.pricing.affidavitAndNoticePack)}
           </p>
 
           <input
@@ -77,7 +83,7 @@ export default function AffidavitsPage() {
           {grouped.map((g) => (
             <div key={g.category}>
               <h2 className="text-xs font-semibold uppercase tracking-wide text-brand-yellow-dark">
-                {g.label} <span className="text-brand-gray">· {g.types.length}</span>
+                {g.label}
               </h2>
               <div className="mt-2 divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
                 {g.types.map((t) => (
@@ -105,7 +111,7 @@ export default function AffidavitsPage() {
 
       <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
         <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
+          <span>SCUML SC251840209 | NDPC registered (NDPC/DCP/07770) | SMEDAN SUIN426476832438 | RC1893484</span>
           <span>© 2026 Docufast Integrated Services Ltd</span>
         </div>
       </footer>

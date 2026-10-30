@@ -11,19 +11,21 @@ const config: Config = {
       colors: {
         brand: {
           white: "#FFFFFF",
-          offwhite: "#FAFAF9",
-          yellow: "#EAB308",   // primary accent
-          "yellow-dark": "#CA8A04",
-          black: "#013B65", // Deep Navy — sampled directly from the generated hero images for an exact match; key name kept as "black" so every existing class updates automatically
-          gray: "#6B7280",
-          "gray-light": "#E5E7EB",
-          success: "#16A34A",
-          error: "#DC2626",
+          offwhite: "#FAF9F5",
+          yellow: "#EFB305",   // primary accent
+          "yellow-dark": "#8A6400",
+          "yellow-hover": "#D9A004",
+          black: "#0D0D0D", // Deep Navy — sampled directly from the generated hero images for an exact match; key name kept as "black" so every existing class updates automatically
+          gray: "#5C5C5C",
+          "gray-light": "#E4E4E0",
+          success: "#1E5C2B",
+          error: "#B3261E",
           amber: "#F59E0B", // status: warning/pending
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
+        mono: ["var(--font-space-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         card: "8px",

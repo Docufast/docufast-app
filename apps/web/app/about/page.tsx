@@ -1,10 +1,11 @@
 // app/about/page.tsx
-// The fact sheet as a public page. Every fact comes from lib/seo/facts.ts, never typed here,
-// so the page, the structured data and llms.txt cannot disagree.
+// The fact sheet as a public page (Blueprint W3, #119). Every fact comes from lib/seo/facts.ts,
+// never typed here, so the page, the structured data and llms.txt cannot disagree.
+// The "Where data is kept" row is deliberately not shown until #128 is approved.
 
 import Link from "next/link";
-import HomeLink from "@/components/ui/HomeLink";
-import AuthNavLink from "@/components/ui/AuthNavLink";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
 import { JsonLd } from "@/components/JsonLd";
 import { FACTS } from "@/lib/seo/facts";
 import { breadcrumbs } from "@/lib/seo/schema";
@@ -39,6 +40,17 @@ const SERVICES: { href: string; label: string; note: string }[] = [
   { href: "/services/notarization", label: "Document Vault and reminders", note: "Digital notarization is coming soon" },
 ];
 
+const card = "rounded-[14px] border border-brand-gray-light bg-brand-white p-6";
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid gap-1 border-b border-brand-gray-light py-3 last:border-b-0 sm:grid-cols-[180px_1fr] sm:gap-6">
+      <dt className="text-sm text-brand-black">{label}</dt>
+      <dd className="text-sm text-brand-black sm:text-right">{children}</dd>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <>
@@ -48,85 +60,111 @@ export default function AboutPage() {
           { name: "About Docufast", path: "/about" },
         ])}
       />
-      <main className="mx-auto max-w-3xl px-6 py-6 lg:px-16 lg:py-10">
-        <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
-          <HomeLink />
-          <AuthNavLink />
-        </nav>
+      <SiteHeader />
+      <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-14">
+        <div className="mx-auto max-w-[1104px]">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-brand-yellow-dark">
+            About Docufast
+          </p>
+          <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-[1.1] text-brand-black md:text-5xl">
+            Your documents. Handled properly. Every time.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-brand-gray">{FACTS.oneLine}</p>
 
-        <h1 className="mt-8 text-3xl font-extrabold text-brand-black">About Docufast</h1>
-        <p className="mt-3 text-lg text-brand-black">{FACTS.oneLine}</p>
-        <p className="mt-3 text-brand-gray">{FACTS.notALawFirm}</p>
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
+            <div className="flex flex-col gap-6">
+              <section className={card}>
+                <h2 className="text-xl font-semibold text-brand-black">Fact sheet</h2>
+                <dl className="mt-3">
+                  <Row label="Legal name">{FACTS.legalName}</Row>
+                  <Row label="Incorporated">{longDate(FACTS.incorporated)}</Row>
+                  <Row label="Founder">{FACTS.founder.name}, {FACTS.founder.jobTitle}</Row>
+                  <Row label="Registered address">
+                    {FACTS.address.street}, {FACTS.address.locality}, {FACTS.address.region}
+                    <span className="mt-1 block text-xs text-brand-gray">
+                      We work online only. No walk-ins.
+                    </span>
+                  </Row>
+                  <Row label="What we do">{FACTS.servicesLine}</Row>
+                  <Row label="Quotes">{FACTS.quotePromise}</Row>
+                  <Row label="Delivery">{FACTS.affidavitDelivery}. Other services to follow</Row>
+                  <Row label="Notarization">
+                    <span className="rounded-full bg-[#FDF0C4] px-2.5 py-0.5 text-xs font-semibold">
+                      {FACTS.notarization}
+                    </span>
+                  </Row>
+                  <Row label="Languages">
+                    {FACTS.languagesNow.join(", ")} now. {FACTS.languagesComing.join(", ")} coming
+                  </Row>
+                </dl>
+              </section>
 
-        <h2 className="mt-10 text-2xl font-extrabold text-brand-black">What we do</h2>
-        <p className="mt-2 text-brand-gray">{FACTS.servicesLine}.</p>
-        <ul className="mt-4 flex flex-col gap-3">
-          {SERVICES.map((s) => (
-            <li key={s.href}>
-              <Link href={s.href} className="font-bold underline">
-                {s.label}
-              </Link>
-              <span className="text-brand-gray">: {s.note}</span>
-            </li>
-          ))}
-        </ul>
+              <section className={card}>
+                <h2 className="text-xl font-semibold text-brand-black">What we do</h2>
+                <p className="mt-2 text-sm text-brand-gray">{FACTS.servicesLine}.</p>
+                <ul className="mt-4 flex flex-col gap-3 text-sm">
+                  {SERVICES.map((s) => (
+                    <li key={s.href}>
+                      <Link href={s.href} className="font-semibold text-brand-black underline">
+                        {s.label}
+                      </Link>
+                      <span className="text-brand-gray">: {s.note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
 
-        <h2 className="mt-10 text-2xl font-extrabold text-brand-black">How an order works</h2>
-        <ol className="mt-3 list-decimal space-y-1 pl-6 text-brand-gray">
-          {STEPS.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ol>
-        <p className="mt-3 text-brand-gray">
-          {FACTS.quotePromise}. {FACTS.affidavitDelivery}. A person checks every document before it is
-          delivered to your encrypted Vault, where it carries a QR code anyone can verify.
-        </p>
-
-        <h2 className="mt-10 text-2xl font-extrabold text-brand-black">Company details</h2>
-        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[14rem_1fr]">
-          <dt className="font-bold">Legal name</dt>
-          <dd className="text-brand-gray">{FACTS.legalName}</dd>
-          <dt className="font-bold">CAC registration</dt>
-          <dd className="text-brand-gray">{FACTS.rcNumber}</dd>
-          <dt className="font-bold">Incorporated</dt>
-          <dd className="text-brand-gray">{longDate(FACTS.incorporated)}</dd>
-          <dt className="font-bold">Registered address</dt>
-          <dd className="text-brand-gray">
-            {FACTS.address.street}, {FACTS.address.locality}, {FACTS.address.region}. We work online only,
-            with no walk-in customers.
-          </dd>
-          <dt className="font-bold">Founder</dt>
-          <dd className="text-brand-gray">{FACTS.founder.name}, {FACTS.founder.jobTitle}</dd>
-        </dl>
-
-        <h2 className="mt-10 text-2xl font-extrabold text-brand-black">Registrations</h2>
-        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[14rem_1fr]">
-          {FACTS.registrations.map((r) => (
-            <div key={r.name} className="contents">
-              <dt className="font-bold">{r.name}</dt>
-              <dd className="text-brand-gray">{r.value}</dd>
+              <section className={card}>
+                <h2 className="text-xl font-semibold text-brand-black">How an order works</h2>
+                <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-brand-gray">
+                  {STEPS.map((s) => (
+                    <li key={s}>{s}</li>
+                  ))}
+                </ol>
+                <p className="mt-3 text-sm text-brand-gray">
+                  {FACTS.quotePromise}. {FACTS.affidavitDelivery}. A person checks every document before
+                  it is delivered to your encrypted Vault, where it carries a QR code anyone can verify.
+                </p>
+                <p className="mt-4 text-sm">
+                  <Link href="/faq" className="font-semibold text-brand-black underline">
+                    Read the frequently asked questions
+                  </Link>
+                </p>
+              </section>
             </div>
-          ))}
-        </dl>
 
-        <h2 className="mt-10 text-2xl font-extrabold text-brand-black">Contact and payment safety</h2>
-        <p className="mt-2 text-brand-gray">
-          WhatsApp support: {FACTS.support.whatsappDisplay}. {FACTS.support.hours}.
-        </p>
-        <p className="mt-2 text-brand-gray">{FACTS.payment}</p>
-        <p className="mt-4">
-          <Link href="/faq" className="font-bold underline">
-            Read the frequently asked questions
-          </Link>
-        </p>
-      </main>
+            <aside className="flex flex-col gap-4">
+              <section className={card}>
+                <h2 className="text-base font-semibold text-brand-black">Registrations</h2>
+                <dl className="mt-2">
+                  {FACTS.registrations.map((r) => (
+                    <div
+                      key={r.name}
+                      className="flex items-baseline justify-between gap-4 border-b border-brand-gray-light py-2.5 last:border-b-0"
+                    >
+                      <dt className="text-sm text-brand-black">{r.name}</dt>
+                      <dd className="font-mono text-xs text-brand-black">{r.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
 
-      <footer className="mt-10 border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
-        <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
-          <span>© 2026 Docufast Integrated Services Ltd</span>
+              <section className={card}>
+                <h2 className="text-base font-semibold text-brand-black">Contact</h2>
+                <p className="mt-2 text-sm text-brand-black">
+                  WhatsApp support {FACTS.support.whatsappDisplay}
+                </p>
+                <p className="text-sm text-brand-black">{FACTS.support.hours}</p>
+              </section>
+
+              <p className="rounded-[14px] bg-[#FDF0C4] px-4 py-3 text-sm leading-relaxed text-brand-black">
+                {FACTS.notALawFirm} {FACTS.payment}
+              </p>
+            </aside>
+          </div>
         </div>
-      </footer>
+      </main>
+      <SiteFooter />
     </>
   );
 }

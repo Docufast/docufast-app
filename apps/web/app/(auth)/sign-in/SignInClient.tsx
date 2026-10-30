@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import HeroPanel from "@/components/ui/HeroPanel";
+import SiteHeader from "@/components/ui/SiteHeader";
+import SiteFooter from "@/components/ui/SiteFooter";
+import { FACTS } from "@/lib/seo/facts";
 import { supabase } from "@/lib/supabase";
 import { unwrapPrivateKey } from "@/lib/vaultCrypto";
 import { storeUnlockedPrivateKey } from "@/lib/vaultSession";
@@ -16,11 +17,17 @@ function safeRedirect(value?: string): string {
   return "/home";
 }
 
+// Blueprint U1 (#119): sign-in styling only. The sign-in and two-factor logic is unchanged.
+const labelCls = "mb-1.5 block text-sm font-semibold text-brand-black";
+const inputCls =
+  "h-12 w-full rounded-[10px] border border-[#BFBFBF] bg-brand-white px-3.5 text-base text-brand-black outline-none focus:border-brand-black";
+const goldBtn =
+  "inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-brand-yellow px-5 text-base font-semibold text-brand-black hover:bg-brand-yellow-hover disabled:opacity-50";
+
 export default function SignInForm({ redirect }: { redirect?: string }) {
   const redirectTo = safeRedirect(redirect);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [needsMfa, setNeedsMfa] = useState(false);
@@ -134,114 +141,98 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
 
   if (needsMfa) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6 py-10">
-        <h1 className="text-2xl font-extrabold text-brand-black">Enter your 6-digit code</h1>
-        <p className="mt-1 text-sm text-brand-gray">From your authenticator app.</p>
-        <form onSubmit={handleMfaVerify} className="mt-6 flex flex-col gap-4">
-          <input
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="rounded-input border-4 border-brand-black px-3 py-3 text-center text-lg tracking-widest outline-none"
-            placeholder="000000"
-            inputMode="numeric"
-          />
-          {error && <p className="text-sm text-brand-error">{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting || mfaCode.length !== 6}
-            className="rounded-card bg-brand-black px-4 py-3.5 text-base font-bold text-brand-white disabled:opacity-50"
-          >
-            {submitting ? "Verifying…" : "Verify and continue"}
-          </button>
-        </form>
-      </main>
+      <>
+        <SiteHeader />
+        <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-16">
+          <div className="mx-auto max-w-md rounded-[14px] border border-brand-gray-light bg-brand-white p-6 md:p-8">
+            <h1 className="text-3xl font-semibold text-brand-black">Enter your 6-digit code</h1>
+            <p className="mt-2 text-sm text-brand-gray">From your authenticator app.</p>
+            <form onSubmit={handleMfaVerify} className="mt-6 flex flex-col gap-4">
+              <label htmlFor="mfa-code" className="sr-only">6-digit code</label>
+              <input
+                id="mfa-code"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className={`${inputCls} text-center font-mono text-lg tracking-[0.4em]`}
+                placeholder="000000"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+              />
+              {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
+              <button type="submit" disabled={submitting || mfaCode.length !== 6} className={goldBtn}>
+                {submitting ? "Verifying…" : "Verify and continue"}
+              </button>
+            </form>
+          </div>
+        </main>
+        <SiteFooter />
+      </>
     );
   }
 
   return (
-    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-      <div className="flex flex-col px-6 py-6 lg:px-16 lg:py-10">
-        <div className="flex items-center gap-2 border-b-4 border-brand-black pb-4">
-          <Image src="/images/logo-black.png" alt="Docufast" width={24} height={24} />
-          <span className="mr-auto text-xl font-extrabold tracking-wide text-brand-black">
-            DOCUFAST
-          </span>
-          <span className="text-sm text-brand-gray">New here?</span>
-          <Link href="/sign-up" className="text-sm font-bold uppercase tracking-wide">
-            Create account
-          </Link>
-        </div>
+    <>
+      <SiteHeader />
+      <main className="bg-brand-offwhite px-4 py-12 md:px-12 md:py-16">
+        <div className="mx-auto max-w-md rounded-[14px] border border-brand-gray-light bg-brand-white p-6 md:p-8">
+          <h1 className="text-3xl font-semibold text-brand-black md:text-4xl">Welcome back</h1>
+          <p className="mt-2 text-sm leading-relaxed text-brand-gray">
+            Sign in to track orders, open your vault and check upcoming deadlines.
+          </p>
 
-        <form onSubmit={handleSubmit} className="mt-10 flex max-w-md flex-1 flex-col gap-6">
-          <div>
-            <h1 className="text-4xl font-extrabold text-brand-black">Welcome back</h1>
-            <p className="mt-2 text-brand-gray">
-              Sign in to track orders, open your vault and check upcoming deadlines.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Email or phone
-              </label>
+              <label htmlFor="identifier" className={labelCls}>Email or phone</label>
               <input
+                id="identifier"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className={inputCls}
                 placeholder="you@example.ng"
+                autoComplete="username"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Password
-              </label>
+              <label htmlFor="password" className={labelCls}>Password</label>
               <input
+                id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-input border-4 border-brand-black px-3 py-3 text-base outline-none"
+                className={inputCls}
+                autoComplete="current-password"
               />
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={keepSignedIn}
-                  onChange={(e) => setKeepSignedIn(e.target.checked)}
-                  className="h-4 w-4 rounded-input border-4 border-brand-black"
-                />
-                Keep me signed in
-              </label>
-              <Link href="/forgot-password" className="font-bold underline">
+            <div className="text-right text-sm">
+              <Link href="/forgot-password" className="font-semibold text-brand-black underline">
                 Forgot password?
               </Link>
             </div>
 
-            {error && <p className="text-sm text-brand-error">{error}</p>}
+            {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center justify-between rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
-            >
-              {submitting ? "Signing in…" : "Sign in"} →
-            </button>
-
-            <div className="rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-xs text-brand-black">
+            <div className="rounded-[14px] border border-brand-yellow bg-[#FFF6D6] px-4 py-3 text-sm text-brand-black">
               A 6-digit code follows if two-factor is switched on.
             </div>
-          </div>
-        </form>
 
-        <p className="mt-auto pt-6 text-xs text-brand-gray">
-          Having trouble? Support on WhatsApp, Mon–Sat 08:00–20:00.
-        </p>
-      </div>
+            <button type="submit" disabled={submitting} className={goldBtn}>
+              {submitting ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
 
-      <HeroPanel src="/images/hero-signin.png" alt="Docufast — secure sign in" bg="dark" />
-    </main>
+          <p className="mt-5 text-sm text-brand-gray">
+            New here?{" "}
+            <Link href="/sign-up" className="font-semibold text-brand-black underline">
+              Create an account
+            </Link>
+          </p>
+          <p className="mt-6 text-xs text-brand-gray">
+            Having trouble? Support on WhatsApp {FACTS.support.whatsappDisplay}, {FACTS.support.hours}.
+          </p>
+        </div>
+      </main>
+      <SiteFooter />
+    </>
   );
 }
-

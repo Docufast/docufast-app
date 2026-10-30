@@ -6,6 +6,8 @@ import healthRoute from "./routes/health.js";
 dotenv.config();
 
 const app = express();
+// H4 (#68): do not advertise the framework in an X-Powered-By header.
+app.disable("x-powered-by");
 app.use(cors());
 app.use(express.json());
 

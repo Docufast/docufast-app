@@ -1,6 +1,6 @@
 import express from "express";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
-import { initiatePayment } from "../services/paymentService.js";
+import { initiatePayment, confirmPayment } from "../services/paymentService.js";
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ router.post("/:id/initiate-payment", async (req, res) => {
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, user_id, quote_amount")
+    .select("id, user_id, status, quote_amount")
     .eq("id", req.params.id)
     .single();
 
@@ -45,12 +45,49 @@ router.post("/:id/initiate-payment", async (req, res) => {
     return res.status(400).json({ error: "This order has no quote yet." });
   }
 
-  const result = await initiatePayment(order);
+  const result = await initiatePayment(order, user.email);
   if (!result.success) {
-    return res.status(501).json({ error: result.error });
+    return res.status(result.status || 500).json({ error: result.error });
   }
 
-  res.json(result);
+  res.json({ paymentUrl: result.paymentUrl, reference: result.reference });
+});
+
+// GET /orders/:id/payment-status?reference=... — the pay page calls this when the customer
+// returns from Paystack. It verifies the reference with Paystack (the webhook may not have
+// arrived yet) and returns the order's current status. Only the order's owner can call it.
+router.get("/:id/payment-status", async (req, res) => {
+  const user = await verifyOwner(req, res);
+  if (!user) return;
+
+  const { data: order } = await supabaseAdmin
+    .from("orders")
+    .select("id, user_id, status")
+    .eq("id", req.params.id)
+    .single();
+  if (!order) return res.status(404).json({ error: "Order not found." });
+  if (order.user_id !== user.id) return res.status(403).json({ error: "Forbidden." });
+
+  const reference = typeof req.query.reference === "string" ? req.query.reference : null;
+  let outcome = null;
+  if (reference) {
+    const { data: payment } = await supabaseAdmin
+      .from("payments")
+      .select("order_id")
+      .eq("reference", reference)
+      .single();
+    if (!payment || payment.order_id !== order.id) {
+      return res.status(404).json({ error: "Payment not found for this order." });
+    }
+    ({ outcome } = await confirmPayment(reference));
+  }
+
+  const { data: fresh } = await supabaseAdmin
+    .from("orders")
+    .select("status")
+    .eq("id", order.id)
+    .single();
+  res.json({ status: fresh?.status || order.status, outcome });
 });
 
 // POST /orders/:id/cancel — customer can cancel their own order, only while

@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import { OrgProvider } from "@/contexts/OrgContext";
 import SupportChat from "@/components/ui/SupportChat";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
@@ -6,6 +7,18 @@ import InactivityLogout from "@/components/ui/InactivityLogout";
 import { JsonLd } from "@/components/JsonLd";
 import { organization, website } from "@/lib/seo/schema";
 import { rootMetadata } from "@/lib/seo/pages";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin", "latin-ext", "vietnamese"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin", "latin-ext", "vietnamese"],
+  variable: "--font-space-mono",
+  display: "swap",
+});
 
 export const metadata = rootMetadata;
 
@@ -18,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-NG">
+    <html lang="en-NG" className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <body className="min-h-screen bg-brand-white text-brand-black antialiased">
         <JsonLd data={[organization(), website()]} />
         <OrgProvider>{children}</OrgProvider>

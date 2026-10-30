@@ -122,7 +122,7 @@ export const FAQ: FaqItem[] = [
     "section": 1,
     "q": "Is Docufast a registered company?",
     "a": [
-      "Yes. Docufast Integrated Services Ltd is CAC registered (RC 1893484), SCUML registered (SC251840209), NDPC licensed (DCP/07770) and SMEDAN registered. You can check our CAC record yourself on the CAC public search."
+      "Yes. Docufast Integrated Services Ltd is CAC registered (RC 1893484), SCUML registered (SC251840209), NDPC registered (NDPC/DCP/07770) and SMEDAN registered. You can check our CAC record yourself on the CAC public search."
     ],
     "status": "live"
   },
@@ -214,7 +214,7 @@ export const FAQ: FaqItem[] = [
     "section": 2,
     "q": "Can I talk to a person?",
     "a": [
-      "Yes. Message us on WhatsApp at 0905 495 1918, Monday to Saturday, 8am to 6pm WAT."
+      "Yes. Message us on WhatsApp at 0905 495 1918, Monday to Friday, 8am to 6pm WAT."
     ],
     "status": "live",
     "gate": "chat-and-quote"
@@ -297,7 +297,7 @@ export const FAQ: FaqItem[] = [
     "section": 3,
     "q": "How long does an affidavit take?",
     "a": [
-      "Affidavits are delivered within 48 hours. Express same-day is available for orders confirmed before 2 PM on working days."
+      "Standard affidavits are delivered within 2 to 3 working days of a confirmed order with everything we need. Express affidavits are delivered the same day when the order is confirmed before 2 PM on a working day."
     ],
     "status": "live"
   },
@@ -749,10 +749,9 @@ export const FAQ: FaqItem[] = [
     "section": 9,
     "q": "Do prices include VAT?",
     "a": [
-      "[CONFIRM VAT position with Sheriff.]"
+      "Yes. The price on your quote includes VAT."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "when-do-i-create-an-account",
@@ -1036,9 +1035,9 @@ export const FAQ: FaqItem[] = [
   {
     "id": "is-docufast-licensed-to-handle-my-personal-data",
     "section": 13,
-    "q": "Is Docufast licensed to handle my personal data?",
+    "q": "Is Docufast registered to handle my personal data?",
     "a": [
-      "Yes. Docufast is licensed by the Nigeria Data Protection Commission (DCP/07770) and follows the Nigeria Data Protection Act 2023."
+      "Yes. Docufast is registered with the Nigeria Data Protection Commission (NDPC/DCP/07770) and follows the Nigeria Data Protection Act 2023."
     ],
     "status": "live"
   },
@@ -1084,10 +1083,9 @@ export const FAQ: FaqItem[] = [
     "section": 13,
     "q": "Can I see or delete the data you hold about me?",
     "a": [
-      "Yes. Under the Nigeria Data Protection Act you can ask for a copy of your data, a correction, or deletion. Email [PRIVACY EMAIL]. Some records must be kept by law, and we will explain which."
+      "Yes. Under the Nigeria Data Protection Act you can ask for a copy of your data, a correction, or deletion. Email privacy@docufast.ng. Some records must be kept by law, and we will explain which."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "where-can-i-read-the-full-privacy-notice",
@@ -1103,7 +1101,7 @@ export const FAQ: FaqItem[] = [
     "section": 14,
     "q": "How long will my order take?",
     "a": [
-      "Each service shows its usual time on your quote. Affidavits: within 48 hours, or same day with Express. Publications: usually 24 to 72 hours. CAC filings depend on CAC's processing times, and we update you at every step."
+      "Each service shows its usual time on your quote. Affidavits: within 2 to 3 working days, or the same day with Express. Publications: usually 24 to 72 hours. CAC filings depend on CAC's processing times, and we update you at every step."
     ],
     "status": "live"
   },
@@ -1150,10 +1148,9 @@ export const FAQ: FaqItem[] = [
     "section": 14,
     "q": "How do I make a complaint?",
     "a": [
-      "Message us on WhatsApp at 0905 495 1918 or email [SUPPORT EMAIL] with your order number. We reply within [X] working hours and aim to resolve within [X] working days."
+      "Message us on WhatsApp at 0905 495 1918 or email support@docufast.ng with your order number. We reply within 1 working day and aim to resolve within 5 working days."
     ],
-    "status": "hold",
-    "hold": "has an unfilled [BRACKET] in the Doc"
+    "status": "live"
   },
   {
     "id": "do-you-work-with-businesses-and-hr-teams",

@@ -211,7 +211,7 @@ export default function OrdersPage() {
                   {order.quote_amount && order.status === "quote_sent" ? (
                     <Link
                       href={`/orders/${order.id}/pay`}
-                      className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black hover:bg-brand-yellow-dark"
+                      className="rounded-card bg-brand-yellow px-4 py-2.5 text-sm font-bold text-brand-black hover:bg-brand-yellow-hover"
                     >
                       ₦{order.quote_amount.toLocaleString()} · Pay now
                     </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -45,8 +46,16 @@ export default function FileUpload({
       const formData = new FormData();
       formData.append("file", selected);
 
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Please sign in to upload files.");
+      }
+
       const res = await fetch(`${API_URL}/upload`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
       });
 

@@ -23,7 +23,7 @@ export default function PublicationsPage() {
         <div className="mt-8">
           <h1 className="text-3xl font-extrabold text-brand-black">
             Newspaper Publications{" "}
-            <span className="text-brand-gray">· {PUBLICATION_TYPES.length} types</span>
+
           </h1>
           <p className="mt-2 text-brand-gray">
             24–72 hour turnaround. Already have an affidavit? Send it with your order. No
@@ -50,7 +50,7 @@ export default function PublicationsPage() {
 
       <footer className="border-t-4 border-brand-black bg-brand-black px-6 py-10 text-brand-white lg:px-16">
         <div className="flex flex-col gap-2 text-xs text-neutral-400">
-          <span>SCUML SC251840209 | NDPC DCP/07770 | SMEDAN SUIN426476832438 | RC1893484</span>
+          <span>SCUML SC251840209 | NDPC registered (NDPC/DCP/07770) | SMEDAN SUIN426476832438 | RC1893484</span>
           <span>© 2026 Docufast Integrated Services Ltd</span>
         </div>
       </footer>
