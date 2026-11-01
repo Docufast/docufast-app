@@ -54,6 +54,27 @@ router.post("/:id/auto-quote", async (req, res) => {
   const ref = `DF-${order.id.slice(0, 8).toUpperCase()}`;
   const quote = instantQuote(order);
   if (!quote) return res.json({ auto: false, ref });
+  const appUrl = (process.env.APP_URL || "https://www.docufast.ng").replace(/\/$/, "");
+  const emailBase = {
+    serviceLabel: serviceLabel(order.order_type),
+    orderRef: ref,
+    lines: quote.lines,
+    total: quote.total,
+    validHours: QUOTE_VALID_HOURS,
+    note: quote.note,
+  };
+
+  // Estimate only: a person confirms the final quote. Email the estimate now; status unchanged.
+  if (!quote.final) {
+    if (order.status === "quote_pending" && !order.quote_amount && user.email && !order.form_data?.estimate_emailed) {
+      const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: false, payUrl: `${appUrl}/orders` });
+      if (sent.success) {
+        await supabaseAdmin.from("orders").update({ form_data: { ...order.form_data, estimate_emailed: true } }).eq("id", order.id);
+      } else console.error("estimate email failed for", ref);
+    }
+    return res.json({ auto: false, ref, ...quote });
+  }
+
   if (order.status !== "quote_pending" || order.quote_amount) {
     return res.json({ auto: true, ref, ...quote, alreadyQuoted: true });
   }
@@ -72,15 +93,7 @@ router.post("/:id/auto-quote", async (req, res) => {
   if (!updated) return res.json({ auto: true, ref, ...quote, alreadyQuoted: true });
 
   if (user.email) {
-    const appUrl = (process.env.APP_URL || "https://www.docufast.ng").replace(/\/$/, "");
-    const sent = await sendItemizedQuoteEmail(user.email, {
-      serviceLabel: serviceLabel(order.order_type),
-      orderRef: ref,
-      lines: quote.lines,
-      total: quote.total,
-      validHours: QUOTE_VALID_HOURS,
-      payUrl: `${appUrl}/orders/${order.id}/pay`,
-    });
+    const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: true, payUrl: `${appUrl}/orders/${order.id}/pay` });
     if (!sent.success) console.error("auto-quote email failed for", ref);
   }
   res.json({ auto: true, ref, ...quote, validHours: QUOTE_VALID_HOURS });

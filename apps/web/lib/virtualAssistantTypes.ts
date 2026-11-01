@@ -1,6 +1,6 @@
-// Shared source of truth for Virtual Office & Clerical — matches the
+// Shared source of truth for Virtual Office & Clerical, matches the
 // Platform Playbook order_type enum values (3 types). No KYC/liveness
-// check required — lower regulatory burden per the Playbook.
+// check required, lower regulatory burden per the Playbook.
 
 export interface VaType {
   slug: string;

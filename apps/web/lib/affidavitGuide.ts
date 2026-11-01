@@ -132,5 +132,5 @@ export function suggestedPurpose(slug: string, category: AffidavitCategory, fiel
 
 // ---- Certified copies --------------------------------------------------------------------------
 export const COPIES_HELP =
-  "Your affidavit is sworn once. A certified copy is an extra official copy of that same affidavit, marked as a true copy. " +
-  "Most people need only 1. Choose more only if you must give a copy to more than one office (for example your bank and the Passport Office) and each office wants to keep one.";
+  "Your affidavit is sworn once at the court. You receive it as a certified copy: an official copy marked as a true copy of the sworn affidavit. " +
+  "You can print it or send it to any office that asks for it. If you need a fresh one later, we can send it again.";

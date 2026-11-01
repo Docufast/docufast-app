@@ -13,7 +13,7 @@ import HomeLink from "@/components/ui/HomeLink";
 import {
   COURTS, DIVISIONS, COURT_HELP, COPIES_HELP, OTHER, USES, jurisdictionText, reasonOptions, suggestedPurpose,
 } from "@/lib/affidavitGuide";
-import { affidavitQuote, naira, type Quote } from "@/lib/pricing";
+import { affidavitQuote, amountText, naira, type Quote } from "@/lib/pricing";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 // Extra fields shown depending on the affidavit's category — the pattern
@@ -64,7 +64,7 @@ export default function AffidavitOrderPage() {
   const [uses, setUses] = useState<string[]>([]);
   const [purposeEdited, setPurposeEdited] = useState<string | null>(null); // null = use the suggestion
   const [authenticatedBy, setAuthenticatedBy] = useState<"commissioner" | "notary">("commissioner");
-  const [copies, setCopies] = useState(1);
+  const copies = 1; // one certified copy per order (JSB, 1 Nov 2026)
   const [speed, setSpeed] = useState<"standard" | "express">("standard");
   const [extraValues, setExtraValues] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -175,11 +175,8 @@ export default function AffidavitOrderPage() {
           <table className="mt-4 w-full text-sm">
             <tbody>
               {placed.quote.lines.map((l) => (
-                <tr key={l.label}><td className="py-1.5 pr-3">{l.label}</td><td className="py-1.5 text-right">{naira(l.amount)}</td></tr>
+                <tr key={l.label}><td className="py-1.5 pr-3">{l.label}</td><td className="py-1.5 text-right">{amountText(l.amount)}</td></tr>
               ))}
-              {!placed.quote.complete && (
-                <tr><td className="py-1.5 pr-3">Extra certified copies</td><td className="py-1.5 text-right">On your quote</td></tr>
-              )}
               <tr className="border-t-2 border-brand-black font-bold">
                 <td className="py-2">{placed.quote.complete ? "Total" : "Total so far"}</td>
                 <td className="py-2 text-right">{naira(placed.quote.total)}</td>
@@ -328,7 +325,7 @@ export default function AffidavitOrderPage() {
 
         <div className="rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
-            Attestation & copies
+            Attestation and copy
           </div>
           <div className="flex flex-col gap-4 p-4">
             <div>
@@ -361,24 +358,10 @@ export default function AffidavitOrderPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Certified copies
+                Certified copy
               </label>
-              <p className="mb-2 text-xs text-brand-gray">{COPIES_HELP}</p>
-              <div className="flex gap-2">
-                {[1, 2, 3, 5].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setCopies(n)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-card border-4 border-brand-black text-sm font-bold ${
-                      copies === n ? "bg-brand-black text-brand-white" : ""
-                    }`}
-                  >
-                    {n === 5 ? "5+" : n}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-1 text-xs text-brand-gray">1 copy is included in the price.</p>
+              <p className="text-sm text-brand-black">1 certified copy, included in the price.</p>
+              <p className="mt-1 text-xs text-brand-gray">{COPIES_HELP}</p>
             </div>
           </div>
         </div>
@@ -427,13 +410,10 @@ export default function AffidavitOrderPage() {
           <table className="mt-2 w-full text-sm">
             <tbody>
               {quote.lines.map((l) => (
-                <tr key={l.label}><td className="py-1 pr-3">{l.label}</td><td className="py-1 text-right">{naira(l.amount)}</td></tr>
+                <tr key={l.label}><td className="py-1 pr-3">{l.label}</td><td className="py-1 text-right">{amountText(l.amount)}</td></tr>
               ))}
-              {!quote.complete && (
-                <tr><td className="py-1 pr-3">Extra certified copies</td><td className="py-1 text-right">Priced on your quote</td></tr>
-              )}
               <tr className="border-t-2 border-brand-black font-bold">
-                <td className="py-1.5">Total</td><td className="py-1.5 text-right">{naira(quote.total)}{quote.complete ? "" : " + copies"}</td>
+                <td className="py-1.5">Total</td><td className="py-1.5 text-right">{naira(quote.total)}</td>
               </tr>
             </tbody>
           </table>

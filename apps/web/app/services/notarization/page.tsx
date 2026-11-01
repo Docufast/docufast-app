@@ -24,7 +24,7 @@ export default function NotarizationPage() {
             Platform-Native
           </h1>
           <p className="mt-2 text-brand-gray">
-            No third-party processing — these run entirely on Docufast's own platform.
+            No third-party processing: these run entirely on Docufast's own platform.
           </p>
         </div>
 

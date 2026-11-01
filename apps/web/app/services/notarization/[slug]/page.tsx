@@ -130,7 +130,7 @@ export default function PlatformNativeOrderPage() {
                     What is this document?
                   </label>
                   <input
-                    placeholder="e.g. Deed of assignment — land, Lekki Phase 1"
+                    placeholder="e.g. Deed of assignment, land, Lekki Phase 1"
                     value={values.doc || ""}
                     onChange={(e) => setValues({ ...values, doc: e.target.value })}
                     className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
