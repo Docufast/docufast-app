@@ -3,14 +3,18 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Admin data is never prepared at build time.
+export const dynamic = "force-dynamic";
+
+// Created per request, not when the file loads: a missing key must never be able to fail the build.
+function adminClient() {
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
 
 const TERMINAL_STATUSES = ["delivered", "cancelled"];
 
 export async function GET(request: Request) {
+  const supabaseAdmin = adminClient();
   // Verify the caller is a signed-in founder before returning anything.
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "");
