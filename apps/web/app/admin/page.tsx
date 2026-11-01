@@ -321,7 +321,10 @@ export default function AdminDashboardPage() {
                 <EmptyRow text="Live order queue is empty." />
               ) : (
                 <div className="flex flex-col divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
-                  {summary.liveQueue.map((order) => (
+                  {[...summary.liveQueue]
+                    // Orders still waiting for a quote need a person (#227): fixed prices are quoted automatically.
+                    .sort((a, b) => Number(b.status === "quote_pending") - Number(a.status === "quote_pending"))
+                    .map((order) => (
                     <Link
                       key={order.id}
                       href={`/admin/orders/${order.id}`}
@@ -333,8 +336,8 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="text-xs text-brand-gray">{shortRef(order.id)}</div>
                       </div>
-                      <span className="rounded-card bg-brand-yellow px-2 py-1 text-xs font-bold uppercase">
-                        {STATUS_LABELS[order.status] || order.status}
+                      <span className={`rounded-card px-2 py-1 text-xs font-bold uppercase ${order.status === "quote_pending" ? "bg-brand-black text-brand-white" : "bg-brand-yellow"}`}>
+                        {order.status === "quote_pending" ? "Needs your quote" : STATUS_LABELS[order.status] || order.status}
                       </span>
                     </Link>
                   ))}

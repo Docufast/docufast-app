@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import sgMail from "@sendgrid/mail";
+import { serviceLabel } from "./servicePricing.js";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -64,10 +65,7 @@ export async function sendQuoteEmail(toEmail, serviceLabel, amount, orderRef) {
 // Payment receipt (#109). Sent once, when an order is first marked paid.
 export async function sendPaymentReceiptEmail(toEmail, { orderRef, orderType, amountNaira, reference, paidAt }) {
   const formattedAmount = Number(amountNaira).toLocaleString("en-NG");
-  const service = String(orderType || "")
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  const service = serviceLabel(orderType || "");
   const when = new Date(paidAt).toLocaleString("en-NG", { timeZone: "Africa/Lagos" });
 
   const msg = {
@@ -79,7 +77,7 @@ export async function sendPaymentReceiptEmail(toEmail, { orderRef, orderType, am
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #0D0D0D;">Payment received</h2>
         <p><strong>${service}</strong> (${orderRef})</p>
-        <p style="font-size: 24px; font-weight: bold; color: #0D0D0D;">₦${formattedAmount}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #0D0D0D;">NGN ${formattedAmount}</p>
         <p>Payment reference: ${reference}<br/>Paid: ${when} (Lagos time)</p>
         <p>Your order is now being processed. You can follow every step in your Docufast account.</p>
         <p style="color: #666; font-size: 13px;">Docufast Integrated Services Ltd, RC 1893484. Prices include VAT. Pay only on docufast.ng.</p>

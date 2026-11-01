@@ -37,6 +37,34 @@ export const CAC = {
 export const PUBLICATION = 10000; // per notice, all-inclusive
 export const VA = { document_typing: 500, data_entry: 2500, transcription: 300 }; // per page / per 100 rows / per audio minute
 
+// Customer-facing service names for quotes, receipts and emails.
+export const SERVICE_LABELS = {
+  change_of_name: "Change of name affidavit", correction_of_name: "Correction of name affidavit",
+  confirmation_of_name: "Confirmation of name affidavit", addition_removal_of_name: "Addition or removal of name affidavit",
+  rearrangement_of_name: "Re-arrangement of name affidavit", combined_correction_name_dob: "Correction of name and date of birth affidavit",
+  age_declaration_adult: "Age declaration affidavit", age_declaration_minor_male: "Age declaration affidavit (son)",
+  age_declaration_minor_female: "Age declaration affidavit (daughter)", correction_of_dob: "Correction of date of birth affidavit",
+  attestation_birth_cert: "Attestation of birth affidavit", loss_general: "Affidavit of loss", loss_workplace_id: "Loss of workplace ID affidavit",
+  loss_sim_card: "Loss of SIM card affidavit", loss_sim_no_id: "Loss of SIM affidavit (no ID)", loss_jamb_sim: "Loss of JAMB SIM affidavit",
+  loss_intl_passport: "Loss of international passport affidavit", loss_drivers_licence: "Loss of driver's licence affidavit",
+  loss_vehicle_docs: "Loss of vehicle documents affidavit", bachelorhood_spinsterhood: "Bachelorhood or spinsterhood affidavit",
+  declaration_of_marriage: "Declaration of marriage affidavit", dissolution_of_marriage: "Dissolution of marriage affidavit",
+  declaration_of_death: "Declaration of death affidavit", release_of_corpse: "Release of corpse affidavit", loss_school_id: "Loss of school ID affidavit",
+  confirmation_of_result: "Confirmation of result affidavit", good_conduct: "Good conduct affidavit", support_sponsorship: "Support or sponsorship affidavit",
+  change_car_ownership: "Change of car ownership affidavit", change_of_residence: "Change of residence affidavit", change_of_signature: "Change of signature affidavit",
+  business_name_registration: "Business name registration", company_incorporation: "Company registration (LTD)",
+  incorporated_trustees_registration: "Incorporated trustees registration", cac_annual_returns: "CAC annual returns",
+  cac_status_report: "CAC status report", company_amendment: "Company amendment",
+  name_change_publication: "Change of name newspaper notice", loss_of_documents_publication: "Loss of documents newspaper notice",
+  incorporated_trustees_publication: "Incorporated trustees newspaper notice",
+  document_typing: "Document typing", data_entry: "Data entry", transcription: "Transcription",
+};
+
+/** @param {string} orderType */
+export function serviceLabel(orderType) {
+  return SERVICE_LABELS[orderType] ?? String(orderType).split("_").map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(" ");
+}
+
 /**
  * @typedef {{ label: string, amount: number }} QuoteLine
  * @typedef {{ lines: QuoteLine[], total: number, final: boolean, note?: string }} Quote

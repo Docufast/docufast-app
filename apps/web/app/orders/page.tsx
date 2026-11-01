@@ -29,7 +29,7 @@ const ORDER_STAGES = [
   { label: "Paid", desc: "Order confirmed, sent to processing", icon: CreditCard },
   { label: "In processing", desc: "Assigned to a processor, tracked in real time", icon: Settings },
   { label: "QA review", desc: "Checked against your order before sealing", icon: ShieldCheck },
-  { label: "Delivered", desc: "Sealed with a QR code, added to your vault", icon: Package },
+  { label: "Delivered", desc: "Checked by a person and delivered to you", icon: Package },
 ];
 
 const STATUS_LABELS: Record<string, string> = {

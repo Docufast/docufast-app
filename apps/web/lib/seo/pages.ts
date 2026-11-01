@@ -63,7 +63,7 @@ export const PAGE_META: Record<string, PageMeta> = {
   '/verify': {
     title: 'Verify a Docufast document',
     description:
-      'Check that an affidavit or other document issued through Docufast is genuine and has not been changed or revoked. Scan its QR code or enter its document ID.',
+      'Coming soon: check that a document issued through Docufast is genuine and has not been changed. Until then, affidavits carry the court\'s own seal and QR code.',
   },
   '/guides': {
     title: 'Guides: affidavits, CAC and documents in Nigeria',

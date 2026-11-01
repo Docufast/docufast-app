@@ -174,8 +174,8 @@ export default function VaultPage() {
             <p className="text-sm text-brand-black">
               <span className="font-bold">Your documents are encrypted end-to-end.</span>{" "}
               Docufast staff cannot read your delivered documents — they're decrypted only in
-              your browser, using a key only you hold. Every document you receive carries a
-              QR code — so any institution can independently verify it's genuine.
+              your browser, using a key only you hold. Affidavits you receive carry the
+              court's own seal and QR code.
             </p>
           </div>
 

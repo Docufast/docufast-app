@@ -2,13 +2,11 @@ import express from "express";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initiatePayment, confirmPayment } from "../services/paymentService.js";
 import { instantQuote } from "../services/pricing.js";
+import { serviceLabel } from "../services/servicePricing.js";
 import { sendItemizedQuoteEmail } from "../services/emailService.js";
 
 const QUOTE_VALID_HOURS = 48; // FACTS.pricing.quoteValidHours
 
-function serviceLabel(orderType) {
-  return String(orderType).split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-}
 
 const router = express.Router();
 

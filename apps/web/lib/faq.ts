@@ -173,7 +173,7 @@ export const FAQ: FaqItem[] = [
       "Add your photo and documents, and verify your identity where the service needs it.",
       "Create your account and pay, only on docufast.ng.",
       "We prepare and process your documents, and a person checks every one. You follow each step on your order tracker.",
-      "Your finished documents arrive in your vault, digitally signed and QR-sealed so anyone can confirm they are genuine."
+      "Your finished documents arrive in your Docufast account. Affidavits carry the court's own seal and QR code."
     ],
     "status": "live",
     "list": "ol",
@@ -288,7 +288,7 @@ export const FAQ: FaqItem[] = [
     "section": 3,
     "q": "Is an online affidavit valid and accepted?",
     "a": [
-      "Your affidavit is a proper court affidavit, sworn before a commissioner for oaths. It carries a QR code so anyone receiving it can confirm it is genuine. If an organisation has special rules, tell us and we will check before you pay."
+      "Your affidavit is a proper court affidavit, sworn before a Commissioner for Oaths, and it carries the court's seal and QR code. If an organisation has special rules, tell us and we will check before you pay."
     ],
     "status": "live"
   },
@@ -968,7 +968,7 @@ export const FAQ: FaqItem[] = [
     "section": 12,
     "q": "How do I know a Docufast document is real?",
     "a": [
-      "Every document we deliver carries a QR code and a reference number. Scan the code, or enter the reference at docufast.ng/verify, to see the document type and issue date, that Docufast's digital signature is valid, and that the document has not been revoked. Banks and agencies can also check it automatically through our API."
+      "Affidavits we deliver are sworn through the Lagos State court system and carry the court's own seal and QR code. Our own document check at docufast.ng/verify is coming soon. Until then, if you or an office need to confirm a document came from us, message us with its order reference."
     ],
     "status": "live",
     "gate": "verify"
@@ -1344,7 +1344,7 @@ export const FAQ: FaqItem[] = [
     "section": 19,
     "q": "What is a Docufast credential?",
     "a": [
-      "Every document we deliver is digitally signed by Docufast and carries a QR code. That makes it a credential: anyone you share it with can confirm it is genuine and unchanged, and banks and agencies can check it automatically."
+      "Coming soon: every document we deliver will be digitally signed by Docufast and carry its own QR code, so anyone you share it with can confirm it is genuine and unchanged. Until then, affidavits carry the court's own seal and QR code."
     ],
     "status": "live",
     "gate": "credentials-agents"

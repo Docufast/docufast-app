@@ -1,3 +1,4 @@
+import { serviceLabel } from "../services/servicePricing.js";
 import express from "express";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -106,7 +107,7 @@ router.patch("/:id", async (req, res) => {
     if (authUser?.user?.email) {
       await sendQuoteEmail(
         authUser.user.email,
-        orderTypeLabel(existingOrder.order_type),
+        serviceLabel(existingOrder.order_type),
         amountToEmail,
         shortRef(req.params.id)
       );

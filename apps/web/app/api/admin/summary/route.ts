@@ -62,9 +62,11 @@ export async function GET(request: Request) {
     statusBreakdown[o.status] = (statusBreakdown[o.status] || 0) + 1;
   }
 
+  // Orders waiting for a person's quote come first, so none drop off the list (#227).
   const liveQueue = orders
     .filter((o) => !TERMINAL_STATUSES.includes(o.status))
-    .slice(0, 10);
+    .sort((a, b) => Number(b.status === "quote_pending") - Number(a.status === "quote_pending"))
+    .slice(0, 20);
 
   return NextResponse.json({
     totalOrders: orders.length,

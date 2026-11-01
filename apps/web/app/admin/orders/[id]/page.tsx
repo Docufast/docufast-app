@@ -12,6 +12,7 @@ import FilingSheet from "@/components/admin/FilingSheet";
 import OrderPayments from "@/components/admin/OrderPayments";
 import OrderAccessLog from "@/components/admin/OrderAccessLog";
 import ExpressPanel, { ExpressFields } from "@/components/admin/ExpressPanel";
+import { quoteFor, amountText, naira } from "@/lib/pricing";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -314,6 +315,34 @@ export default function AdminOrderDetailPage() {
             })}
           </p>
         </div>
+
+        {(() => {
+          // Price check (#227): the same price list the customer saw. Fixed prices are quoted and
+          // emailed automatically; an estimate needs a person to add the variable part.
+          const q = quoteFor(order.service_category, order.order_type, order.speed, order.form_data || {});
+          if (!q) return null;
+          return (
+            <div className={`mt-6 rounded-card border-2 p-4 text-sm ${q.complete ? "border-brand-black" : "border-brand-error"}`}>
+              <p className="text-xs font-bold uppercase tracking-wide">
+                {q.complete ? "Price list: fixed price" : "Needs your quote: estimate only"}
+              </p>
+              <table className="mt-2 w-full">
+                <tbody>
+                  {q.lines.map((l) => (
+                    <tr key={l.label}><td className="py-1 pr-3">{l.label}</td><td className="py-1 text-right">{amountText(l.amount)}</td></tr>
+                  ))}
+                  <tr className="border-t-2 border-brand-black font-bold"><td className="py-1.5">{q.complete ? "Total" : "Estimate"}</td><td className="py-1.5 text-right">{naira(q.total)}</td></tr>
+                </tbody>
+              </table>
+              {q.note && <p className="mt-1 text-xs">{q.note} Add the extra amount, then set the status to Quote sent to email the customer.</p>}
+              {order.status === "quote_pending" && (
+                <button type="button" onClick={() => setPriceDraft(String(q.total))} className="mt-2 text-xs font-bold underline">
+                  Start from {naira(q.total)}
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
