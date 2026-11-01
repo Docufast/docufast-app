@@ -88,7 +88,7 @@ export default function VaOrderPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-6 lg:px-16 lg:py-10">
+    <main className="mx-auto max-w-2xl px-6 py-6 pb-40 sm:pb-6 lg:px-16 lg:py-10">
       <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
         <HomeLink />
         <Link href="/services/virtual-assistant" className="text-sm font-semibold uppercase tracking-wide">

@@ -85,7 +85,7 @@ export default function PlatformNativeOrderPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-6 lg:px-16 lg:py-10">
+    <main className="mx-auto max-w-2xl px-6 py-6 pb-40 sm:pb-6 lg:px-16 lg:py-10">
       <nav className="flex items-center gap-6 border-b-4 border-brand-black pb-4">
         <HomeLink />
         <Link href="/services/notarization" className="text-sm font-semibold uppercase tracking-wide">
@@ -95,7 +95,7 @@ export default function PlatformNativeOrderPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-brand-black">{item.label}</h1>
+          <h1 className="break-words text-3xl font-extrabold text-brand-black">{item.label}</h1>
           <p className="mt-1 text-sm text-brand-gray">{item.desc}</p>
         </div>
 
