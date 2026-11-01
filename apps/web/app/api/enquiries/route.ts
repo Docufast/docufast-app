@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { alertNewQuestion } from "@/lib/teamAlert";
 
 // Help chat questions (JSB, 27 Oct 2026): a visitor's question goes to Docufast's own database
 // and appears on the admin dashboard. Server only: the service role key never reaches the
@@ -124,5 +125,6 @@ export async function POST(request: Request) {
     );
   }
 
+  await alertNewQuestion({ replyBy: email && phone ? "email or WhatsApp" : email ? "email" : "WhatsApp", page: page || null });
   return NextResponse.json({ ok: true });
 }
