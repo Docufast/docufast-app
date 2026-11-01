@@ -1,5 +1,5 @@
 import express from "express";
-import { supabaseAdmin } from "../lib/verifyFounder.js";
+import { supabaseAdmin, tokenAal } from "../lib/verifyFounder.js";
 import { initiatePayment, confirmPayment } from "../services/paymentService.js";
 
 const router = express.Router();
@@ -20,6 +20,10 @@ async function verifyOwner(req, res) {
   } = await supabaseAdmin.auth.getUser(token);
   if (authError || !user) {
     res.status(401).json({ error: "Not authenticated." });
+    return null;
+  }
+  if (tokenAal(token) !== "aal2") {
+    res.status(403).json({ error: "Two-factor sign-in required." });
     return null;
   }
 

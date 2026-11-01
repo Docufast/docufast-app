@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { tokenAal } from "../../../../lib/tokenAal";
 
 // Help chat questions for the admin dashboard (JSB, 27 Oct 2026). Founder only, checked here
 // on the server; the dashboard's own check is not what protects the data.
@@ -23,6 +24,7 @@ async function requireFounder(request: Request) {
 
   const { data: profile } = await supabaseAdmin.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "founder") return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
+  if (tokenAal(token) !== "aal2") return { error: NextResponse.json({ error: "Two-factor sign-in required." }, { status: 403 }) };
 
   return { supabaseAdmin, user };
 }
