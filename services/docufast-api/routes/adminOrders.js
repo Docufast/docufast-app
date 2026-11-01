@@ -3,7 +3,8 @@ import express from "express";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
-import { verifyFounder, supabaseAdmin } from "../lib/verifyFounder.js";
+import { supabaseAdmin } from "../lib/verifyFounder.js";
+import { verifyStaff, FILER_STATUSES } from "../lib/staffAuth.js";
 import { sendQuoteEmail } from "../services/emailService.js";
 import { logDocumentAccess } from "../lib/accessLog.js";
 import { refundExpressFee, markExpressNotDue } from "../services/expressService.js";
@@ -22,8 +23,9 @@ function shortRef(id) {
 }
 
 router.get("/:id", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "order");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data: order, error } = await supabaseAdmin
     .from("orders")
@@ -58,10 +60,16 @@ router.get("/:id", async (req, res) => {
 });
 
 router.patch("/:id", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "order_status");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { status, quote_amount, speed } = req.body;
+  // A filer moves work along after payment; quotes, prices, speed and payment statuses stay with the Founder.
+  if (staff.role !== "founder") {
+    if (quote_amount !== undefined || speed !== undefined) return res.status(403).json({ error: "Only the Founder can change prices or speed." });
+    if (status !== undefined && !FILER_STATUSES.includes(status)) return res.status(403).json({ error: "You can only set filing and delivery statuses." });
+  }
   const updates = {};
   if (status !== undefined) updates.status = status;
   if (quote_amount !== undefined) updates.quote_amount = quote_amount;
@@ -81,6 +89,10 @@ router.patch("/:id", async (req, res) => {
     .select("status, user_id, order_type, quote_amount, express_due_at")
     .eq("id", req.params.id)
     .single();
+
+  if (staff.role !== "founder" && ["quote_pending", "quote_sent", "cancelled"].includes(existingOrder?.status)) {
+    return res.status(403).json({ error: "This order is not paid yet." });
+  }
 
   // Speed is part of the price: it cannot change once the order is paid and the clock is running.
   if (updates.speed !== undefined && existingOrder?.express_due_at) {
@@ -122,8 +134,9 @@ router.patch("/:id", async (req, res) => {
 // specific customer before this is called; encryption_iv and
 // sender_ephemeral_public_key are needed for the customer to decrypt it.
 router.post("/:id/deliver", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "deliver");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { r2_key, file_name, encryption_iv, sender_ephemeral_public_key } = req.body;
   if (!r2_key || !file_name || !encryption_iv || !sender_ephemeral_public_key) {
@@ -163,7 +176,7 @@ router.post("/:id/deliver", async (req, res) => {
     orderId: req.params.id,
     ownerUserId: order.user_id,
     actorUserId: user.id,
-    actorRole: "founder",
+    actorRole: staff.role,
     action: "deliver",
     channel: "admin_panel",
   });
@@ -183,8 +196,9 @@ router.post("/:id/deliver", async (req, res) => {
 });
 
 router.get("/documents/:documentId/download", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "download");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data: document } = await supabaseAdmin
     .from("documents")
@@ -200,7 +214,7 @@ router.get("/documents/:documentId/download", async (req, res) => {
     orderId: document.order_id,
     ownerUserId: document.user_id,
     actorUserId: user.id,
-    actorRole: "founder",
+    actorRole: staff.role,
     action: "download",
     channel: "admin_panel",
   });
@@ -217,8 +231,9 @@ router.get("/documents/:documentId/download", async (req, res) => {
 
 // GET /admin/orders/:id/filing — the staff filing record for an affidavit order (#185).
 router.get("/:id/filing", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "filing");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data, error } = await supabaseAdmin
     .from("affidavit_filings")
@@ -233,8 +248,9 @@ router.get("/:id/filing", async (req, res) => {
 // fields can be set; times are ISO strings or null.
 const FILING_FIELDS = ["court_route", "court_form", "court_division", "filing_id", "filed_at", "commissioned_at", "video_requested", "notes"];
 router.put("/:id/filing", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "filing");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data: order } = await supabaseAdmin
     .from("orders")
@@ -269,8 +285,9 @@ router.put("/:id/filing", async (req, res) => {
 
 // GET /admin/orders/:id/payments — every payment attempt for this order (#109).
 router.get("/:id/payments", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "payments");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data, error } = await supabaseAdmin
     .from("payments")
@@ -284,8 +301,9 @@ router.get("/:id/payments", async (req, res) => {
 // POST /admin/orders/:id/express-refund — refund the Express fee now (Terms section 7).
 // Allowed before the deadline too, when staff already know it will be missed.
 router.post("/:id/express-refund", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "express");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
   const result = await refundExpressFee(req.params.id, { force: true });
   const statusCode = { refunded: 200, refund_needed: 502, already_handled: 409, not_express: 400, no_payment: 400 }[result.outcome] || 400;
   res.status(statusCode).json(result);
@@ -294,8 +312,9 @@ router.post("/:id/express-refund", async (req, res) => {
 // POST /admin/orders/:id/express-not-due — the delay was on the customer's side (for example an
 // identification video we asked for and did not receive). A note is required and is kept.
 router.post("/:id/express-not-due", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "express");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
   const result = await markExpressNotDue(req.params.id, req.body?.note);
   const statusCode = { not_due: 200, note_required: 400, already_handled: 409 }[result.outcome] || 400;
   res.status(statusCode).json(result);
@@ -304,8 +323,9 @@ router.post("/:id/express-not-due", async (req, res) => {
 // GET /admin/orders/:id/access-log — every logged access to this order's documents,
 // newest first, for the Founder Dashboard (#153).
 router.get("/:id/access-log", async (req, res) => {
-  const user = await verifyFounder(req);
-  if (!user) return res.status(403).json({ error: "Forbidden." });
+  const staff = await verifyStaff(req, "access_log");
+  if (!staff) return res.status(403).json({ error: "Forbidden." });
+  const user = staff.user;
 
   const { data, error } = await supabaseAdmin
     .from("document_access_log")

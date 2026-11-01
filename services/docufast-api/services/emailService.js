@@ -172,3 +172,30 @@ export async function sendItemizedQuoteEmail(toEmail, { serviceLabel, orderRef, 
     return { success: false, error: error.response?.body || error.message };
   }
 }
+
+// Team alerts (JSB, 1 Nov 2026): a short email to the team when an order is placed or paid, so
+// nobody has to keep refreshing the dashboard. ORDER REFERENCE ONLY: never the customer's name,
+// contact details or document details. Recipients: OPS_ALERT_EMAILS (comma-separated); if it is
+// not set, no alert is sent.
+export async function sendStaffAlert({ event, orderRef, orderType, orderId, amountNaira, extra }) {
+  const to = String(process.env.OPS_ALERT_EMAILS || "").split(",").map((x) => x.trim()).filter(Boolean);
+  if (to.length === 0) return { success: false, error: "OPS_ALERT_EMAILS not set" };
+  const appUrl = (process.env.APP_URL || "https://www.docufast.ng").replace(/\/$/, "");
+  const link = `${appUrl}/admin/orders/${orderId}`;
+  const service = serviceLabel(orderType || "");
+  const titles = {
+    placed_quoted: "New order, quote sent automatically",
+    placed_needs_quote: "New order: NEEDS YOUR QUOTE",
+    paid: "Order PAID: start filing",
+  };
+  const title = titles[event] || event;
+  const amount = amountNaira != null ? `NGN ${Number(amountNaira).toLocaleString("en-NG")}` : "";
+  const text = [`${title}`, `${service} (${orderRef})${amount ? `, ${amount}` : ""}`, extra || "", `Open: ${link}`].filter(Boolean).join("\n");
+  try {
+    await sgMail.send({ to, from: { email: FROM_EMAIL, name: "Docufast alerts" }, subject: `[Docufast] ${title}: ${orderRef}`, text });
+    return { success: true };
+  } catch (error) {
+    console.error("Staff alert failed:", error.response?.body || error.message);
+    return { success: false };
+  }
+}

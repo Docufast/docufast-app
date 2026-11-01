@@ -27,7 +27,8 @@ async function requireFounder(request: Request) {
   if (error || !user) return { error: NextResponse.json({ error: "Not authenticated." }, { status: 401 }) };
 
   const { data: profile } = await supabaseAdmin.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "founder") return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
+  // Founder and Support answer customer questions (#224).
+  if (profile?.role !== "founder" && profile?.role !== "support") return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
 
   return { supabaseAdmin, user };
 }

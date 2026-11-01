@@ -3,7 +3,7 @@ import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initiatePayment, confirmPayment } from "../services/paymentService.js";
 import { instantQuote } from "../services/pricing.js";
 import { serviceLabel } from "../services/servicePricing.js";
-import { sendItemizedQuoteEmail } from "../services/emailService.js";
+import { sendItemizedQuoteEmail, sendStaffAlert } from "../services/emailService.js";
 
 const QUOTE_VALID_HOURS = 48; // FACTS.pricing.quoteValidHours
 
@@ -51,7 +51,13 @@ router.post("/:id/auto-quote", async (req, res) => {
 
   const ref = `DF-${order.id.slice(0, 8).toUpperCase()}`;
   const quote = instantQuote(order);
-  if (!quote) return res.json({ auto: false, ref });
+  if (!quote) {
+    if (order.status === "quote_pending" && !order.form_data?.staff_alerted) {
+      await sendStaffAlert({ event: "placed_needs_quote", orderRef: ref, orderType: order.order_type, orderId: order.id, extra: "No price list entry: a person must quote it." });
+      await supabaseAdmin.from("orders").update({ form_data: { ...order.form_data, staff_alerted: true } }).eq("id", order.id);
+    }
+    return res.json({ auto: false, ref });
+  }
   const appUrl = (process.env.APP_URL || "https://www.docufast.ng").replace(/\/$/, "");
   const emailBase = {
     serviceLabel: serviceLabel(order.order_type),
@@ -68,6 +74,7 @@ router.post("/:id/auto-quote", async (req, res) => {
       const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: false, payUrl: `${appUrl}/orders` });
       if (sent.success) {
         await supabaseAdmin.from("orders").update({ form_data: { ...order.form_data, estimate_emailed: true } }).eq("id", order.id);
+        await sendStaffAlert({ event: "placed_needs_quote", orderRef: ref, orderType: order.order_type, orderId: order.id, amountNaira: quote.total, extra: `Estimate only. ${quote.note || ""}` });
       } else console.error("estimate email failed for", ref);
     }
     return res.json({ auto: false, ref, ...quote });
@@ -94,6 +101,7 @@ router.post("/:id/auto-quote", async (req, res) => {
     const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: true, payUrl: `${appUrl}/orders/${order.id}/pay` });
     if (!sent.success) console.error("auto-quote email failed for", ref);
   }
+  await sendStaffAlert({ event: "placed_quoted", orderRef: ref, orderType: order.order_type, orderId: order.id, amountNaira: quote.total });
   res.json({ auto: true, ref, ...quote, validHours: QUOTE_VALID_HOURS });
 });
 

@@ -11,7 +11,7 @@
 import crypto from "node:crypto";
 import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initializeTransaction, verifyTransaction, createRefund } from "../lib/paystack.js";
-import { sendPaymentReceiptEmail } from "./emailService.js";
+import { sendPaymentReceiptEmail, sendStaffAlert } from "./emailService.js";
 import { startExpressClock } from "./expressService.js";
 
 const PAYABLE_STATUS = "quote_sent";
@@ -158,5 +158,12 @@ export async function confirmPayment(reference) {
       paidAt: verified.paid_at,
     });
   }
+  await sendStaffAlert({
+    event: "paid",
+    orderRef: shortRef(paidOrder.id),
+    orderType: paidOrder.order_type,
+    orderId: paidOrder.id,
+    amountNaira: Number(payment.amount_kobo) / 100,
+  });
   return { outcome: "paid", orderId: paidOrder.id };
 }

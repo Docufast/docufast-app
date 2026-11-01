@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isStaff, ROLE_INTRO, type StaffRole } from "@/lib/staffRoles";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -100,6 +101,7 @@ export default function AdminDashboardPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[] | null>(null);
   const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [role, setRole] = useState<StaffRole | null>(null);
 
   async function loadEnquiries(token: string | undefined) {
     try {
@@ -144,10 +146,11 @@ export default function AdminDashboardPage() {
         .eq("id", user.id)
         .single();
 
-      if (profile?.role !== "founder") {
+      if (!isStaff(profile?.role)) {
         window.location.href = "/home";
         return;
       }
+      setRole(profile.role);
 
       setLoading(false);
 
@@ -156,7 +159,7 @@ export default function AdminDashboardPage() {
           data: { session },
         } = await supabase.auth.getSession();
         setAccessToken(session?.access_token ?? null);
-        loadEnquiries(session?.access_token);
+        if (profile.role !== "filer") loadEnquiries(session?.access_token);
 
         const res = await fetch("/api/admin/summary", {
           headers: {
@@ -206,7 +209,12 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Four core metrics — always visible */}
+        {role && ROLE_INTRO[role] && (
+          <p className="mb-6 rounded-card border-2 border-brand-black bg-brand-yellow/10 px-4 py-3 text-sm">{ROLE_INTRO[role]}</p>
+        )}
+
+        {/* Four core metrics: Founder only (#224) */}
+        {role === "founder" && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Monthly net revenue" value="₦0" sublabel="Month-to-date · ₦0 YTD" />
           <MetricCard
@@ -217,8 +225,10 @@ export default function AdminDashboardPage() {
           <MetricCard label="Cash runway" value="Not set" sublabel="Manual input required" />
           <MetricCard label="Open issues" value="0" />
         </div>
+        )}
 
-        {/* Help chat questions from the website (JSB, 27 Oct 2026) */}
+        {/* Help chat questions from the website (JSB, 27 Oct 2026): Founder and Support */}
+        {role !== "filer" && (
         <div className="mt-8">
           <Module
             title={`Customer questions${
@@ -273,9 +283,11 @@ export default function AdminDashboardPage() {
             )}
           </Module>
         </div>
+        )}
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Module 1 — Commercial & Revenue */}
+          {/* Module 1 — Commercial & Revenue: Founder only (#224) */}
+          {role === "founder" && (
           <Module title="Commercial & Revenue">
             <div className="flex flex-col gap-3">
               {!summary || Object.keys(summary.statusBreakdown).length === 0 ? (
@@ -313,6 +325,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </Module>
+          )}
 
           {/* Module 2 — Operations & Quality (incl. QR Verification Feed) */}
           <Module title="Operations & Quality">
@@ -327,7 +340,7 @@ export default function AdminDashboardPage() {
                     .map((order) => (
                     <Link
                       key={order.id}
-                      href={`/admin/orders/${order.id}`}
+                      href={role === "support" ? "/admin" : `/admin/orders/${order.id}`}
                       className="flex items-center justify-between px-3 py-2 text-sm hover:bg-brand-yellow/10"
                     >
                       <div>
@@ -375,6 +388,7 @@ export default function AdminDashboardPage() {
             </div>
           </Module>
 
+          {role === "founder" && (<>
           {/* Module 3 — Financial & Cash */}
           <Module title="Financial & Cash">
             <div className="flex flex-col gap-3 text-sm">
@@ -426,6 +440,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </Module>
+          </>)}
         </div>
       </div>
     </main>

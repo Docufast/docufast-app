@@ -1,3 +1,4 @@
+import { isStaff } from "@/lib/staffRoles";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "founder") {
+  if (!isStaff(profile?.role)) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
