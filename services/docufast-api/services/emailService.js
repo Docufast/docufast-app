@@ -123,3 +123,46 @@ export async function sendExpressRefundEmail(toEmail, { orderRef, amountNaira })
     return { success: false, error: error.response?.body || error.message };
   }
 }
+
+// Itemised quote and pro-forma invoice, sent the moment a fixed-price order is placed (JSB, 1 Nov 2026).
+// Only Docufast's own fixed text and numbers go into the HTML (no customer-typed text).
+export async function sendItemizedQuoteEmail(toEmail, { serviceLabel, orderRef, lines, total, validHours, payUrl }) {
+  const ngn = (n) => `NGN ${Number(n).toLocaleString("en-NG")}`;
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const textLines = lines.map((l) => `- ${l.label}: ${ngn(l.amount)}`).join("\n");
+  const rows = lines
+    .map((l) => `<tr><td style="padding:6px 0;">${esc(l.label)}</td><td style="padding:6px 0;text-align:right;">${ngn(l.amount)}</td></tr>`)
+    .join("");
+  const msg = {
+    to: toEmail,
+    from: { email: FROM_EMAIL, name: FROM_NAME },
+    subject: `Your Docufast quote: ${serviceLabel} (${orderRef})`,
+    text:
+      `Thank you for your order. Here is your quote (pro-forma invoice).\n\n` +
+      `${serviceLabel} (${orderRef})\n${textLines}\nTotal: ${ngn(total)}\n\n` +
+      `Pay securely on docufast.ng: ${payUrl}\nThis quote is valid for ${validHours} hours. Work starts once payment is confirmed.\n\n` +
+      `Pay only on docufast.ng. Never into a personal account, never inside WhatsApp.\n` +
+      `Docufast Integrated Services Ltd, RC 1893484. Prices include VAT. Questions: support@docufast.ng or WhatsApp 0905 495 1918.`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; color: #0D0D0D;">
+        <h2>Your quote (pro-forma invoice)</h2>
+        <p><strong>${esc(serviceLabel)}</strong> (${esc(orderRef)})</p>
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">${rows}
+          <tr><td style="padding:8px 0;border-top:2px solid #0D0D0D;"><strong>Total</strong></td>
+              <td style="padding:8px 0;border-top:2px solid #0D0D0D;text-align:right;"><strong>${ngn(total)}</strong></td></tr>
+        </table>
+        <p style="margin:20px 0;"><a href="${esc(payUrl)}" style="background:#F2B705;color:#0D0D0D;padding:12px 20px;border-radius:8px;font-weight:bold;text-decoration:none;">Pay securely on docufast.ng</a></p>
+        <p>This quote is valid for ${Number(validHours)} hours. Work starts once payment is confirmed.</p>
+        <p style="color:#666; font-size:13px;">Pay only on docufast.ng. Never into a personal account, never inside WhatsApp.<br/>
+        Docufast Integrated Services Ltd, RC 1893484. Prices include VAT. Questions: support@docufast.ng or WhatsApp 0905 495 1918.</p>
+      </div>
+    `,
+  };
+  try {
+    await sgMail.send(msg);
+    return { success: true };
+  } catch (error) {
+    console.error("SendGrid error:", error.response?.body || error.message);
+    return { success: false, error: error.response?.body || error.message };
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { FACTS } from "@/lib/seo/facts";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,13 +10,18 @@ import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
 
 import HomeLink from "@/components/ui/HomeLink";
+import {
+  COURTS, DIVISIONS, COURT_HELP, COPIES_HELP, OTHER, USES, jurisdictionText, reasonOptions, suggestedPurpose,
+} from "@/lib/affidavitGuide";
+import { affidavitQuote, naira, type Quote } from "@/lib/pricing";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 // Extra fields shown depending on the affidavit's category — the pattern
 // repeats across all types, only the category-specific block changes.
 const CATEGORY_FIELDS: Record<AffidavitCategory, { key: string; label: string; placeholder: string }[]> = {
   name: [
     { key: "old_name", label: "Current/old name", placeholder: "As it appears on your ID" },
     { key: "new_name", label: "New/correct name", placeholder: "The name to be used going forward" },
-    { key: "reason", label: "Reason for change", placeholder: "e.g. marriage, personal preference" },
   ],
   birth_age: [
     { key: "declared_dob", label: "Declared date of birth", placeholder: "DD/MM/YYYY" },
@@ -52,8 +57,12 @@ export default function AffidavitOrderPage() {
   const { activeOrgId } = useOrg();
 
   const [deponentName, setDeponentName] = useState("");
-  const [jurisdiction, setJurisdiction] = useState("");
-  const [purpose, setPurpose] = useState("");
+  const [court, setCourt] = useState<string>(COURTS[0].value);
+  const [division, setDivision] = useState<string>(DIVISIONS[0]);
+  const [reasonChoice, setReasonChoice] = useState("");
+  const [reasonOther, setReasonOther] = useState("");
+  const [uses, setUses] = useState<string[]>([]);
+  const [purposeEdited, setPurposeEdited] = useState<string | null>(null); // null = use the suggestion
   const [authenticatedBy, setAuthenticatedBy] = useState<"commissioner" | "notary">("commissioner");
   const [copies, setCopies] = useState(1);
   const [speed, setSpeed] = useState<"standard" | "express">("standard");
@@ -61,6 +70,18 @@ export default function AffidavitOrderPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<{ id: string; ref: string; quote: Quote; auto: boolean } | null>(null);
+
+  const reason = affidavitType ? reasonOptions(slug, affidavitType.category) : null;
+  const reasonValue = reasonChoice === OTHER ? reasonOther.trim() : reasonChoice;
+  const fieldValues = useMemo(
+    () => ({ ...extraValues, ...(reason && reasonValue ? { [reason.key]: reasonValue } : {}) }),
+    [extraValues, reason, reasonValue]
+  );
+  const suggestion = affidavitType ? suggestedPurpose(slug, affidavitType.category, fieldValues, uses) : "";
+  const purpose = purposeEdited ?? suggestion;
+  const jurisdiction = jurisdictionText(court, division);
+  const quote = affidavitQuote(slug, speed, copies);
 
   if (!affidavitType) {
     return (
@@ -79,7 +100,10 @@ export default function AffidavitOrderPage() {
     e.preventDefault();
     setSubmitError(null);
 
-    if (!deponentName || !jurisdiction || !purpose) return;
+    if (!deponentName.trim()) return setSubmitError("Please enter the full name of the person swearing the affidavit.");
+    if (!jurisdiction) return setSubmitError("Please choose the court.");
+    if (!purpose.trim()) return setSubmitError("Please say what the affidavit is for.");
+    if (reason && !reasonValue) return setSubmitError(`Please choose: ${reason.label.toLowerCase()}.`);
 
     const {
       data: { user },
@@ -93,7 +117,7 @@ export default function AffidavitOrderPage() {
 
     setSubmitting(true);
 
-    const { error } = await supabase.from("orders").insert({
+    const { data: inserted, error } = await supabase.from("orders").insert({
       user_id: user.id,
       entity_id: activeOrgId === "personal" ? null : activeOrgId,
       service_category: "affidavit",
@@ -103,36 +127,79 @@ export default function AffidavitOrderPage() {
       form_data: {
         deponent_name: deponentName,
         jurisdiction,
+        court,
+        division,
         purpose,
+        purpose_suggested: purposeEdited === null,
+        uses,
         authenticated_by: authenticatedBy,
         copies,
-        ...extraValues,
+        ...fieldValues,
       },
-    });
+    }).select("id").single();
 
-    setSubmitting(false);
-    if (error) {
-      setSubmitError(error.message);
+    if (error || !inserted) {
+      setSubmitting(false);
+      setSubmitError("We could not save your order. Please try again, or message us on WhatsApp.");
       return;
     }
+
+    // Price it at once on the server and email the quote (JSB, 1 Nov 2026). If this step fails,
+    // the order is still saved and a person sends the quote.
+    let auto = false;
+    let ref = `DF-${inserted.id.slice(0, 8).toUpperCase()}`;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_URL}/orders/${inserted.id}/auto-quote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ""}` },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok) { auto = !!body.auto; ref = body.ref || ref; }
+    } catch { /* a person sends the quote */ }
+
+    setSubmitting(false);
+    setPlaced({ id: inserted.id, ref, quote, auto });
     setSubmitted(true);
   }
 
-  if (submitted) {
+  if (submitted && placed) {
     return (
-      <main className="mx-auto max-w-xl px-6 py-16 text-center">
-        <div className="rounded-card border-4 border-brand-black bg-brand-yellow/10 p-8">
-          <h1 className="text-2xl font-extrabold text-brand-black">Order received</h1>
-          <p className="mt-3 text-sm text-brand-gray">
-            Your request for {affidavitType.label.toLowerCase()} has been saved.
-            {FACTS.quotePromise}. We also send it by email and WhatsApp.
-          </p>
-          <Link
-            href="/orders"
-            className="mt-5 inline-block rounded-card bg-brand-black px-5 py-3 text-sm font-bold text-brand-white"
-          >
-            View your orders →
-          </Link>
+      <main className="mx-auto max-w-xl px-6 py-12 pb-40 sm:pb-12">
+        <div className="rounded-card border-4 border-brand-black p-6">
+          <p className="text-xs font-bold uppercase tracking-wide text-brand-gray">Order {placed.ref}</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-brand-black">
+            {placed.auto ? "Your quote is ready" : "Order received"}
+          </h1>
+          <p className="mt-1 text-sm text-brand-black">{affidavitType.label}</p>
+          <table className="mt-4 w-full text-sm">
+            <tbody>
+              {placed.quote.lines.map((l) => (
+                <tr key={l.label}><td className="py-1.5 pr-3">{l.label}</td><td className="py-1.5 text-right">{naira(l.amount)}</td></tr>
+              ))}
+              {!placed.quote.complete && (
+                <tr><td className="py-1.5 pr-3">Extra certified copies</td><td className="py-1.5 text-right">On your quote</td></tr>
+              )}
+              <tr className="border-t-2 border-brand-black font-bold">
+                <td className="py-2">{placed.quote.complete ? "Total" : "Total so far"}</td>
+                <td className="py-2 text-right">{naira(placed.quote.total)}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="mt-3 text-xs text-brand-gray">Prices include VAT and the court fee. Valid for {FACTS.pricing.quoteValidHours} hours.</p>
+          {placed.auto ? (
+            <>
+              <p className="mt-3 text-sm text-brand-black">We have emailed this quote to you. Work starts once payment is confirmed.</p>
+              <Link href={`/orders/${placed.id}/pay`} className="mt-4 block rounded-card bg-brand-yellow px-5 py-3 text-center text-base font-bold text-brand-black">
+                Pay securely now →
+              </Link>
+            </>
+          ) : (
+            <p className="mt-3 text-sm text-brand-black">
+              {FACTS.quotePromise}. We will email your full quote and you can pay from your orders page.
+            </p>
+          )}
+          <Link href="/orders" className="mt-3 block text-center text-sm font-semibold underline">View your orders</Link>
         </div>
       </main>
     );
@@ -171,15 +238,20 @@ export default function AffidavitOrderPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
-                Jurisdiction / Court
-              </label>
-              <input
-                value={jurisdiction}
-                onChange={(e) => setJurisdiction(e.target.value)}
-                placeholder="e.g. High Court of Lagos State — Ikeja"
-                className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
-              />
+              <label htmlFor="court" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">Court</label>
+              <select id="court" value={court} onChange={(e) => setCourt(e.target.value)}
+                className="w-full rounded-input border-4 border-brand-black bg-brand-white px-3 py-2.5 outline-none">
+                {COURTS.map((c) => <option key={c.value} value={c.value}>{c.value}</option>)}
+              </select>
+              <p className="mt-1 text-xs text-brand-gray">{COURTS.find((c) => c.value === court)?.hint}</p>
+            </div>
+            <div>
+              <label htmlFor="division" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">Division (area)</label>
+              <select id="division" value={division} onChange={(e) => setDivision(e.target.value)}
+                className="w-full rounded-input border-4 border-brand-black bg-brand-white px-3 py-2.5 outline-none">
+                {DIVISIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <p className="mt-1 text-xs text-brand-gray">{COURT_HELP}</p>
             </div>
           </div>
         </div>
@@ -202,16 +274,54 @@ export default function AffidavitOrderPage() {
                 />
               </div>
             ))}
+            {reason && (
+              <div>
+                <label htmlFor="reason" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">{reason.label}</label>
+                <select id="reason" value={reasonChoice} onChange={(e) => setReasonChoice(e.target.value)}
+                  className="w-full rounded-input border-4 border-brand-black bg-brand-white px-3 py-2.5 outline-none">
+                  <option value="">Choose one</option>
+                  {reason.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+                {reasonChoice === OTHER && (
+                  <input value={reasonOther} onChange={(e) => setReasonOther(e.target.value)} placeholder="Write the reason in a few words"
+                    className="mt-2 w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none" />
+                )}
+              </div>
+            )}
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+              <p className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">Where will you use it? (choose any)</p>
+              <div className="flex flex-wrap gap-2">
+                {USES.map((u) => {
+                  const on = uses.includes(u);
+                  return (
+                    <button key={u} type="button" aria-pressed={on}
+                      onClick={() => setUses(on ? uses.filter((x) => x !== u) : [...uses, u])}
+                      className={`rounded-card border-2 border-brand-black px-3 py-2 text-xs font-semibold ${on ? "bg-brand-black text-brand-white" : ""}`}>
+                      {u}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <label htmlFor="purpose" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Purpose of affidavit
               </label>
+              <p className="mb-1.5 text-xs text-brand-gray">
+                We have written this for you from your answers. Keep it, or change any words so it fits your situation.
+              </p>
               <textarea
+                id="purpose"
                 value={purpose}
-                onChange={(e) => setPurpose(e.target.value)}
-                rows={2}
+                onChange={(e) => setPurposeEdited(e.target.value)}
+                rows={6}
                 className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
               />
+              {purposeEdited !== null && (
+                <button type="button" onClick={() => setPurposeEdited(null)} className="mt-1 text-xs font-semibold underline">
+                  Use the suggested wording again
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -237,23 +347,23 @@ export default function AffidavitOrderPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAuthenticatedBy("notary")}
-                  className={`flex-1 rounded-card border-4 border-brand-black px-3 py-2 text-sm font-bold ${
-                    authenticatedBy === "notary" ? "bg-brand-black text-brand-white" : ""
-                  }`}
+                  disabled
+                  aria-disabled="true"
+                  className="flex-1 cursor-not-allowed rounded-card border-4 border-brand-gray-light px-3 py-2 text-sm font-bold text-brand-gray"
                 >
-                  Notary Public
+                  Notary Public ({FACTS.notarization.toLowerCase()})
                 </button>
               </div>
               <p className="mt-1 text-xs text-brand-gray">
-                Notary is required for documents going abroad; the court commissioner is
-                standard locally.
+                A Commissioner for Oaths at the court swears your affidavit. This is what offices in Nigeria
+                accept. Notary Public, for documents going abroad, is coming soon.
               </p>
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Certified copies
               </label>
+              <p className="mb-2 text-xs text-brand-gray">{COPIES_HELP}</p>
               <div className="flex gap-2">
                 {[1, 2, 3, 5].map((n) => (
                   <button
@@ -268,6 +378,7 @@ export default function AffidavitOrderPage() {
                   </button>
                 ))}
               </div>
+              <p className="mt-1 text-xs text-brand-gray">1 copy is included in the price.</p>
             </div>
           </div>
         </div>
@@ -279,11 +390,11 @@ export default function AffidavitOrderPage() {
           <div className="flex flex-col gap-2 p-4 sm:flex-row">
             {(
               [
-                ["standard", "Standard", `NGN ${FACTS.pricing.affidavitStandard.toLocaleString("en-US")}`, "Within 2 to 3 working days"],
+                ["standard", "Standard", naira(affidavitQuote(slug, "standard", 1).total), "Within 2 to 3 working days"],
                 [
                   "express",
                   "Express",
-                  `NGN ${FACTS.pricing.affidavitExpress.toLocaleString("en-US")}`,
+                  naira(affidavitQuote(slug, "express", 1).total),
                   "Same day when confirmed before 2 PM on a working day",
                 ],
               ] as const
@@ -311,6 +422,24 @@ export default function AffidavitOrderPage() {
           )}
         </div>
 
+        <div className="rounded-card border-2 border-brand-black p-4" aria-live="polite">
+          <p className="text-xs font-bold uppercase tracking-wide">Your price</p>
+          <table className="mt-2 w-full text-sm">
+            <tbody>
+              {quote.lines.map((l) => (
+                <tr key={l.label}><td className="py-1 pr-3">{l.label}</td><td className="py-1 text-right">{naira(l.amount)}</td></tr>
+              ))}
+              {!quote.complete && (
+                <tr><td className="py-1 pr-3">Extra certified copies</td><td className="py-1 text-right">Priced on your quote</td></tr>
+              )}
+              <tr className="border-t-2 border-brand-black font-bold">
+                <td className="py-1.5">Total</td><td className="py-1.5 text-right">{naira(quote.total)}{quote.complete ? "" : " + copies"}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="mt-1 text-xs text-brand-gray">Includes VAT and the court fee. Nothing to pay at this step.</p>
+        </div>
+
         {submitError && <p className="text-sm text-brand-error">{submitError}</p>}
 
         <button
@@ -318,10 +447,10 @@ export default function AffidavitOrderPage() {
           disabled={submitting}
           className="rounded-card bg-brand-black px-4 py-4 text-base font-bold text-brand-white disabled:opacity-50"
         >
-          {submitting ? "Submitting…" : "Request quote →"}
+          {submitting ? "Placing your order…" : "Place order and get my quote →"}
         </button>
         <p className="text-center text-xs text-brand-gray">
-          {FACTS.quotePromise}. No payment at this step.
+          We email your quote (pro-forma invoice) at once. You pay only when you are ready.
         </p>
       </form>
     </main>
