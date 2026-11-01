@@ -1,0 +1,28 @@
+# Automatic dependency update pull requests (#217). Security updates arrive as soon as a fix is
+# published; other updates are grouped weekly. Each PR still goes through review and the checks.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories: ["/apps/web", "/services/docufast-api", "/services/bluetentbc-api"]
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Africa/Lagos
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      # Next.js 15 needs React 19 and code changes: done as its own planned piece of work.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-config-next"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Africa/Lagos

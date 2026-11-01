@@ -3,6 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 // Help chat questions for the admin dashboard (JSB, 27 Oct 2026). Founder only, checked here
 // on the server; the dashboard's own check is not what protects the data.
+// Security review 31 Oct 2026 (#219): database errors are logged on the server and never sent
+// to the browser, and the id is checked before it reaches the database.
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function adminClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -11,7 +15,8 @@ function adminClient() {
 }
 
 async function requireFounder(request: Request) {
-  const token = request.headers.get("authorization")?.replace("Bearer ", "");
+  const header = request.headers.get("authorization") ?? "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
   if (!token) return { error: NextResponse.json({ error: "Not authenticated." }, { status: 401 }) };
 
   const supabaseAdmin = adminClient();
@@ -37,8 +42,11 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ enquiries: data });
+  if (error) {
+    console.error("admin enquiries list failed", error.message);
+    return NextResponse.json({ error: "Could not load questions." }, { status: 500 });
+  }
+  return NextResponse.json({ enquiries: data }, { headers: { "Cache-Control": "no-store" } });
 }
 
 // Mark a question answered once someone has replied.
@@ -48,13 +56,16 @@ export async function PATCH(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const id = typeof body.id === "string" ? body.id : "";
-  if (!id) return NextResponse.json({ error: "Missing id." }, { status: 400 });
+  if (!UUID.test(id)) return NextResponse.json({ error: "Missing or invalid id." }, { status: 400 });
 
   const { error } = await auth.supabaseAdmin
     .from("enquiries")
     .update({ status: "answered", answered_at: new Date().toISOString(), answered_by: auth.user.id })
     .eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("admin enquiries update failed", error.message);
+    return NextResponse.json({ error: "Could not update this question." }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
