@@ -101,6 +101,12 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
         }
       }
 
+      // Two-factor is compulsory: an account with no authenticator yet sets one up first.
+      if (aal && aal.nextLevel === "aal1") {
+        window.location.href = "/account/security/2fa";
+        return;
+      }
+
       window.location.href = redirectTo;
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -213,7 +219,7 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
             {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
 
             <div className="rounded-[14px] border border-brand-yellow bg-[#FFF6D6] px-4 py-3 text-sm text-brand-black">
-              A 6-digit code follows if two-factor is switched on.
+              Two-factor is required on every account: a 6-digit code from your authenticator app follows, or you will set it up next.
             </div>
 
             <button type="submit" disabled={submitting} className={goldBtn}>

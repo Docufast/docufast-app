@@ -4,6 +4,7 @@ import { OrgProvider } from "@/contexts/OrgContext";
 import SupportChat from "@/components/ui/SupportChat";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import InactivityLogout from "@/components/ui/InactivityLogout";
+import RequireTwoFactor from "@/components/ui/RequireTwoFactor";
 import { JsonLd } from "@/components/JsonLd";
 import { organization, website } from "@/lib/seo/schema";
 import { rootMetadata } from "@/lib/seo/pages";
@@ -38,6 +39,7 @@ export default function RootLayout({
         <SupportChat />
         <WhatsAppButton />
         <InactivityLogout />
+        <RequireTwoFactor />
       </body>
     </html>
   );

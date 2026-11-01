@@ -182,13 +182,7 @@ export default function AccountSettingsPage() {
                   {has2fa ? "On" : "Off"}
                 </span>
                 {has2fa ? (
-                  <button
-                    onClick={handleTurnOff2fa}
-                    disabled={turningOff}
-                    className="text-xs font-bold uppercase text-brand-error underline disabled:opacity-50"
-                  >
-                    {turningOff ? "Turning off…" : "Turn off"}
-                  </button>
+                  <span className="text-xs font-bold uppercase text-brand-gray">Required</span>
                 ) : (
                   <Link href="/account/security/2fa" className="text-xs font-bold uppercase underline">
                     Set up
