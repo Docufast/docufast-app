@@ -108,7 +108,15 @@ export async function confirmPayment(reference) {
     paid_at: tx.paid_at || new Date().toISOString(),
   };
 
-  if (tx.currency !== "NGN" || Number(tx.amount) !== Number(payment.amount_kobo)) {
+  // The customer bears Paystack's fee (JSB, 2 Nov 2026), so Paystack reports a total above the
+  // price. The price itself (requested_amount) must still match the order exactly, and the extra
+  // must be a plausible fee: no more than 5% of the price or NGN 2,000, whichever is larger.
+  const quotedKobo = Number(payment.amount_kobo);
+  const requestedKobo = Number(tx.requested_amount ?? tx.amount);
+  const chargedKobo = Number(tx.amount);
+  const feeKobo = chargedKobo - requestedKobo;
+  const feeLimitKobo = Math.max(Math.round(quotedKobo * 0.05), 200000);
+  if (tx.currency !== "NGN" || requestedKobo !== quotedKobo || feeKobo < 0 || feeKobo > feeLimitKobo) {
     await supabaseAdmin.from("payments").update({ ...verified, status: "amount_mismatch" }).eq("id", payment.id);
     console.error(`Payment ${reference}: amount or currency does not match the quote. Not marking the order paid.`);
     return { outcome: "amount_mismatch", orderId: payment.order_id };
