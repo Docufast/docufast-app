@@ -6,10 +6,14 @@ import { cookies } from "next/headers";
 
 // Admin data is never prepared at build time.
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // Created per request, not when the file loads: a missing key must never be able to fail the build.
 function adminClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    global: { fetch: (url, init) => fetch(url, { ...init, cache: "no-store" }) },
+  });
 }
 
 const TERMINAL_STATUSES = ["delivered", "cancelled"];
