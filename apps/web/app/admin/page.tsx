@@ -49,6 +49,7 @@ interface Summary {
   ordersThisMonth: number;
   statusBreakdown: Record<string, number>;
   liveQueue: Order[];
+  delivery?: { judged: number; met: number; expressLate: number; standardLate: number; percent: number | null };
 }
 
 function orderTypeLabel(serviceCategory: string, orderType: string) {
@@ -363,8 +364,17 @@ export default function AdminDashboardPage() {
                   <div className="font-bold">—</div>
                 </div>
                 <div className="rounded-card border-2 border-brand-black p-3">
-                  <div className="text-xs text-brand-gray">BluetentBC SLA</div>
-                  <div className="font-bold">—</div>
+                  <div className="text-xs text-brand-gray">Affidavits on time, last 30 days</div>
+                  <div className="font-bold">
+                    {summary?.delivery?.percent != null ? `${summary.delivery.percent}% (${summary.delivery.met} of ${summary.delivery.judged})` : "—"}
+                    <span className="text-xs text-brand-gray"> / 100% target</span>
+                  </div>
+                  <div className="mt-1 text-xs text-brand-gray">
+                    Standard within 2 to 3 working days; Express same day if confirmed before 2 PM.
+                    {summary?.delivery && (summary.delivery.expressLate + summary.delivery.standardLate) > 0
+                      ? ` Late: ${summary.delivery.standardLate} standard, ${summary.delivery.expressLate} Express.`
+                      : ""}
+                  </div>
                 </div>
               </div>
               <div className="rounded-card border-2 border-brand-black">
