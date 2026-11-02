@@ -75,7 +75,7 @@ export default function SupportChat() {
   }
 
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 sm:bottom-24 sm:right-6 flex flex-col items-end">
       {open && (
         <div className="mb-3 w-80 max-w-[calc(100vw-3rem)] overflow-hidden rounded-card border-4 border-brand-black bg-brand-white shadow-xl">
           {/* Header */}

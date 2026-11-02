@@ -1,3 +1,4 @@
+import { isStaff } from "@/lib/staffRoles";
 import { tokenAal } from "../../../../lib/tokenAal";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "founder") {
+  if (!isStaff(profile?.role)) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   if (tokenAal(token) !== "aal2") {
@@ -66,9 +67,11 @@ export async function GET(request: Request) {
     statusBreakdown[o.status] = (statusBreakdown[o.status] || 0) + 1;
   }
 
+  // Orders waiting for a person's quote come first, so none drop off the list (#227).
   const liveQueue = orders
     .filter((o) => !TERMINAL_STATUSES.includes(o.status))
-    .slice(0, 10);
+    .sort((a, b) => Number(b.status === "quote_pending") - Number(a.status === "quote_pending"))
+    .slice(0, 20);
 
   return NextResponse.json({
     totalOrders: orders.length,

@@ -123,7 +123,7 @@ export default function AboutPage() {
                 </ol>
                 <p className="mt-3 text-sm text-brand-gray">
                   {FACTS.quotePromise}. {FACTS.affidavitDelivery}. A person checks every document before
-                  it is delivered to your encrypted Vault, where it carries a QR code anyone can verify.
+                  it is delivered to you. Affidavits carry the court's own seal and QR code.
                 </p>
                 <p className="mt-4 text-sm">
                   <Link href="/faq" className="font-semibold text-brand-black underline">

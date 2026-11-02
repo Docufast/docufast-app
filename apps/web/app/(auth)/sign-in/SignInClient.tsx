@@ -6,6 +6,7 @@ import SiteHeader from "@/components/ui/SiteHeader";
 import SiteFooter from "@/components/ui/SiteFooter";
 import { FACTS } from "@/lib/seo/facts";
 import { supabase } from "@/lib/supabase";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import { unwrapPrivateKey } from "@/lib/vaultCrypto";
 import { storeUnlockedPrivateKey } from "@/lib/vaultSession";
 
@@ -33,6 +34,11 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
   const [needsMfa, setNeedsMfa] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
   const [factorId, setFactorId] = useState<string | null>(null);
+  // Bot check (#226): Turnstile token for Supabase Auth CAPTCHA. Empty when no site key is set.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const resetCaptcha = () => { setCaptchaToken(""); setCaptchaKey((k) => k + 1); }; // tokens are single use
 
   async function unlockVaultKey(userId: string, plainPassword: string) {
     try {
@@ -79,7 +85,9 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: identifier,
         password,
+        options: captchaToken ? { captchaToken } : undefined,
       });
+      resetCaptcha();
 
       if (signInError) {
         setError(signInError.message);
@@ -99,12 +107,6 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
           setNeedsMfa(true);
           return;
         }
-      }
-
-      // Two-factor is compulsory: an account with no authenticator yet sets one up first.
-      if (aal && aal.nextLevel === "aal1") {
-        window.location.href = "/account/security/2fa";
-        return;
       }
 
       window.location.href = redirectTo;
@@ -219,10 +221,11 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
             {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
 
             <div className="rounded-[14px] border border-brand-yellow bg-[#FFF6D6] px-4 py-3 text-sm text-brand-black">
-              Two-factor is required on every account: a 6-digit code from your authenticator app follows, or you will set it up next.
+              A 6-digit code follows if two-factor is switched on.
             </div>
 
-            <button type="submit" disabled={submitting} className={goldBtn}>
+            <TurnstileWidget key={captchaKey} onToken={setCaptchaToken} />
+            <button type="submit" disabled={submitting || (captchaRequired && !captchaToken)} className={goldBtn}>
               {submitting ? "Signing in…" : "Sign in"}
             </button>
           </form>

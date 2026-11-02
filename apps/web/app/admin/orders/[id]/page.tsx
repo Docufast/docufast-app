@@ -12,6 +12,8 @@ import FilingSheet from "@/components/admin/FilingSheet";
 import OrderPayments from "@/components/admin/OrderPayments";
 import OrderAccessLog from "@/components/admin/OrderAccessLog";
 import ExpressPanel, { ExpressFields } from "@/components/admin/ExpressPanel";
+import { quoteFor, amountText, naira } from "@/lib/pricing";
+import { FILER_STATUSES, ROLE_INTRO } from "@/lib/staffRoles";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -80,6 +82,7 @@ export default function AdminOrderDetailPage() {
 
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<Order | null>(null);
+  const [role, setRole] = useState<"founder" | "filer" | null>(null);
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [recipientPublicKey, setRecipientPublicKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -116,10 +119,12 @@ export default function AdminOrderDetailPage() {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "founder") {
-      window.location.href = "/home";
+    // Founder and Filer open orders (#224); Support sees the queue only.
+    if (profile?.role !== "founder" && profile?.role !== "filer") {
+      window.location.href = profile?.role === "support" ? "/admin" : "/home";
       return;
     }
+    setRole(profile.role);
 
     try {
       const headers = await getAuthHeader();
@@ -156,7 +161,7 @@ export default function AdminOrderDetailPage() {
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({
           status: statusDraft,
-          quote_amount: priceDraft === "" ? null : Number(priceDraft),
+          ...(role === "founder" ? { quote_amount: priceDraft === "" ? null : Number(priceDraft) } : {}),
         }),
       });
       const data = await res.json();
@@ -315,6 +320,34 @@ export default function AdminOrderDetailPage() {
           </p>
         </div>
 
+        {(() => {
+          // Price check (#227): the same price list the customer saw. Fixed prices are quoted and
+          // emailed automatically; an estimate needs a person to add the variable part.
+          const q = quoteFor(order.service_category, order.order_type, order.speed, order.form_data || {});
+          if (!q || role !== "founder") return null;
+          return (
+            <div className={`mt-6 rounded-card border-2 p-4 text-sm ${q.complete ? "border-brand-black" : "border-brand-error"}`}>
+              <p className="text-xs font-bold uppercase tracking-wide">
+                {q.complete ? "Price list: fixed price" : "Needs your quote: estimate only"}
+              </p>
+              <table className="mt-2 w-full">
+                <tbody>
+                  {q.lines.map((l) => (
+                    <tr key={l.label}><td className="py-1 pr-3">{l.label}</td><td className="py-1 text-right">{amountText(l.amount)}</td></tr>
+                  ))}
+                  <tr className="border-t-2 border-brand-black font-bold"><td className="py-1.5">{q.complete ? "Total" : "Estimate"}</td><td className="py-1.5 text-right">{naira(q.total)}</td></tr>
+                </tbody>
+              </table>
+              {q.note && <p className="mt-1 text-xs">{q.note} Add the extra amount, then set the status to Quote sent to email the customer.</p>}
+              {order.status === "quote_pending" && (
+                <button type="button" onClick={() => setPriceDraft(String(q.total))} className="mt-2 text-xs font-bold underline">
+                  Start from {naira(q.total)}
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
         <div className="mt-6 rounded-card border-2 border-brand-black">
           <div className="border-b-2 border-brand-black bg-brand-yellow/10 px-4 py-2 text-xs font-bold uppercase tracking-wide">
             Status & Quote
@@ -330,13 +363,14 @@ export default function AdminOrderDetailPage() {
                   onChange={(e) => setStatusDraft(e.target.value)}
                   className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
                 >
-                  {STATUS_OPTIONS.map((s) => (
+                  {STATUS_OPTIONS.filter((s) => role === "founder" || FILER_STATUSES.includes(s) || s === order.status).map((s) => (
                     <option key={s} value={s}>
                       {STATUS_LABELS[s]}
                     </option>
                   ))}
                 </select>
               </div>
+              {role === "founder" ? (
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                   Quoted price (₦)
@@ -349,6 +383,9 @@ export default function AdminOrderDetailPage() {
                   className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
                 />
               </div>
+              ) : (
+                <p className="self-end text-xs text-brand-gray">{ROLE_INTRO.filer}</p>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -377,9 +414,9 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        <OrderPayments apiUrl={API_URL} orderId={order.id} getAuthHeader={getAuthHeader} />
+        {role === "founder" && <OrderPayments apiUrl={API_URL} orderId={order.id} getAuthHeader={getAuthHeader} />}
 
-        {order.service_category === "affidavit" && (
+        {role === "founder" && order.service_category === "affidavit" && (
           <ExpressPanel apiUrl={API_URL} order={order} getAuthHeader={getAuthHeader} onChanged={loadOrder} />
         )}
 

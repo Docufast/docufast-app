@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 
 // Help chat question form (JSB, 27 Oct 2026). Questions are saved to public.enquiries through
 // /api/enquiries and appear on the admin dashboard for the team to answer.
@@ -19,6 +20,9 @@ export default function AskQuestionForm() {
   const [company, setCompany] = useState(""); // honeypot, hidden from people
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState(""); // bot check (#219)
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,8 +42,9 @@ export default function AskQuestionForm() {
       const res = await fetch("/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, question, company, page: window.location.pathname }),
+        body: JSON.stringify({ name, email, phone, question, company, turnstileToken, page: window.location.pathname }),
       });
+      setTurnstileToken(""); setCaptchaKey((k) => k + 1); // tokens are single use
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setStatus("error");
@@ -96,9 +101,10 @@ export default function AskQuestionForm() {
         </label>
       </div>
 
+      <TurnstileWidget key={captchaKey} onToken={setTurnstileToken} />
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status === "sending" || (captchaRequired && !turnstileToken)}
         className="mt-1 rounded-card bg-brand-yellow px-4 py-2 text-sm font-bold text-brand-black hover:bg-brand-yellow-hover disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : "Send question"}

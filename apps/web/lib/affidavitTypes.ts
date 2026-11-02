@@ -40,7 +40,7 @@ export const AFFIDAVIT_TYPES: AffidavitType[] = [
   { slug: "loss_drivers_licence", label: "Loss of Driver's Licence", category: "loss" },
   { slug: "loss_vehicle_docs", label: "Loss of Vehicle Documents", category: "loss" },
 
-  { slug: "bachelorhood_spinsterhood", label: "Bachelorhood/Spinsterhood", category: "marriage" },
+  { slug: "bachelorhood_spinsterhood", label: "Bachelorhood / Spinsterhood", category: "marriage" },
   { slug: "declaration_of_marriage", label: "Declaration of Marriage", category: "marriage" },
   { slug: "dissolution_of_marriage", label: "Dissolution of Marriage", category: "marriage" },
 

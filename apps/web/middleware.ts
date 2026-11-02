@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
     `connect-src 'self' https://*.supabase.co ${backendUrl} https://*.r2.cloudflarestorage.com`,
+    "frame-src https://challenges.cloudflare.com", // Turnstile (#219, #226)
     "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",

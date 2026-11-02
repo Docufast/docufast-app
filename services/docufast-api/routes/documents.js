@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
-import { supabaseAdmin, tokenAal } from "../lib/verifyFounder.js";
+import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { logDocumentAccess } from "../lib/accessLog.js";
 import { SHARE_DAY_CHOICES, newShareToken, hashShareToken, revokeShare } from "../services/shareService.js";
 
@@ -22,8 +22,7 @@ async function signedInUser(req) {
     data: { user },
     error,
   } = await supabaseAdmin.auth.getUser(token);
-  if (error || !user) return null;
-  return tokenAal(token) === "aal2" ? user : null;
+  return error || !user ? null : user;
 }
 
 // POST /documents/:id/shares — the owner creates a share link (Terms section 10).
@@ -118,9 +117,6 @@ router.get("/:id/download", async (req, res) => {
   } = await supabaseAdmin.auth.getUser(token);
   if (authError || !user) {
     return res.status(401).json({ error: "Not authenticated." });
-  }
-  if (tokenAal(token) !== "aal2") {
-    return res.status(403).json({ error: "Two-factor sign-in required." });
   }
 
   const { data: document } = await supabaseAdmin

@@ -1,6 +1,12 @@
 import express from "express";
-import { supabaseAdmin, tokenAal } from "../lib/verifyFounder.js";
+import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initiatePayment, confirmPayment } from "../services/paymentService.js";
+import { instantQuote } from "../services/pricing.js";
+import { serviceLabel } from "../services/servicePricing.js";
+import { sendItemizedQuoteEmail, sendStaffAlert } from "../services/emailService.js";
+
+const QUOTE_VALID_HOURS = 48; // FACTS.pricing.quoteValidHours
+
 
 const router = express.Router();
 
@@ -22,13 +28,82 @@ async function verifyOwner(req, res) {
     res.status(401).json({ error: "Not authenticated." });
     return null;
   }
-  if (tokenAal(token) !== "aal2") {
-    res.status(403).json({ error: "Two-factor sign-in required." });
-    return null;
-  }
 
   return user;
 }
+
+// POST /orders/:id/auto-quote (JSB, 1 Nov 2026). Called by the order form right after the order is
+// saved. Prices fixed-price orders at once from services/pricing.js (never from the browser), marks
+// the quote sent and emails it. Orders a person must price stay quote_pending and get the usual
+// manual quote. Safe to call twice: only a quote_pending order with no amount is changed.
+router.post("/:id/auto-quote", async (req, res) => {
+  const user = await verifyOwner(req, res);
+  if (!user) return;
+  if (!/^[0-9a-f-]{36}$/i.test(req.params.id)) return res.status(400).json({ error: "Bad order id." });
+
+  const { data: order } = await supabaseAdmin
+    .from("orders")
+    .select("id, user_id, status, quote_amount, service_category, order_type, speed, form_data")
+    .eq("id", req.params.id)
+    .single();
+  if (!order) return res.status(404).json({ error: "Order not found." });
+  if (order.user_id !== user.id) return res.status(403).json({ error: "Forbidden." });
+
+  const ref = `DF-${order.id.slice(0, 8).toUpperCase()}`;
+  const quote = instantQuote(order);
+  if (!quote) {
+    if (order.status === "quote_pending" && !order.form_data?.staff_alerted) {
+      await sendStaffAlert({ event: "placed_needs_quote", orderRef: ref, orderType: order.order_type, orderId: order.id, extra: "No price list entry: a person must quote it." });
+      await supabaseAdmin.from("orders").update({ form_data: { ...order.form_data, staff_alerted: true } }).eq("id", order.id);
+    }
+    return res.json({ auto: false, ref });
+  }
+  const appUrl = (process.env.APP_URL || "https://www.docufast.ng").replace(/\/$/, "");
+  const emailBase = {
+    serviceLabel: serviceLabel(order.order_type),
+    orderRef: ref,
+    lines: quote.lines,
+    total: quote.total,
+    validHours: QUOTE_VALID_HOURS,
+    note: quote.note,
+  };
+
+  // Estimate only: a person confirms the final quote. Email the estimate now; status unchanged.
+  if (!quote.final) {
+    if (order.status === "quote_pending" && !order.quote_amount && user.email && !order.form_data?.estimate_emailed) {
+      const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: false, payUrl: `${appUrl}/orders` });
+      if (sent.success) {
+        await supabaseAdmin.from("orders").update({ form_data: { ...order.form_data, estimate_emailed: true } }).eq("id", order.id);
+        await sendStaffAlert({ event: "placed_needs_quote", orderRef: ref, orderType: order.order_type, orderId: order.id, amountNaira: quote.total, extra: `Estimate only. ${quote.note || ""}` });
+      } else console.error("estimate email failed for", ref);
+    }
+    return res.json({ auto: false, ref, ...quote });
+  }
+
+  if (order.status !== "quote_pending" || order.quote_amount) {
+    return res.json({ auto: true, ref, ...quote, alreadyQuoted: true });
+  }
+
+  const { data: updated, error } = await supabaseAdmin
+    .from("orders")
+    .update({ quote_amount: quote.total, status: "quote_sent" })
+    .eq("id", order.id)
+    .eq("status", "quote_pending") // no double quote if two calls race
+    .select("id")
+    .maybeSingle();
+  if (error) {
+    console.error("auto-quote update failed", error.message);
+    return res.status(500).json({ error: "Could not prepare your quote. We will send it shortly." });
+  }
+  if (!updated) return res.json({ auto: true, ref, ...quote, alreadyQuoted: true });
+
+  if (user.email) {
+    const sent = await sendItemizedQuoteEmail(user.email, { ...emailBase, final: true, payUrl: `${appUrl}/orders/${order.id}/pay` });
+    if (!sent.success) console.error("auto-quote email failed for", ref);
+  }
+  await sendStaffAlert({ event: "placed_quoted", orderRef: ref, orderType: order.order_type, orderId: order.id, amountNaira: quote.total });
+  res.json({ auto: true, ref, ...quote, validHours: QUOTE_VALID_HOURS });
+});
 
 // POST /orders/:id/initiate-payment
 router.post("/:id/initiate-payment", async (req, res) => {

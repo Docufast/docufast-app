@@ -1,6 +1,6 @@
-// Shared source of truth for Newspaper Publications — matches the Platform
+// Shared source of truth for Newspaper Publications, matches the Platform
 // Playbook order_type enum values (3 types). Always paired with a parent
-// affidavit or CAC filing — never standalone.
+// affidavit or CAC filing, never standalone.
 
 export interface PublicationField {
   label: string;
