@@ -352,7 +352,7 @@ export default function AdminDashboardPage() {
                         <div className="text-xs text-brand-gray">{shortRef(order.id)}</div>
                       </div>
                       <span className={`rounded-card px-2 py-1 text-xs font-bold uppercase ${order.status === "quote_pending" ? "bg-brand-black text-brand-white" : "bg-brand-yellow"}`}>
-                        {order.status === "quote_pending" ? "Needs your quote" : STATUS_LABELS[order.status] || order.status}
+                        {order.status === "quote_pending" ? (role === "founder" ? "Needs your quote" : "Waiting for a quote") : STATUS_LABELS[order.status] || order.status}
                       </span>
                     </Link>
                   ))}
@@ -377,25 +377,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               </div>
-              <div className="rounded-card border-2 border-brand-black">
-                <div className="border-b-2 border-brand-black px-3 py-2 text-xs font-bold uppercase tracking-wide">
-                  QR Verification Feed
-                </div>
-                <div className="grid grid-cols-2 gap-3 p-3 text-sm">
-                  <div>
-                    <div className="text-xs text-brand-gray">Scans today / this month</div>
-                    <div className="font-bold">0 / 0</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-brand-gray">Revocations this month</div>
-                    <div className="font-bold">0</div>
-                  </div>
-                </div>
-                <p className="border-t-2 border-brand-black px-3 py-2 text-xs text-brand-gray">
-                  Not built yet — this feed goes live once the QR Verification Layer (Phase 8) is
-                  implemented.
-                </p>
-              </div>
+              {/* QR Verification Feed: hidden until the Docufast QR check is built (Phase 8, #110). */}
             </div>
           </Module>
 
