@@ -136,10 +136,14 @@ export default function FilingSheet({ apiUrl, orderId, orderRef, orderType, form
           <p className="mt-1">
             <span className="text-brand-gray">Identification video: </span>
             <span className="font-semibold">
-              {mapping.needsVideo === null ? "Not confirmed yet (#184)" : mapping.needsVideo ? "Needed. Contact the customer." : "Not needed"}
+              {mapping.needsVideo === null ? "Where applicable: do it whenever LagosCoMiS or the Commissioner asks (#184)" : mapping.needsVideo ? "Needed. Contact the customer." : "Not needed"}
             </span>
           </p>
         </div>
+
+        <p className="text-xs text-brand-gray">
+          Every affidavit is sworn before a Commissioner for Oaths, including e-swearing. Never file one without it.
+        </p>
 
         <div>
           <p className={label}>Details to enter on the portal</p>
