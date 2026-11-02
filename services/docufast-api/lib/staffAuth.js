@@ -9,6 +9,17 @@
 // document download is logged with the person's role.
 import { supabaseAdmin } from "./verifyFounder.js";
 
+// Reads the "aal" claim from an access token. Only used after getUser() has verified the token.
+function tokenAal(token) {
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const aal = JSON.parse(Buffer.from(payload, "base64").toString("utf8"))?.aal;
+    return typeof aal === "string" ? aal : null;
+  } catch {
+    return null;
+  }
+}
+
 export const ROLE_PERMISSIONS = {
   founder: ["queue", "order", "order_status", "quote", "filing", "deliver", "download", "payments", "express", "access_log", "enquiries"],
   filer: ["queue", "order", "order_status", "filing", "deliver", "download", "access_log"],
@@ -29,6 +40,7 @@ export async function verifyStaff(req, permission) {
   if (!token) return null;
   const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) return null;
+  if (tokenAal(token) !== "aal2") return null; // staff always use the authenticator app (#220)
   const { data: profile } = await supabaseAdmin.from("profiles").select("role").eq("id", user.id).single();
   const role = profile?.role;
   if (!can(role, permission)) return null;

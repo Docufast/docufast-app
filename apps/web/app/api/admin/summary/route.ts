@@ -1,4 +1,5 @@
 import { isStaff } from "@/lib/staffRoles";
+import { tokenAal } from "../../../../lib/tokenAal";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -40,6 +41,9 @@ export async function GET(request: Request) {
 
   if (!isStaff(profile?.role)) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+  if (tokenAal(token) !== "aal2") {
+    return NextResponse.json({ error: "Two-factor sign-in required." }, { status: 403 });
   }
 
   const { data: orders, error } = await supabaseAdmin
