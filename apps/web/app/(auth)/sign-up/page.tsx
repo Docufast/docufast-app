@@ -175,7 +175,9 @@ export default function SignUpPage() {
   }
 
   function handleContinue() {
-    window.location.href = "/account/security/2fa";
+    // No second step before payment for customers (JSB and Olamide, 1 Nov 2026).
+    // The authenticator app stays optional, under account security.
+    window.location.href = "/home";
   }
 
   if (recoveryPhrase) {
