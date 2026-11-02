@@ -52,7 +52,7 @@ jobs:
           retention-days: 90
 
       - name: Known vulnerabilities (Grype)
-        uses: anchore/scan-action@v6
+        uses: anchore/scan-action@v7
         with:
           sbom: sbom.spdx.json
           fail-build: false # set to true after the Next.js 15 upgrade
