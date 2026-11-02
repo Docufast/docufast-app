@@ -84,7 +84,7 @@ export default function SharedDocumentPage() {
         {message && <p className="mt-3 text-sm text-brand-error">{message}</p>}
 
         <p className="mt-6 text-xs text-brand-gray">
-          Documents Docufast delivers carry a QR code and a reference. To check one is genuine, go to{" "}
+          Affidavits carry the court's seal and QR code. Docufast's own document check is coming soon at{" "}
           <Link href="/verify" className="font-bold underline">
             docufast.ng/verify
           </Link>

@@ -34,6 +34,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
     if (!user) {
       setOrgs([PERSONAL_ORG]);
+      setActiveOrgIdState("personal");
       setLoading(false);
       return;
     }
@@ -56,6 +57,18 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       role: "Owner",
     }));
     setOrgs([PERSONAL_ORG, ...realOrgs]);
+    // A saved choice that is not one of this user's own organisations (left over from another
+    // account in the same browser) would make order creation fail; fall back to Personal.
+    const ownIds = new Set(realOrgs.map((o) => o.id));
+    setActiveOrgIdState((current) => {
+      if (current === "personal" || ownIds.has(current)) return current;
+      try {
+        localStorage.removeItem(ACTIVE_KEY);
+      } catch {
+        // localStorage unavailable — nothing to clear.
+      }
+      return "personal";
+    });
     setLoading(false);
   }
 

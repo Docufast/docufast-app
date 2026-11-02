@@ -28,7 +28,7 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
         </div>
       )}
 
-      <h1 className="mt-6 text-3xl font-extrabold text-brand-black">{title}</h1>
+      <h1 className="mt-6 break-words text-3xl font-extrabold text-brand-black">{title}</h1>
       <p className="mt-1 text-sm text-brand-gray">
         Last updated: <Open>{LEGAL_LAST_UPDATED}</Open>
       </p>

@@ -1,0 +1,74 @@
+# Docufast security checks (#217, #226). Runs on every pull request, on main, and every Monday.
+#
+#   1. Syft: a software list (SBOM) of the repo, kept as a build artefact for 90 days.
+#   2. Grype: known vulnerabilities in that list. REPORT ONLY for now: the remaining Next.js 14
+#      advisories need the Next.js 15 upgrade (planned after launch). After that upgrade, set
+#      fail-build to true so new High or Critical issues with a fix block the merge.
+#   3. Gitleaks: passwords, keys or tokens committed by mistake. FAILS the build on any finding.
+#      Uses the open-source gitleaks image directly, so no licence key is needed.
+#
+# After the first green run: make "security / secrets" (and later "security / sbom-and-vulnerabilities")
+# required checks in the branch protection rule for main (#220), and pin each action to a commit SHA.
+
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+  schedule:
+    - cron: "30 6 * * 1" # Mondays 07:30 WAT
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sbom-and-vulnerabilities:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+
+      - name: Keep the SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.spdx.json
+          retention-days: 90
+
+      - name: Known vulnerabilities (Grype)
+        uses: anchore/scan-action@v6
+        with:
+          sbom: sbom.spdx.json
+          fail-build: false # set to true after the Next.js 15 upgrade
+          severity-cutoff: high
+          only-fixed: true
+          output-format: table
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # scan the whole history, not just the last commit
+          persist-credentials: false
+      - name: Leaked secrets (Gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            detect --source /repo --redact --no-banner --exit-code 1

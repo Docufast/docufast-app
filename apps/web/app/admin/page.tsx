@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isStaff, ROLE_INTRO, type StaffRole } from "@/lib/staffRoles";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -48,6 +49,7 @@ interface Summary {
   ordersThisMonth: number;
   statusBreakdown: Record<string, number>;
   liveQueue: Order[];
+  delivery?: { judged: number; met: number; expressLate: number; standardLate: number; percent: number | null };
 }
 
 function orderTypeLabel(serviceCategory: string, orderType: string) {
@@ -100,6 +102,7 @@ export default function AdminDashboardPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[] | null>(null);
   const [enquiriesError, setEnquiriesError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [role, setRole] = useState<StaffRole | null>(null);
 
   async function loadEnquiries(token: string | undefined) {
     try {
@@ -144,10 +147,11 @@ export default function AdminDashboardPage() {
         .eq("id", user.id)
         .single();
 
-      if (profile?.role !== "founder") {
+      if (!isStaff(profile?.role)) {
         window.location.href = "/home";
         return;
       }
+      setRole(profile.role);
 
       setLoading(false);
 
@@ -156,9 +160,10 @@ export default function AdminDashboardPage() {
           data: { session },
         } = await supabase.auth.getSession();
         setAccessToken(session?.access_token ?? null);
-        loadEnquiries(session?.access_token);
+        if (profile.role !== "filer") loadEnquiries(session?.access_token);
 
         const res = await fetch("/api/admin/summary", {
+          cache: "no-store",
           headers: {
             Authorization: `Bearer ${session?.access_token}`,
           },
@@ -206,7 +211,12 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Four core metrics — always visible */}
+        {role && ROLE_INTRO[role] && (
+          <p className="mb-6 rounded-card border-2 border-brand-black bg-brand-yellow/10 px-4 py-3 text-sm">{ROLE_INTRO[role]}</p>
+        )}
+
+        {/* Four core metrics: Founder only (#224) */}
+        {role === "founder" && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Monthly net revenue" value="₦0" sublabel="Month-to-date · ₦0 YTD" />
           <MetricCard
@@ -217,8 +227,10 @@ export default function AdminDashboardPage() {
           <MetricCard label="Cash runway" value="Not set" sublabel="Manual input required" />
           <MetricCard label="Open issues" value="0" />
         </div>
+        )}
 
-        {/* Help chat questions from the website (JSB, 27 Oct 2026) */}
+        {/* Help chat questions from the website (JSB, 27 Oct 2026): Founder and Support */}
+        {role !== "filer" && (
         <div className="mt-8">
           <Module
             title={`Customer questions${
@@ -273,9 +285,11 @@ export default function AdminDashboardPage() {
             )}
           </Module>
         </div>
+        )}
 
         <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Module 1 — Commercial & Revenue */}
+          {/* Module 1 — Commercial & Revenue: Founder only (#224) */}
+          {role === "founder" && (
           <Module title="Commercial & Revenue">
             <div className="flex flex-col gap-3">
               {!summary || Object.keys(summary.statusBreakdown).length === 0 ? (
@@ -313,6 +327,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </Module>
+          )}
 
           {/* Module 2 — Operations & Quality (incl. QR Verification Feed) */}
           <Module title="Operations & Quality">
@@ -321,10 +336,13 @@ export default function AdminDashboardPage() {
                 <EmptyRow text="Live order queue is empty." />
               ) : (
                 <div className="flex flex-col divide-y-2 divide-brand-black rounded-card border-2 border-brand-black">
-                  {summary.liveQueue.map((order) => (
+                  {[...summary.liveQueue]
+                    // Orders still waiting for a quote need a person (#227): fixed prices are quoted automatically.
+                    .sort((a, b) => Number(b.status === "quote_pending") - Number(a.status === "quote_pending"))
+                    .map((order) => (
                     <Link
                       key={order.id}
-                      href={`/admin/orders/${order.id}`}
+                      href={role === "support" ? "/admin" : `/admin/orders/${order.id}`}
                       className="flex items-center justify-between px-3 py-2 text-sm hover:bg-brand-yellow/10"
                     >
                       <div>
@@ -333,8 +351,8 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="text-xs text-brand-gray">{shortRef(order.id)}</div>
                       </div>
-                      <span className="rounded-card bg-brand-yellow px-2 py-1 text-xs font-bold uppercase">
-                        {STATUS_LABELS[order.status] || order.status}
+                      <span className={`rounded-card px-2 py-1 text-xs font-bold uppercase ${order.status === "quote_pending" ? "bg-brand-black text-brand-white" : "bg-brand-yellow"}`}>
+                        {order.status === "quote_pending" ? "Needs your quote" : STATUS_LABELS[order.status] || order.status}
                       </span>
                     </Link>
                   ))}
@@ -346,8 +364,17 @@ export default function AdminDashboardPage() {
                   <div className="font-bold">—</div>
                 </div>
                 <div className="rounded-card border-2 border-brand-black p-3">
-                  <div className="text-xs text-brand-gray">BluetentBC SLA</div>
-                  <div className="font-bold">—</div>
+                  <div className="text-xs text-brand-gray">Affidavits on time, last 30 days</div>
+                  <div className="font-bold">
+                    {summary?.delivery?.percent != null ? `${summary.delivery.percent}% (${summary.delivery.met} of ${summary.delivery.judged})` : "—"}
+                    <span className="text-xs text-brand-gray"> / 100% target</span>
+                  </div>
+                  <div className="mt-1 text-xs text-brand-gray">
+                    Standard within 2 to 3 working days; Express same day if confirmed before 2 PM.
+                    {summary?.delivery && (summary.delivery.expressLate + summary.delivery.standardLate) > 0
+                      ? ` Late: ${summary.delivery.standardLate} standard, ${summary.delivery.expressLate} Express.`
+                      : ""}
+                  </div>
                 </div>
               </div>
               <div className="rounded-card border-2 border-brand-black">
@@ -372,6 +399,7 @@ export default function AdminDashboardPage() {
             </div>
           </Module>
 
+          {role === "founder" && (<>
           {/* Module 3 — Financial & Cash */}
           <Module title="Financial & Cash">
             <div className="flex flex-col gap-3 text-sm">
@@ -423,6 +451,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           </Module>
+          </>)}
         </div>
       </div>
     </main>

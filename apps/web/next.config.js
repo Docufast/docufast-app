@@ -3,6 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   // H4 (#68): no X-Powered-By: Next.js header.
   poweredByHeader: false,
+  // #226: serve images as they are. Removes the /_next/image optimizer endpoint, which has open
+  // advisories in Next.js 14 (e.g. GHSA-2464-fhr4-w9xw, fixed only in 15.5.28). The site's images
+  // are small logos and icons, so nothing visible changes. Revisit after the Next.js 15 upgrade.
+  images: { unoptimized: true },
   async redirects() {
     return [
       {

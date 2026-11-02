@@ -6,6 +6,7 @@ import SiteHeader from "@/components/ui/SiteHeader";
 import SiteFooter from "@/components/ui/SiteFooter";
 import { getPasswordStrength, strengthLabel } from "@/lib/passwordStrength";
 import { supabase } from "@/lib/supabase";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import * as bip39 from "bip39";
 import { checkAdult, AGE_MESSAGES, lagosToday } from "@/lib/consent";
 import {
@@ -34,6 +35,11 @@ export default function SignUpPage() {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bot check (#226): Turnstile token for Supabase Auth CAPTCHA. Empty when no site key is set.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const resetCaptcha = () => { setCaptchaToken(""); setCaptchaKey((k) => k + 1); }; // tokens are single use
 
   const [recoveryPhrase, setRecoveryPhrase] = useState<string | null>(null);
   const [savedConfirmed, setSavedConfirmed] = useState(false);
@@ -71,8 +77,10 @@ export default function SignUpPage() {
         password,
         options: {
           data: { full_name: fullName, phone },
+          ...(captchaToken ? { captchaToken } : {}),
         },
       });
+      resetCaptcha();
 
       if (signUpError) {
         setError(signUpError.message);
@@ -167,7 +175,9 @@ export default function SignUpPage() {
   }
 
   function handleContinue() {
-    window.location.href = "/account/security/2fa";
+    // No second step before payment for customers (JSB and Olamide, 1 Nov 2026).
+    // The authenticator app stays optional, under account security.
+    window.location.href = "/home";
   }
 
   if (recoveryPhrase) {
@@ -349,7 +359,8 @@ export default function SignUpPage() {
 
             {error && <p role="alert" className="text-sm text-brand-error">{error}</p>}
 
-            <button type="submit" disabled={submitting} className={goldBtn}>
+            <TurnstileWidget key={captchaKey} onToken={setCaptchaToken} />
+            <button type="submit" disabled={submitting || (captchaRequired && !captchaToken)} className={goldBtn}>
               {submitting ? "Creating account…" : "Create account"}
             </button>
 

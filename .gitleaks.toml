@@ -1,0 +1,13 @@
+# Docufast gitleaks configuration (used by .github/workflows/security.yml).
+# Keep every default rule, and accept only the two commits below: an accidental upload of an
+# unrelated page (2 Nov 2026) that contained a Firebase web API key, which is public by design.
+# The upload was reverted; history is not rewritten. Any new finding still fails the build.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Accidental upload of an unrelated page with a public Firebase web key, reverted"
+commits = [
+  "9008845566a511f36cef56f3e326c5155ec11011",
+  "94f276df62b7a404cd34a310a5a650ec39acfae4",
+]

@@ -5,7 +5,7 @@ import { FACTS } from "@/lib/seo/facts";
 // Blueprint footer (#119). Wording follows the house rules: NDPC registered,
 // SCUML/SMEDAN/CAC registered, online only, no walk-ins. No data-location line
 // until #128 is approved. Registration numbers stay (Playbook Section 03).
-const link = "text-sm text-brand-white hover:underline";
+const link = "inline-block py-3 text-sm text-brand-white hover:underline sm:py-1"; // 44px tap target on phones (#226)
 const heading = "text-sm font-semibold text-brand-white";
 
 export default function SiteFooter() {
@@ -35,6 +35,7 @@ export default function SiteFooter() {
           <Link href="/about" className={link}>About and registrations</Link>
           <Link href="/faq" className={link}>FAQ</Link>
           <Link href="/privacy" className={link}>Privacy Notice</Link>
+          <Link href="/account/privacy-choices" className={link}>Privacy choices</Link>
           <Link href="/terms" className={link}>Terms of Service</Link>
         </div>
 

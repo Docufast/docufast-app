@@ -4,12 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Bot check (#226): Turnstile token for Supabase Auth CAPTCHA. Empty when no site key is set.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const resetCaptcha = () => { setCaptchaToken(""); setCaptchaKey((k) => k + 1); }; // tokens are single use
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +28,9 @@ export default function ForgotPasswordPage() {
     setSubmitting(true);
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
+      ...(captchaToken ? { captchaToken } : {}),
     });
+    resetCaptcha();
     setSubmitting(false);
 
     if (resetError) {
@@ -70,9 +78,10 @@ export default function ForgotPasswordPage() {
             />
           </div>
           {error && <p className="text-sm text-brand-error">{error}</p>}
+          <TurnstileWidget key={captchaKey} onToken={setCaptchaToken} />
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || (captchaRequired && !captchaToken)}
             className="rounded-card bg-brand-black px-4 py-3.5 text-base font-bold text-brand-white disabled:opacity-50"
           >
             {submitting ? "Sending…" : "Send reset link"}

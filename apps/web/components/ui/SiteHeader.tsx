@@ -36,7 +36,7 @@ export default function SiteHeader() {
   return (
     <header className="border-b border-brand-gray-light bg-brand-white">
       <div className="flex flex-wrap items-center gap-x-7 gap-y-3 px-4 py-4 md:px-12">
-        <Link href={loggedIn ? "/home" : "/"} className="flex items-center gap-2.5">
+        <Link href={loggedIn ? "/home" : "/"} className="flex items-center gap-2.5 py-2">
           <Image src="/images/logo-black.png" alt="" width={30} height={30} />
           <span className="text-lg font-bold text-brand-black">Docufast</span>
         </Link>
