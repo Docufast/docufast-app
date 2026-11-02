@@ -162,6 +162,7 @@ export default function AdminDashboardPage() {
         if (profile.role !== "filer") loadEnquiries(session?.access_token);
 
         const res = await fetch("/api/admin/summary", {
+          cache: "no-store",
           headers: {
             Authorization: `Bearer ${session?.access_token}`,
           },
