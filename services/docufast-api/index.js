@@ -11,6 +11,7 @@ import shareRoute from "./routes/share.js";
 import partnerRoute from "./routes/partner.js";
 import { sweepLateExpressOrders } from "./services/expressService.js";
 import { sweepExpiredShares } from "./services/shareService.js";
+import { sweepStaleOrders } from "./services/retentionService.js";
 
 dotenv.config();
 
@@ -67,12 +68,15 @@ app.listen(PORT, () => {
 // Background jobs, every 15 minutes. Both are safe to run on several instances at once.
 // - Late Express refunds: only when EXPRESS_AUTO_REFUND=on (turn on once tested on staging).
 // - Expired share links: their encrypted copies are deleted from storage.
+// - Unpaid quotes and orders older than 6 months, with their uploads (#213): only when
+//   RETENTION_SWEEP=on (or =dry to log without deleting).
 const SWEEP_MS = 15 * 60 * 1000;
 async function runSweeps() {
   if (process.env.EXPRESS_AUTO_REFUND === "on") {
     await sweepLateExpressOrders().catch((err) => console.error("Express sweep failed:", err.message));
   }
   await sweepExpiredShares().catch((err) => console.error("Share sweep failed:", err.message));
+  await sweepStaleOrders().catch((err) => console.error("Retention sweep failed:", err.message));
 }
 setTimeout(runSweeps, 60 * 1000);
 setInterval(runSweeps, SWEEP_MS);
