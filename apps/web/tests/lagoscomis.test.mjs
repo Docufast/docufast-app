@@ -49,3 +49,12 @@ test("any type without its own form falls under General or Custom, except the tw
   assert.match(F.GENERAL, /Custom affidavit/);
   for (const s of F.NOT_FILED_ON_LAGOSCOMIS) assert.equal(F.courtFormFor(s).form, null, s);
 });
+
+test("hidden for the beta: Declaration of Death and Attestation of Birth Certificate are not orderable", () => {
+  const orderable = T.ORDERABLE_AFFIDAVIT_TYPES.map((t) => t.slug);
+  for (const s of ["declaration_of_death", "attestation_birth_cert"]) {
+    assert.ok(!orderable.includes(s), s);
+    assert.ok(T.getAffidavitType(s).notOrderable.length > 20, `${s} has a message`);
+  }
+  assert.equal(orderable.length, T.AFFIDAVIT_TYPES.length - 2);
+});

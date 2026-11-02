@@ -15,6 +15,8 @@ export interface AffidavitType {
   slug: string;
   label: string;
   category: AffidavitCategory;
+  /** Set when the type cannot be ordered; the message is shown instead of the order form. */
+  notOrderable?: string;
 }
 
 export const AFFIDAVIT_TYPES: AffidavitType[] = [
@@ -29,7 +31,8 @@ export const AFFIDAVIT_TYPES: AffidavitType[] = [
   { slug: "age_declaration_minor_male", label: "Age Declaration (Minor, Male)", category: "birth_age" },
   { slug: "age_declaration_minor_female", label: "Age Declaration (Minor, Female)", category: "birth_age" },
   { slug: "correction_of_dob", label: "Correction of Date of Birth", category: "birth_age" },
-  { slug: "attestation_birth_cert", label: "Attestation of Birth Certificate", category: "birth_age" },
+  { slug: "attestation_birth_cert", label: "Attestation of Birth Certificate", category: "birth_age",
+    notOrderable: "Birth attestation is a National Population Commission (NPC) service, not an affidavit. It is moving to our NPC services, which are coming soon. Message us on WhatsApp if you need it now." }, // JSB, 2 Nov 2026
 
   { slug: "loss_general", label: "Loss of Items (General)", category: "loss" },
   { slug: "loss_workplace_id", label: "Loss of Workplace ID", category: "loss" },
@@ -44,7 +47,8 @@ export const AFFIDAVIT_TYPES: AffidavitType[] = [
   { slug: "declaration_of_marriage", label: "Declaration of Marriage", category: "marriage" },
   { slug: "dissolution_of_marriage", label: "Dissolution of Marriage", category: "marriage" },
 
-  { slug: "declaration_of_death", label: "Declaration of Death", category: "death" },
+  { slug: "declaration_of_death", label: "Declaration of Death", category: "death",
+    notOrderable: "Declaration of Death is not available online yet. Message us on WhatsApp and we will tell you how to get one." }, // JSB, 2 Nov 2026: hidden for the beta (LPA s.22, #206)
   { slug: "release_of_corpse", label: "Release of Corpse", category: "death" },
 
   { slug: "loss_school_id", label: "Loss of School ID", category: "student" },
@@ -56,6 +60,9 @@ export const AFFIDAVIT_TYPES: AffidavitType[] = [
   { slug: "change_of_residence", label: "Change of Residence", category: "status" },
   { slug: "change_of_signature", label: "Change of Signature", category: "status" },
 ];
+
+/** Types customers can order now (the list page and search use this). */
+export const ORDERABLE_AFFIDAVIT_TYPES = AFFIDAVIT_TYPES.filter((t) => !t.notOrderable);
 
 export function getAffidavitType(slug: string): AffidavitType | undefined {
   return AFFIDAVIT_TYPES.find((t) => t.slug === slug);

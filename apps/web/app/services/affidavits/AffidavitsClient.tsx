@@ -4,7 +4,7 @@ import { FACTS } from "@/lib/seo/facts";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { AFFIDAVIT_TYPES, AffidavitCategory } from "@/lib/affidavitTypes";
+import { ORDERABLE_AFFIDAVIT_TYPES, AffidavitCategory } from "@/lib/affidavitTypes";
 import AuthNavLink from "@/components/ui/AuthNavLink";
 
 import HomeLink from "@/components/ui/HomeLink";
@@ -36,7 +36,7 @@ export default function AffidavitsPage() {
   const grouped = CATEGORY_ORDER.map((cat) => ({
     category: cat,
     label: CATEGORY_LABELS[cat],
-    types: AFFIDAVIT_TYPES.filter(
+    types: ORDERABLE_AFFIDAVIT_TYPES.filter(
       (t) => t.category === cat && t.label.toLowerCase().includes(search.toLowerCase())
     ),
   })).filter((g) => g.types.length > 0);

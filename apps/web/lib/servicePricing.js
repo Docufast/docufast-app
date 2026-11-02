@@ -25,6 +25,10 @@ export const COMPLEX_AFFIDAVITS = [
   "dissolution_of_marriage", "declaration_of_death", "release_of_corpse",
 ];
 
+// Not orderable (JSB, 2 Nov 2026): Declaration of Death is hidden for the beta (LPA s.22, #206);
+// Attestation of Birth Certificate moves to the NPC services (#101). No price, so no quote.
+export const AFFIDAVIT_NOT_ORDERABLE = ["declaration_of_death", "attestation_birth_cert"];
+
 export const CAC = {
   business_name_registration: 40000,
   company_incorporation: 75000, // share capital up to NGN 1,000,000
@@ -90,7 +94,7 @@ export function priceOrder(order) {
   const lines = [];
 
   if (order.service_category === "affidavit") {
-    if (!AFFIDAVIT_SLUGS.includes(slug)) return null;
+    if (!AFFIDAVIT_SLUGS.includes(slug) || AFFIDAVIT_NOT_ORDERABLE.includes(slug)) return null;
     const complex = COMPLEX_AFFIDAVITS.includes(slug);
     lines.push({ label: complex ? "Affidavit (enhanced checks), court fee included" : "Affidavit, court fee included", amount: complex ? AFFIDAVIT_COMPLEX : AFFIDAVIT_STANDARD });
     lines.push({ label: "1 certified copy", amount: 0 });

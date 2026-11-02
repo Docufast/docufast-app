@@ -263,10 +263,10 @@ export const FAQ: FaqItem[] = [
     "q": "Which affidavits can Docufast prepare?",
     "a": [
       "Name: change, correction, confirmation, addition or removal, re-arrangement, and combined correction of name and date of birth",
-      "Birth and age: age declaration (adults and minors), correction of date of birth, attestation of birth certificate",
+      "Birth and age: age declaration (adults and minors), correction of date of birth",
       "Loss: general loss, workplace ID, SIM card, JAMB profile SIM, international passport, driver's licence, vehicle documents",
       "Marriage: bachelorhood or spinsterhood, declaration of marriage, dissolution of marriage",
-      "Death: declaration of death, release of corpse",
+      "Death: release of corpse",
       "Student: loss of school ID, confirmation of result, good conduct, support or sponsorship",
       "Status: change of car ownership, change of residence, change of signature"
     ],

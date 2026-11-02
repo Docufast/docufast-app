@@ -41,7 +41,9 @@ test("affidavits: 4,000 standard, 6,000 complex, +1,000 express, 1 copy included
   assert.equal(q("affidavit", "loss_sim_card").total, 4000);
   assert.equal(q("affidavit", "loss_sim_card", {}, "express").total, 5000);
   assert.equal(q("affidavit", "age_declaration_minor_male").total, 6000);
-  assert.equal(q("affidavit", "declaration_of_death", {}, "express").total, 7000);
+  assert.equal(q("affidavit", "dissolution_of_marriage", {}, "express").total, 7000);
+  assert.equal(q("affidavit", "declaration_of_death"), null, "hidden for the beta (JSB 2 Nov)");
+  assert.equal(q("affidavit", "attestation_birth_cert"), null, "moved to NPC services (JSB 2 Nov)");
   assert.ok(q("affidavit", "loss_sim_card").lines.some((l) => l.label === "1 certified copy" && l.amount === 0));
   assert.equal(q("affidavit", "loss_sim_card", { copies: 1 }).final, true);
   assert.equal(q("affidavit", "loss_sim_card", { authenticated_by: "notary" }).final, false);
