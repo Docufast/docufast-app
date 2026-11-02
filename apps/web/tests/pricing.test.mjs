@@ -15,7 +15,7 @@ const apiFile = path.resolve(web, "../../services/docufast-api/services/serviceP
 const webFile = path.join(web, "lib", "servicePricing.js");
 
 const out = fs.mkdtempSync(path.join(os.tmpdir(), "df-pricing-"));
-for (const f of ["affidavitGuide", "affidavitTypes", "serviceForms"]) {
+for (const f of ["affidavitGuide", "affidavitTypes", "serviceForms", "npcForms"]) {
   const src = fs.readFileSync(path.join(web, "lib", `${f}.ts`), "utf8");
   const js = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 } }).outputText;
   fs.writeFileSync(path.join(out, `${f}.mjs`), js.replace(/from "\.\/(\w+)"/g, 'from "./$1.mjs"'));

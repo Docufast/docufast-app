@@ -1216,7 +1216,7 @@ export const FAQ: FaqItem[] = [
     "section": 16,
     "q": "Can you help with birth certificates and death notifications?",
     "a": [
-      "Yes. We help with nine National Population Commission services, including birth registration, birth attestation, certificate reprints, reissue and verification, and death notification. With your consent, we prepare the application and submit it to NPC for you, and you follow every step on your tracker."
+      "Coming soon. We will help you complete your National Population Commission application for birth registration, birth attestation, certificate reprints, reissue and verification, record corrections and death notification. With your consent, we check your details before anything is sent to NPC, and you follow every step on your tracker. Message us on WhatsApp if you need one now."
     ],
     "status": "live"
   },

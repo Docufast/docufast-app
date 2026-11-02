@@ -32,7 +32,7 @@ export const AFFIDAVIT_TYPES: AffidavitType[] = [
   { slug: "age_declaration_minor_female", label: "Age Declaration (Minor, Female)", category: "birth_age" },
   { slug: "correction_of_dob", label: "Correction of Date of Birth", category: "birth_age" },
   { slug: "attestation_birth_cert", label: "Attestation of Birth Certificate", category: "birth_age",
-    notOrderable: "Birth attestation is a National Population Commission (NPC) service, not an affidavit. It is moving to our NPC services, which are coming soon. Message us on WhatsApp if you need it now." }, // JSB, 2 Nov 2026
+    notOrderable: "Birth attestation is a National Population Commission (NPC) service, not an affidavit. It is now under our Births and deaths (NPC) services, which are coming soon. Message us on WhatsApp if you need it now." }, // JSB, 2 Nov 2026
 
   { slug: "loss_general", label: "Loss of Items (General)", category: "loss" },
   { slug: "loss_workplace_id", label: "Loss of Workplace ID", category: "loss" },
