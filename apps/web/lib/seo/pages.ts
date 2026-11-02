@@ -90,8 +90,8 @@ export function pageMetadata(path: string, override?: Partial<PageMeta>): Metada
     title: isHome ? { absolute: m.title } : m.title,
     description: m.description,
     alternates: { canonical: `${SITE_URL}${isHome ? '' : path}` },
-    openGraph: { type: 'website', siteName: 'Docufast', locale: 'en_NG', images: ['/og-image.png?v=2'], title: m.title, description: m.description, url: `${SITE_URL}${isHome ? '' : path}` },
-    twitter: { card: 'summary_large_image', images: ['/og-image.png?v=2'], title: m.title, description: m.description },
+    openGraph: { type: 'website', siteName: 'Docufast', locale: 'en_NG', images: ['/og-image.png?v=3'], title: m.title, description: m.description, url: `${SITE_URL}${isHome ? '' : path}` },
+    twitter: { card: 'summary_large_image', images: ['/og-image.png?v=3'], title: m.title, description: m.description },
   };
 }
 
@@ -109,7 +109,7 @@ export const rootMetadata: Metadata = {
     locale: 'en_NG',
     title: PAGE_META['/'].title,
     description: PAGE_META['/'].description,
-    images: ['/og-image.png?v=2'],
+    images: ['/og-image.png?v=3'],
   },
-  twitter: { card: 'summary_large_image', images: ['/og-image.png?v=2'] },
+  twitter: { card: 'summary_large_image', images: ['/og-image.png?v=3'] },
 };
