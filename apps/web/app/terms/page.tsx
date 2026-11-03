@@ -94,7 +94,7 @@ export default function TermsOfServicePage() {
             "No refund once a document is sworn, filed or published, except where the mistake is ours.",
             "If we make a mistake, we correct it, republish or refile at no cost.",
             "Refunds go back to the original payment method within 3 to 5 working days.",
-            "Refunds cover the price on your quote. The payment processing fee is not refunded, including on a full refund, because our payment provider keeps it.",
+            "Refunds cover the price on your quote. The payment processing fee is refunded too when the refund is because of us, for example when we cannot start your order for a reason on our side or the mistake is ours. In other cases, such as when you cancel, it is not refunded, because our payment provider keeps it.",
           ]}
         />
       </Section>

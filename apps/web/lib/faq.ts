@@ -682,7 +682,7 @@ export const FAQ: FaqItem[] = [
     "a": [
       "Yes. Our payment provider charges a fee on every payment, and you pay it at checkout. It is shown on your quote, with the amount to pay, before you pay.",
       "The fee is about 1.5% of your total plus NGN 100, and never more than NGN 2,000. On totals under NGN 2,500 there is no NGN 100. For example, a NGN 4,000 affidavit has a NGN 163 fee, so you pay NGN 4,163.",
-      "The fee is not refunded, including on a full refund, because our payment provider keeps it."
+      "If you get a refund because of us, for example we cannot start your order for a reason on our side, we refund the fee too. If you cancel, the fee is not refunded, because our payment provider keeps it."
     ],
     "status": "live",
     "gate": "payments"
