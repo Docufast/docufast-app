@@ -15,6 +15,7 @@ import {
   COURTS, DIVISIONS, COURT_HELP, COPIES_HELP, OTHER, USES, jurisdictionText, reasonOptions, suggestedPurpose,
 } from "@/lib/affidavitGuide";
 import { affidavitQuote, amountText, naira, type Quote } from "@/lib/pricing";
+import PaymentFeeRows, { PAYMENT_FEE_NOTE } from "@/components/PaymentFeeRows";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 // Extra fields shown depending on the affidavit's category — the pattern
@@ -196,9 +197,10 @@ export default function AffidavitOrderPage() {
                 <td className="py-2">{placed.quote.complete ? "Total" : "Total so far"}</td>
                 <td className="py-2 text-right">{naira(placed.quote.total)}</td>
               </tr>
+              <PaymentFeeRows total={placed.quote.total} estimate={!placed.quote.complete} cellClass="py-2" />
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-brand-gray">Prices include VAT and the court fee. Valid for {FACTS.pricing.quoteValidHours} hours.</p>
+          <p className="mt-3 text-xs text-brand-gray">Prices include VAT and the court fee. Valid for {FACTS.pricing.quoteValidHours} hours. {PAYMENT_FEE_NOTE}</p>
           {placed.auto ? (
             <>
               <p className="mt-3 text-sm text-brand-black">We have emailed this quote to you. Work starts once payment is confirmed.</p>
@@ -430,9 +432,10 @@ export default function AffidavitOrderPage() {
               <tr className="border-t-2 border-brand-black font-bold">
                 <td className="py-1.5">Total</td><td className="py-1.5 text-right">{naira(quote.total)}</td>
               </tr>
+              <PaymentFeeRows total={quote.total} cellClass="py-1" />
             </tbody>
           </table>
-          <p className="mt-1 text-xs text-brand-gray">Includes VAT and the court fee. Nothing to pay at this step.</p>
+          <p className="mt-1 text-xs text-brand-gray">Includes VAT and the court fee. Nothing to pay at this step. {PAYMENT_FEE_NOTE}</p>
         </div>
 
         {submitError && <p className="text-sm text-brand-error">{submitError}</p>}

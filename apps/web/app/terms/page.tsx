@@ -45,13 +45,16 @@ export default function TermsOfServicePage() {
           You see an itemised price before you commit. Once you accept it, the price is fixed for that order.
           A price you have not yet accepted stays valid for 48 hours. The price shows which official fees are
           included and, for filings where they vary, lists government fees and penalties separately. If
-          anything you tell us changes the work, we give you a new price before continuing.
+          anything you tell us changes the work, we give you a new price before continuing. A payment
+          processing fee, charged by our payment provider, is added at checkout; your quote shows it and the
+          amount to pay before you pay.
         </p>
       </Section>
 
       <Section title="5. Payment">
         <p>
-          Pay only on docufast.ng. We never ask you to pay into a personal account or inside WhatsApp; if
+          Pay only on docufast.ng. You pay the quoted price plus the payment processing fee shown on your
+          quote. We never ask you to pay into a personal account or inside WhatsApp; if
           anyone does, do not pay and report it to us. Your order starts once payment is confirmed. Late bank
           transfers are matched automatically; if you are charged twice, the extra payment is refunded
           automatically.
@@ -91,6 +94,7 @@ export default function TermsOfServicePage() {
             "No refund once a document is sworn, filed or published, except where the mistake is ours.",
             "If we make a mistake, we correct it, republish or refile at no cost.",
             "Refunds go back to the original payment method within 3 to 5 working days.",
+            "Refunds cover the price on your quote. The payment processing fee is refunded too when the refund is because of us, for example when we cannot start your order for a reason on our side or the mistake is ours. In other cases, such as when you cancel, it is not refunded, because our payment provider keeps it.",
           ]}
         />
       </Section>

@@ -69,7 +69,9 @@ export default function AboutPage() {
           <h1 className="mt-3 max-w-4xl text-4xl font-semibold leading-[1.1] text-brand-black md:text-5xl">
             Your documents. Handled properly. Every time.
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-brand-gray">{FACTS.oneLine}</p>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-brand-gray">
+            {FACTS.identityLine} {FACTS.oneLine}
+          </p>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
             <div className="flex flex-col gap-6">

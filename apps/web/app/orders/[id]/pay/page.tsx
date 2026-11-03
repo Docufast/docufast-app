@@ -251,7 +251,7 @@ export default function OrderPaymentPage() {
             </button>
             <p className="mt-3 text-center text-xs text-brand-gray">
               Card, bank transfer, USSD or bank account, on a secure checkout opened from docufast.ng. Prices
-              include VAT. Paystack adds its payment processing fee at checkout, so the total you pay there is
+              include VAT. A payment processing fee is added at checkout, so the total you pay there is
               a little higher than the amount due.
             </p>
             {payMessage && (

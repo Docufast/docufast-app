@@ -3,6 +3,7 @@ dotenv.config();
 
 import sgMail from "@sendgrid/mail";
 import { serviceLabel } from "./servicePricing.js";
+import { paymentFee, amountToPay } from "./paymentFee.js";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -133,6 +134,15 @@ export async function sendItemizedQuoteEmail(toEmail, { serviceLabel, orderRef, 
     ? `This quote is valid for ${Number(validHours)} hours. Work starts once payment is confirmed.`
     : `${note ? note + " " : ""}We will email your final quote, then you can pay from your orders page.`;
   const button = final ? "Pay securely on docufast.ng" : "View your order";
+  // Payment processing fee, paid by the customer at checkout (JSB, 3 Nov 2026). Same file the API charges from.
+  const fee = paymentFee(total);
+  const feeLabel = final ? "Payment processing fee" : "Payment processing fee (estimate)";
+  const payLabel = final ? "Amount to pay" : "Estimated amount to pay";
+  const feeText = fee ? `${feeLabel}: NGN ${fee.toLocaleString("en-NG")}\n${payLabel}: NGN ${amountToPay(total).toLocaleString("en-NG")}\n` : "";
+  const feeRows = fee
+    ? `<tr><td style="padding:6px 0;">${feeLabel}</td><td style="padding:6px 0;text-align:right;">NGN ${fee.toLocaleString("en-NG")}</td></tr>` +
+      `<tr><td style="padding:6px 0;"><strong>${payLabel}</strong></td><td style="padding:6px 0;text-align:right;"><strong>NGN ${amountToPay(total).toLocaleString("en-NG")}</strong></td></tr>`
+    : "";
   const textLines = lines.map((l) => `- ${l.label}: ${ngn(l.amount)}`).join("\n");
   const rows = lines
     .map((l) => `<tr><td style="padding:6px 0;">${esc(l.label)}</td><td style="padding:6px 0;text-align:right;">${ngn(l.amount)}</td></tr>`)
@@ -143,7 +153,7 @@ export async function sendItemizedQuoteEmail(toEmail, { serviceLabel, orderRef, 
     subject: `${final ? "Your Docufast quote" : "Your Docufast estimate"}: ${serviceLabel} (${orderRef})`,
     text:
       `Thank you for your order. ${title}:\n\n` +
-      `${serviceLabel} (${orderRef})\n${textLines}\n${totalLabel}: NGN ${Number(total).toLocaleString("en-NG")}\n\n` +
+      `${serviceLabel} (${orderRef})\n${textLines}\n${totalLabel}: NGN ${Number(total).toLocaleString("en-NG")}\n${feeText}\n` +
       `${next}\n${button}: ${payUrl}\n` +
       `${final && note ? note + "\n" : ""}\n` +
       `Pay only on docufast.ng. Never into a personal account, never inside WhatsApp.\n` +
@@ -154,7 +164,7 @@ export async function sendItemizedQuoteEmail(toEmail, { serviceLabel, orderRef, 
         <p><strong>${esc(serviceLabel)}</strong> (${esc(orderRef)})</p>
         <table style="width:100%; border-collapse:collapse; font-size:14px;">${rows}
           <tr><td style="padding:8px 0;border-top:2px solid #0D0D0D;"><strong>${totalLabel}</strong></td>
-              <td style="padding:8px 0;border-top:2px solid #0D0D0D;text-align:right;"><strong>NGN ${Number(total).toLocaleString("en-NG")}</strong></td></tr>
+              <td style="padding:8px 0;border-top:2px solid #0D0D0D;text-align:right;"><strong>NGN ${Number(total).toLocaleString("en-NG")}</strong></td></tr>${feeRows}
         </table>
         <p>${esc(next)}</p>
         ${final && note ? `<p style="font-size:13px;">${esc(note)}</p>` : ""}
