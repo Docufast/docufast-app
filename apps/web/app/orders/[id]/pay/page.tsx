@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { getAffidavitType } from "@/lib/affidavitTypes";
+import { paymentFee, amountToPay } from "@/lib/paymentFee.js";
 import { CreditCard, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -203,10 +204,18 @@ export default function OrderPaymentPage() {
             <span className="text-brand-gray">Reference</span>
             <span className="font-semibold">{shortRef(order.id)}</span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-brand-gray">Total</span>
+            <span className="font-semibold">₦{order.quote_amount!.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-brand-gray">Payment processing fee</span>
+            <span className="font-semibold">₦{paymentFee(order.quote_amount!).toLocaleString()}</span>
+          </div>
           <div className="flex justify-between border-t-2 border-brand-black pt-3">
-            <span className="font-bold text-brand-black">Amount due</span>
+            <span className="font-bold text-brand-black">Amount to pay</span>
             <span className="text-xl font-extrabold text-brand-black">
-              ₦{order.quote_amount!.toLocaleString()}
+              ₦{amountToPay(order.quote_amount!).toLocaleString()}
             </span>
           </div>
         </div>
@@ -251,8 +260,8 @@ export default function OrderPaymentPage() {
             </button>
             <p className="mt-3 text-center text-xs text-brand-gray">
               Card, bank transfer, USSD or bank account, on a secure checkout opened from docufast.ng. Prices
-              include VAT. A payment processing fee is added at checkout, so the total you pay there is
-              a little higher than the amount due.
+              include VAT. The amount to pay includes the payment processing fee, which is charged by our
+              payment provider at checkout.
             </p>
             {payMessage && (
               <p role="alert" className="mt-3 text-center text-sm text-brand-error">
