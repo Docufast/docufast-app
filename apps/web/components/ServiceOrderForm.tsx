@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/contexts/OrgContext";
 import { FACTS } from "@/lib/seo/facts";
 import { quoteFor, naira, amountText, type Quote } from "@/lib/pricing";
+import PaymentFeeRows, { PAYMENT_FEE_NOTE } from "@/components/PaymentFeeRows";
 import { initialValues, isVisible, type FormField, type ServiceForm } from "@/lib/serviceForms";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -226,10 +227,11 @@ export function PriceBox({ quote }: { quote: Quote }) {
           <tr className="border-t-2 border-brand-black font-bold">
             <td className="py-1.5">{quote.complete ? "Total" : "Estimated total"}</td><td className="py-1.5 text-right">{naira(quote.total)}</td>
           </tr>
+          <PaymentFeeRows total={quote.total} estimate={!quote.complete} cellClass="py-1" />
         </tbody>
       </table>
       {quote.note && <p className="mt-1 text-xs text-brand-black">{quote.note}</p>}
-      <p className="mt-1 text-xs text-brand-gray">Prices include VAT. Nothing to pay at this step.</p>
+      <p className="mt-1 text-xs text-brand-gray">Prices include VAT. Nothing to pay at this step. {PAYMENT_FEE_NOTE}</p>
     </div>
   );
 }
@@ -250,6 +252,7 @@ export function QuoteResult({ title, placed }: { title: string; placed: { id: st
             <tr className="border-t-2 border-brand-black font-bold">
               <td className="py-2">{placed.final ? "Total" : "Estimated total"}</td><td className="py-2 text-right">{naira(q.total)}</td>
             </tr>
+            <PaymentFeeRows total={q.total} estimate={!placed.final} cellClass="py-2" />
           </tbody>
         </table>
       )}

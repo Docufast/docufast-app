@@ -12,9 +12,11 @@ import { useOrg } from "@/contexts/OrgContext";
 
 import HomeLink from "@/components/ui/HomeLink";
 import {
-  COURTS, DIVISIONS, COURT_HELP, COPIES_HELP, OTHER, USES, jurisdictionText, reasonOptions, suggestedPurpose,
+  COURTS, DIVISIONS, COURT_HELP, COPIES_HELP, OTHER, USES, ALL_PURPOSES, PURPOSE_MAX_CHARS, jurisdictionText, reasonOptions, suggestedPurpose,
+  toggleUse, onePageCheck,
 } from "@/lib/affidavitGuide";
 import { affidavitQuote, amountText, naira, type Quote } from "@/lib/pricing";
+import PaymentFeeRows, { PAYMENT_FEE_NOTE } from "@/components/PaymentFeeRows";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 // Extra fields shown depending on the affidavit's category — the pattern
@@ -79,8 +81,9 @@ export default function AffidavitOrderPage() {
     () => ({ ...extraValues, ...(reason && reasonValue ? { [reason.key]: reasonValue } : {}) }),
     [extraValues, reason, reasonValue]
   );
-  const suggestion = affidavitType ? suggestedPurpose(slug, affidavitType.category, fieldValues, uses) : "";
+  const suggestion = affidavitType ? suggestedPurpose(slug, affidavitType.category, fieldValues, uses, deponentName) : "";
   const purpose = purposeEdited ?? suggestion;
+  const page = onePageCheck(purpose); // every affidavit fits on one page (JSB, 3 Nov 2026)
   const jurisdiction = jurisdictionText(court, division);
   const quote = affidavitQuote(slug, speed, copies);
 
@@ -117,6 +120,8 @@ export default function AffidavitOrderPage() {
     if (!deponentName.trim()) return setSubmitError("Please enter the full name of the person swearing the affidavit.");
     if (!jurisdiction) return setSubmitError("Please choose the court.");
     if (!purpose.trim()) return setSubmitError("Please say what the affidavit is for.");
+    if (!page.ok) return setSubmitError(page.message);
+    if (/\[[^\]]+\]/.test(purpose)) return setSubmitError("Please replace the words in [brackets] in the affidavit statements.");
     if (reason && !reasonValue) return setSubmitError(`Please choose: ${reason.label.toLowerCase()}.`);
 
     const {
@@ -196,9 +201,10 @@ export default function AffidavitOrderPage() {
                 <td className="py-2">{placed.quote.complete ? "Total" : "Total so far"}</td>
                 <td className="py-2 text-right">{naira(placed.quote.total)}</td>
               </tr>
+              <PaymentFeeRows total={placed.quote.total} estimate={!placed.quote.complete} cellClass="py-2" />
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-brand-gray">Prices include VAT and the court fee. Valid for {FACTS.pricing.quoteValidHours} hours.</p>
+          <p className="mt-3 text-xs text-brand-gray">Prices include VAT and the court fee. Valid for {FACTS.pricing.quoteValidHours} hours. {PAYMENT_FEE_NOTE}</p>
           {placed.auto ? (
             <>
               <p className="mt-3 text-sm text-brand-black">We have emailed this quote to you. Work starts once payment is confirmed.</p>
@@ -307,28 +313,40 @@ export default function AffidavitOrderPage() {
                   const on = uses.includes(u);
                   return (
                     <button key={u} type="button" aria-pressed={on}
-                      onClick={() => setUses(on ? uses.filter((x) => x !== u) : [...uses, u])}
+                      onClick={() => setUses(toggleUse(uses, u))}
                       className={`rounded-card border-2 border-brand-black px-3 py-2 text-xs font-semibold ${on ? "bg-brand-black text-brand-white" : ""}`}>
                       {u}
                     </button>
                   );
                 })}
               </div>
+              <p className="mt-1 text-xs text-brand-gray">
+                Not sure, or need it for more than one office? Choose &ldquo;{ALL_PURPOSES}&rdquo;.
+              </p>
             </div>
             <div>
               <label htmlFor="purpose" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Purpose of affidavit
               </label>
               <p className="mb-1.5 text-xs text-brand-gray">
-                We have written this for you from your answers. Keep it, or change any words so it fits your situation.
+                We have written the statements of your affidavit from your answers, one numbered point per line.
+                Check every name, date and number, replace anything in [brackets], and change any words so it fits your
+                situation. It must fit on one page.
               </p>
               <textarea
                 id="purpose"
                 value={purpose}
                 onChange={(e) => setPurposeEdited(e.target.value)}
-                rows={6}
-                className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
+                rows={10}
+                aria-describedby="purpose-count"
+                className={`w-full rounded-input border-4 px-3 py-2.5 outline-none ${page.ok ? "border-brand-black" : "border-brand-error"}`}
               />
+              <p id="purpose-count" className={`mt-1 text-xs ${page.ok ? "text-brand-gray" : "font-semibold text-brand-error"}`} aria-live="polite">
+                {page.message ?? `${page.chars.toLocaleString("en-US")} of ${PURPOSE_MAX_CHARS.toLocaleString("en-US")} characters. Fits on one page.`}
+              </p>
+              {/\[[^\]]+\]/.test(purpose) && (
+                <p className="mt-1 text-xs font-semibold text-brand-black">Replace the words in [brackets] before you place your order.</p>
+              )}
               {purposeEdited !== null && (
                 <button type="button" onClick={() => setPurposeEdited(null)} className="mt-1 text-xs font-semibold underline">
                   Use the suggested wording again
@@ -430,9 +448,10 @@ export default function AffidavitOrderPage() {
               <tr className="border-t-2 border-brand-black font-bold">
                 <td className="py-1.5">Total</td><td className="py-1.5 text-right">{naira(quote.total)}</td>
               </tr>
+              <PaymentFeeRows total={quote.total} cellClass="py-1" />
             </tbody>
           </table>
-          <p className="mt-1 text-xs text-brand-gray">Includes VAT and the court fee. Nothing to pay at this step.</p>
+          <p className="mt-1 text-xs text-brand-gray">Includes VAT and the court fee. Nothing to pay at this step. {PAYMENT_FEE_NOTE}</p>
         </div>
 
         {submitError && <p className="text-sm text-brand-error">{submitError}</p>}

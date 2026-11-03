@@ -87,15 +87,21 @@ test("every form has a price (except the included trustees notice), labels have 
   }
 });
 
-test("suggested purpose fills in answers and has no em dashes", () => {
+test("suggested purpose fills in answers, fits one page and has no em dashes", () => {
   for (const t of types.AFFIDAVIT_TYPES) {
     const s = guide.suggestedPurpose(t.slug, t.category, {}, []);
-    assert.ok(s.length > 20 && s.endsWith("all official purposes."), t.slug);
-    assert.ok(!s.includes("—"), t.slug);
+    assert.ok(s.startsWith("1. That I am [your full name], the deponent"), t.slug);
+    assert.match(s, /That this affidavit is required for all lawful and official purposes\./, t.slug);
+    assert.match(s, /in accordance with the Oaths Act\.$/, t.slug);
+    assert.ok(!s.includes("\u2014"), t.slug);
+    assert.ok(guide.onePageCheck(s).ok, t.slug);
   }
-  const s = guide.suggestedPurpose("change_of_name", "name", { old_name: "Ada Okafor", new_name: "Ada Bello", reason: "Marriage" }, ["my bank", "NIMC (NIN)"]);
-  assert.match(s, /formerly known as Ada Okafor, now wish to be known and addressed as Ada Bello \(marriage\)/);
-  assert.match(s, /my bank, NIMC \(NIN\) and all other official purposes\.$/);
+  const s = guide.suggestedPurpose("change_of_name", "name", { old_name: "Ada Okafor", new_name: "Ada Bello", reason: "Marriage" }, ["my bank", "NIMC (NIN)"], "Ada Bello");
+  assert.match(s, /^1\. That I am Ada Bello, the deponent/);
+  assert.match(s, /That I was formerly known and addressed as Ada Okafor\./);
+  assert.match(s, /changed my name to Ada Bello by reason of marriage\./);
+  assert.match(s, /required for use with my bank and NIMC \(NIN\), and for all other lawful and official purposes\./);
+  assert.doesNotMatch(s, /\[/);
   assert.equal(guide.jurisdictionText("High Court of Lagos State", "Ikeja"), "High Court of Lagos State, Ikeja Judicial Division");
   assert.equal(guide.reasonOptions("change_of_name", "name").label, "Reason for the change");
   assert.equal(guide.reasonOptions("loss_sim_card", "loss").key, "how_lost");

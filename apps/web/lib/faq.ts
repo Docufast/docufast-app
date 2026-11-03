@@ -659,7 +659,8 @@ export const FAQ: FaqItem[] = [
     "section": 9,
     "q": "Are government fees included?",
     "a": [
-      "For affidavits, publications, business names, companies and incorporated trustees, yes: one all-inclusive price. For annual returns, amendments and status reports, CAC fees and any penalties are shown as separate lines on your quote, because they differ for each business."
+      "For affidavits, publications, business names, companies and incorporated trustees, yes: one all-inclusive price. For annual returns, amendments and status reports, CAC fees and any penalties are shown as separate lines on your quote, because they differ for each business.",
+      "A payment processing fee is added at checkout. Your quote shows it, and the amount to pay, before you pay."
     ],
     "status": "live",
     "gate": "payments"
@@ -669,7 +670,19 @@ export const FAQ: FaqItem[] = [
     "section": 9,
     "q": "Are there hidden charges?",
     "a": [
-      "No. The total on your quote is what you pay. If anything changes before you pay, you get a new quote."
+      "No. Your quote shows every charge before you pay, including the payment processing fee, and the amount to pay. If anything changes before you pay, you get a new quote."
+    ],
+    "status": "live",
+    "gate": "payments"
+  },
+  {
+    "id": "is-there-a-payment-processing-fee",
+    "section": 9,
+    "q": "Is there a payment processing fee?",
+    "a": [
+      "Yes. Our payment provider charges a fee on every payment, and you pay it at checkout. It is shown on your quote, with the amount to pay, before you pay.",
+      "The fee is about 1.5% of your total plus NGN 100, and never more than NGN 2,000. On totals under NGN 2,500 there is no NGN 100. For example, a NGN 4,000 affidavit has a NGN 163 fee, so you pay NGN 4,163.",
+      "If you get a refund because of us, for example we cannot start your order for a reason on our side, we refund the fee too. If you cancel, the fee is not refunded, because our payment provider keeps it."
     ],
     "status": "live",
     "gate": "payments"
