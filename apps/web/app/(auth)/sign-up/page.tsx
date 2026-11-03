@@ -1,5 +1,6 @@
 "use client";
 
+import { safeRedirect } from "@/lib/safeRedirect";
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
@@ -177,7 +178,9 @@ export default function SignUpPage() {
   function handleContinue() {
     // No second step before payment for customers (JSB and Olamide, 1 Nov 2026).
     // The authenticator app stays optional, under account security.
-    window.location.href = "/home";
+    // Back to the page they came from (an order form, say), if they were sent here from one.
+    const back = new URLSearchParams(window.location.search).get("redirect");
+    window.location.href = safeRedirect(back ?? undefined);
   }
 
   if (recoveryPhrase) {
@@ -372,7 +375,17 @@ export default function SignUpPage() {
 
           <p className="mt-5 text-sm text-brand-gray">
             Already registered?{" "}
-            <Link href="/sign-in" className="font-semibold text-brand-black underline">
+            <Link
+              href="/sign-in"
+              onClick={(e) => {
+                const back = new URLSearchParams(window.location.search).get("redirect");
+                if (back) {
+                  e.preventDefault();
+                  window.location.href = `/sign-in?redirect=${encodeURIComponent(safeRedirect(back))}`;
+                }
+              }}
+              className="font-semibold text-brand-black underline"
+            >
               Sign in
             </Link>
           </p>

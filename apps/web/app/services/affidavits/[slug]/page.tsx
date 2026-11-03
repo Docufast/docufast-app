@@ -1,8 +1,9 @@
 "use client";
 
 import { ordersPausedMessage } from "@/lib/ordersPaused";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/formDraft";
 import { FACTS } from "@/lib/seo/facts";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -75,6 +76,22 @@ export default function AffidavitOrderPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [placed, setPlaced] = useState<{ id: string; ref: string; quote: Quote; auto: boolean } | null>(null);
 
+  // Restore what they had typed before they were sent to sign in (kept in this tab for up to two hours).
+  useEffect(() => {
+    const d = loadDraft<Record<string, unknown>>(`affidavit:${slug}`);
+    if (!d || typeof d !== "object") return;
+    if (typeof d.deponentName === "string") setDeponentName(d.deponentName);
+    if (typeof d.court === "string") setCourt(d.court);
+    if (typeof d.division === "string") setDivision(d.division);
+    if (typeof d.reasonChoice === "string") setReasonChoice(d.reasonChoice);
+    if (typeof d.reasonOther === "string") setReasonOther(d.reasonOther);
+    if (Array.isArray(d.uses)) setUses(d.uses.filter((x): x is string => typeof x === "string"));
+    if (typeof d.purposeEdited === "string") setPurposeEdited(d.purposeEdited);
+    if (d.authenticatedBy === "commissioner" || d.authenticatedBy === "notary") setAuthenticatedBy(d.authenticatedBy);
+    if (d.speed === "standard" || d.speed === "express") setSpeed(d.speed);
+    if (d.extraValues && typeof d.extraValues === "object") setExtraValues(d.extraValues as Record<string, string>);
+  }, [slug]);
+
   const reason = affidavitType ? reasonOptions(slug, affidavitType.category) : null;
   const reasonValue = reasonChoice === OTHER ? reasonOther.trim() : reasonChoice;
   const fieldValues = useMemo(
@@ -130,6 +147,9 @@ export default function AffidavitOrderPage() {
 
     if (!user) {
       // Orders require an account — send them to sign in, then back here.
+      saveDraft(`affidavit:${slug}`, {
+        deponentName, court, division, reasonChoice, reasonOther, uses, purposeEdited, authenticatedBy, speed, extraValues,
+      });
       window.location.href = `/sign-in?redirect=/services/affidavits/${slug}`;
       return;
     }
@@ -179,6 +199,7 @@ export default function AffidavitOrderPage() {
     } catch { /* a person sends the quote */ }
 
     setSubmitting(false);
+    clearDraft(`affidavit:${slug}`);
     setPlaced({ id: inserted.id, ref, quote, auto });
     setSubmitted(true);
   }

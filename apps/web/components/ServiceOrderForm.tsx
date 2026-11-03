@@ -5,7 +5,8 @@
 // asks the API to price it (quote or estimate, emailed at once) and shows the result.
 
 import { ordersPausedMessage } from "@/lib/ordersPaused";
-import { useMemo, useState } from "react";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/formDraft";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import HomeLink from "@/components/ui/HomeLink";
 import FileUpload from "@/components/ui/FileUpload";
@@ -26,6 +27,12 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
   const [error, setError] = useState<string | null>(null);
   const [placed, setPlaced] = useState<{ id: string; ref: string; quote: Quote | null; final: boolean } | null>(null);
 
+  // Restore what they had typed before they were sent to sign in (kept in this tab for up to two hours).
+  useEffect(() => {
+    const draft = loadDraft<Record<string, string>>(`order:${form.slug}`);
+    if (draft && typeof draft === "object") setValues((prev) => ({ ...prev, ...draft }));
+  }, [form.slug]);
+
   const set = (k: string, v: string) => setValues((prev) => ({ ...prev, [k]: v }));
   const quote = useMemo(() => quoteFor(form.category, form.slug, undefined, values), [form, values]);
   const visibleFields = form.sections.flatMap((s) => s.fields.filter((f) => isVisible(f, values)));
@@ -40,6 +47,7 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      saveDraft(`order:${form.slug}`, values);
       window.location.href = `/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
@@ -78,6 +86,7 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
       if (res.ok) { final = !!body.auto; ref = body.ref || ref; }
     } catch { /* a person sends the quote */ }
     setSubmitting(false);
+    clearDraft(`order:${form.slug}`);
     setPlaced({ id: inserted.id, ref, quote, final });
   }
 
