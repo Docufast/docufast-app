@@ -45,6 +45,11 @@ export const PAGE_META: Record<string, PageMeta> = {
     description:
       'Keep every document Docufast prepares in an encrypted Vault, get reminders before CAC, FIRS and LIRS deadlines, and join the waitlist for online notarization.',
   },
+  '/services/npc': {
+    title: 'Births and deaths: NPC applications made simple',
+    description:
+      'We help you complete your National Population Commission application: birth registration and attestation, certificate reprint, reissue and verification, record corrections and death notification.',
+  },
   '/services/virtual-assistant': {
     title: 'Document typing, data entry and transcription',
     description:

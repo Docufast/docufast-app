@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
 import SiteFooter from "@/components/ui/SiteFooter";
+import { NPC_SERVICES_ENABLED } from "@/lib/npcForms";
 
 // Blueprint W1 (#119). Only services that exist today get a card. Check my company,
 // Births and deaths, Vault and reminders and Virtual office are added when they ship.
@@ -28,6 +29,14 @@ const CARDS = [
     href: "/services/virtual-assistant",
     title: "Typing, data entry and transcription",
     text: "Typed, checked and delivered to your Vault.",
+  },
+  {
+    href: "/services/npc",
+    title: "Births and deaths (NPC)",
+    text: NPC_SERVICES_ENABLED
+      ? "Birth registration and attestation, certificates, record corrections and death notification."
+      : "We will announce it here when it opens.",
+    soon: !NPC_SERVICES_ENABLED,
   },
   {
     href: "/services/notarization",

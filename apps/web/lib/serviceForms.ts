@@ -3,6 +3,8 @@
 // price shown as they go. Keys are stable snake_case names stored in orders.form_data.
 // Legal wording to be checked by Sheriff (#184); CAC rules from the CAC Fees tab (#164).
 
+import { NPC_FORMS } from "./npcForms";
+
 export type FieldType = "text" | "textarea" | "date" | "number" | "file" | "select" | "choice";
 
 export interface FormField {
@@ -17,10 +19,12 @@ export interface FormField {
   showIf?: { key: string; in: string[] };
   /** Prefill. */
   initial?: string;
+  /** Block the order when this field has one of these values; the message is shown instead. */
+  stop?: { in: string[]; message: string };
 }
 
 export interface ServiceForm {
-  category: "cac" | "publication" | "virtual_assistant";
+  category: "cac" | "publication" | "virtual_assistant" | "npc";
   slug: string;
   title: string;
   intro: string;
@@ -324,8 +328,10 @@ export const SERVICE_FORMS: ServiceForm[] = [
   },
 ];
 
+export const ALL_SERVICE_FORMS: ServiceForm[] = [...SERVICE_FORMS, ...NPC_FORMS];
+
 export function getServiceForm(category: ServiceForm["category"], slug: string): ServiceForm | undefined {
-  return SERVICE_FORMS.find((f) => f.category === category && f.slug === slug);
+  return ALL_SERVICE_FORMS.find((f) => f.category === category && f.slug === slug);
 }
 
 export function initialValues(form: ServiceForm): Record<string, string> {

@@ -33,6 +33,8 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
     setError(null);
     const missing = visibleFields.find((f) => f.required && !(values[f.key] ?? "").trim());
     if (missing) return setError(`Please fill in: ${missing.label}.`);
+    const stopped = visibleFields.find((f) => f.stop && f.stop.in.includes(values[f.key] ?? ""));
+    if (stopped?.stop) return setError(stopped.stop.message);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -125,6 +127,10 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
             {form.note && (
               <div className="rounded-card border-l-4 border-brand-yellow bg-brand-yellow/10 px-4 py-3 text-sm text-brand-black">{form.note}</div>
             )}
+
+            {visibleFields.filter((f) => f.stop && f.stop.in.includes(values[f.key] ?? "")).map((f) => (
+              <div key={`stop-${f.key}`} role="alert" className="rounded-card border-2 border-brand-error p-3 text-sm text-brand-black">{f.stop!.message}</div>
+            ))}
 
             {quote && <PriceBox quote={quote} />}
 

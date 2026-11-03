@@ -1,7 +1,7 @@
 // A single searchable index across every service type and main app page —
 // powers the real TopBar search dropdown.
 
-import { AFFIDAVIT_TYPES } from "./affidavitTypes";
+import { ORDERABLE_AFFIDAVIT_TYPES } from "./affidavitTypes";
 import { CAC_TYPES } from "./cacTypes";
 import { PUBLICATION_TYPES } from "./publicationTypes";
 import { VA_TYPES } from "./virtualAssistantTypes";
@@ -22,7 +22,7 @@ const NAV_PAGES: SearchItem[] = [
   { label: "Settings", href: "/account/settings", group: "Pages" },
 ];
 
-const AFFIDAVIT_ITEMS: SearchItem[] = AFFIDAVIT_TYPES.map((t) => ({
+const AFFIDAVIT_ITEMS: SearchItem[] = ORDERABLE_AFFIDAVIT_TYPES.map((t) => ({
   label: t.label,
   href: `/services/affidavits/${t.slug}`,
   group: "Affidavits",

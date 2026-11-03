@@ -263,10 +263,10 @@ export const FAQ: FaqItem[] = [
     "q": "Which affidavits can Docufast prepare?",
     "a": [
       "Name: change, correction, confirmation, addition or removal, re-arrangement, and combined correction of name and date of birth",
-      "Birth and age: age declaration (adults and minors), correction of date of birth, attestation of birth certificate",
+      "Birth and age: age declaration (adults and minors), correction of date of birth",
       "Loss: general loss, workplace ID, SIM card, JAMB profile SIM, international passport, driver's licence, vehicle documents",
       "Marriage: bachelorhood or spinsterhood, declaration of marriage, dissolution of marriage",
-      "Death: declaration of death, release of corpse",
+      "Death: release of corpse",
       "Student: loss of school ID, confirmation of result, good conduct, support or sponsorship",
       "Status: change of car ownership, change of residence, change of signature"
     ],
@@ -1216,7 +1216,7 @@ export const FAQ: FaqItem[] = [
     "section": 16,
     "q": "Can you help with birth certificates and death notifications?",
     "a": [
-      "Yes. We help with nine National Population Commission services, including birth registration, birth attestation, certificate reprints, reissue and verification, and death notification. With your consent, we prepare the application and submit it to NPC for you, and you follow every step on your tracker."
+      "Coming soon. We will help you complete your National Population Commission application for birth registration, birth attestation, certificate reprints, reissue and verification, record corrections and death notification. With your consent, we check your details before anything is sent to NPC, and you follow every step on your tracker. Message us on WhatsApp if you need one now."
     ],
     "status": "live"
   },

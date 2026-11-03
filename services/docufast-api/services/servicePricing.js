@@ -25,6 +25,19 @@ export const COMPLEX_AFFIDAVITS = [
   "dissolution_of_marriage", "declaration_of_death", "release_of_corpse",
 ];
 
+// Not orderable (JSB, 2 Nov 2026): Declaration of Death is hidden for the beta (LPA s.22, #206);
+// Attestation of Birth Certificate moves to the NPC services (#101). No price, so no quote.
+export const AFFIDAVIT_NOT_ORDERABLE = ["declaration_of_death", "attestation_birth_cert"];
+
+// NPC services (#101; Playbook 7.3, JSB price schedule): Docufast's service NGN 5,000, plus NPC's own
+// fee at cost. Always an estimate: a person confirms the NPC fee before the quote is final.
+export const NPC_SERVICE_FEE = 5000;
+export const NPC_SLUGS = [
+  "npc_birth_registration", "npc_foreign_birth_notification", "npc_birth_attestation", "npc_record_modification",
+  "npc_certificate_reprint", "npc_certificate_reissuance", "npc_certificate_verification", "npc_death_notification",
+  "npc_health_facility_onboarding",
+];
+
 export const CAC = {
   business_name_registration: 40000,
   company_incorporation: 75000, // share capital up to NGN 1,000,000
@@ -57,6 +70,11 @@ export const SERVICE_LABELS = {
   cac_status_report: "CAC status report", company_amendment: "Company amendment",
   name_change_publication: "Change of name newspaper notice", loss_of_documents_publication: "Loss of documents newspaper notice",
   incorporated_trustees_publication: "Incorporated trustees newspaper notice",
+  npc_birth_registration: "NPC birth registration", npc_foreign_birth_notification: "NPC foreign birth notification",
+  npc_birth_attestation: "NPC birth attestation", npc_record_modification: "NPC record correction",
+  npc_certificate_reprint: "NPC certificate reprint", npc_certificate_reissuance: "NPC certificate reissue",
+  npc_certificate_verification: "NPC certificate verification", npc_death_notification: "NPC death notification",
+  npc_health_facility_onboarding: "NPC health facility onboarding",
   document_typing: "Document typing", data_entry: "Data entry", transcription: "Transcription",
 };
 
@@ -90,7 +108,7 @@ export function priceOrder(order) {
   const lines = [];
 
   if (order.service_category === "affidavit") {
-    if (!AFFIDAVIT_SLUGS.includes(slug)) return null;
+    if (!AFFIDAVIT_SLUGS.includes(slug) || AFFIDAVIT_NOT_ORDERABLE.includes(slug)) return null;
     const complex = COMPLEX_AFFIDAVITS.includes(slug);
     lines.push({ label: complex ? "Affidavit (enhanced checks), court fee included" : "Affidavit, court fee included", amount: complex ? AFFIDAVIT_COMPLEX : AFFIDAVIT_STANDARD });
     lines.push({ label: "1 certified copy", amount: 0 });
@@ -151,6 +169,13 @@ export function priceOrder(order) {
     lines.push({ label, amount: qty * rate });
     if (f.turnaround === "rush") return { lines, total: sum(lines), final: false, note: "Rush (12 hours) costs extra. We will confirm your quote." };
     return { lines, total: sum(lines), final: true, note: "Priced on the amount you gave. If your file is longer, we tell you before we start." };
+  }
+
+  if (order.service_category === "npc") {
+    if (!NPC_SLUGS.includes(slug)) return null;
+    if (f.record_of === "My child (under 18)") return null; // no instant quote: a person checks parental consent (#200)
+    lines.push({ label: "Docufast service: we help you complete your NPC application", amount: NPC_SERVICE_FEE });
+    return { lines, total: sum(lines), final: false, note: "NPC's own fee, if there is one, is paid to NPC in full and added at cost. We confirm your quote before you pay." };
   }
 
   return null;

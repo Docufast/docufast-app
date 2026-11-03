@@ -94,6 +94,19 @@ export default function AffidavitOrderPage() {
     );
   }
 
+  if (affidavitType.notOrderable) {
+    return (
+      <main className="mx-auto max-w-2xl px-6 py-16">
+        <h1 className="break-words text-2xl font-bold text-brand-black">{affidavitType.label}</h1>
+        <p className="mt-3 text-sm text-brand-black">{affidavitType.notOrderable}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <a href="https://wa.me/2349054951918" className="rounded-card bg-brand-yellow px-4 py-3 text-sm font-bold text-brand-black">Message us on WhatsApp</a>
+          <Link href="/services/affidavits" className="rounded-card border-4 border-brand-black px-4 py-3 text-sm font-bold">See other affidavits</Link>
+        </div>
+      </main>
+    );
+  }
+
   const extraFields = CATEGORY_FIELDS[affidavitType.category];
 
   async function handleSubmit(e: React.FormEvent) {
