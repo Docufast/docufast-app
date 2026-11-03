@@ -9,15 +9,14 @@ updates:
       day: monday
       time: "07:00"
       timezone: Africa/Lagos
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
     ignore:
-      # Next.js 15 needs React 19 and code changes: done as its own planned piece of work.
-      - dependency-name: "next"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "eslint-config-next"
+      # Until after launch (Olamide, 3 Nov 2026): no major-version jumps (Express 5, Tailwind 4, TypeScript 7,
+      # Next.js 15 and so on). Each needs planned work. Minor and patch updates still arrive, grouped weekly.
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
@@ -26,3 +25,6 @@ updates:
       interval: weekly
       day: monday
       timezone: Africa/Lagos
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
