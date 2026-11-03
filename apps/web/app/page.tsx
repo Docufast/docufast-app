@@ -3,11 +3,14 @@ import { pageMetadata } from "@/lib/seo/pages";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
 import SiteFooter from "@/components/ui/SiteFooter";
+import HomeChat from "@/components/HomeChat";
+import { chatPriceNotes } from "@/lib/homeChatPrices";
 
 export const metadata = pageMetadata("/");
 
-// Blueprint D1 (#119). The chat panel and language pills are left out until they are
-// built. Only services that exist today get a card.
+// Blueprint A1 (mobile) and D1 (desktop): the home screen chat with its language pills sits in
+// the hero (JSB, 3 Nov 2026: part of the beta; components/HomeChat.tsx). Only services that exist
+// today get a card.
 const CARDS = [
   {
     href: "/services/affidavits",
@@ -38,7 +41,8 @@ export default function Home() {
       <SiteHeader />
       <main>
         <section className="bg-brand-black px-4 py-14 md:px-12 md:py-20">
-          <div className="mx-auto max-w-[1200px]">
+          <div className="mx-auto grid max-w-[1200px] items-center gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+            <div>
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-brand-yellow">
               Online, in Nigeria
             </p>
@@ -62,6 +66,8 @@ export default function Home() {
                 Verify a Docufast document
               </Link>
             </div>
+            </div>
+            <HomeChat prices={chatPriceNotes()} />
           </div>
         </section>
 
