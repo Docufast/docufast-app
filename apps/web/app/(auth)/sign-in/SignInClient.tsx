@@ -9,14 +9,7 @@ import { supabase } from "@/lib/supabase";
 import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import { unwrapPrivateKey } from "@/lib/vaultCrypto";
 import { storeUnlockedPrivateKey } from "@/lib/vaultSession";
-
-// Only same-site paths are allowed. Blocks https://other.site, //other.site and javascript: values.
-function safeRedirect(value?: string): string {
-  if (value && value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\")) {
-    return value;
-  }
-  return "/home";
-}
+import { safeRedirect } from "@/lib/safeRedirect";
 
 // Blueprint U1 (#119): sign-in styling only. The sign-in and two-factor logic is unchanged.
 const labelCls = "mb-1.5 block text-sm font-semibold text-brand-black";
@@ -232,7 +225,10 @@ export default function SignInForm({ redirect }: { redirect?: string }) {
 
           <p className="mt-5 text-sm text-brand-gray">
             New here?{" "}
-            <Link href="/sign-up" className="font-semibold text-brand-black underline">
+            <Link
+              href={redirectTo !== "/home" ? `/sign-up?redirect=${encodeURIComponent(redirectTo)}` : "/sign-up"}
+              className="font-semibold text-brand-black underline"
+            >
               Create an account
             </Link>
           </p>
