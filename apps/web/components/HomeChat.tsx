@@ -16,7 +16,10 @@ import {
   type ChatReply, type LangCode, type PriceNotes,
 } from "@/lib/homeChat";
 
-type Turn = { from: "me"; text: string } | { from: "bot"; reply: ChatReply };
+type Turn = { from: "me"; text: string } | { from: "bot"; reply: ChatReply; ai?: boolean; pending?: boolean };
+
+// AI fallback (patch 0026): only for questions the fixed rules cannot match, only when switched on.
+const AI_ON = process.env.NEXT_PUBLIC_CHAT_AI === "on";
 
 const LANG_KEY = "docufast.lang";
 const MAX_INPUT = 200;
@@ -52,8 +55,29 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
   function send(query: string) {
     const q = query.trim().slice(0, MAX_INPUT);
     if (!q) return;
-    setTurns((t) => [...t, { from: "me", text: q }, { from: "bot", reply: replyTo(q, prices) }]);
+    const ruled = replyTo(q, prices);
     setText("");
+    if (!AI_ON || ruled.intent !== "unknown") {
+      setTurns((t) => [...t, { from: "me", text: q }, { from: "bot", reply: ruled }]);
+      return;
+    }
+    const thinking: ChatReply = { intent: "pending", text: "Let me check that for you...", actions: [] };
+    setTurns((t) => [...t, { from: "me", text: q }, { from: "bot", reply: thinking, pending: true }]);
+    const finish = (reply: ChatReply, ai = false) =>
+      setTurns((t) => {
+        const copy = [...t];
+        const i = copy.map((x) => x.from === "bot" && x.pending).lastIndexOf(true);
+        if (i >= 0) copy[i] = { from: "bot", reply, ai };
+        return copy;
+      });
+    fetch("/api/chat-assist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: q }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.ok && Array.isArray(d.actions) && d.actions.length) {
+          finish({ intent: "ai", text: String(d.reply), actions: d.actions, ask: true, whatsapp: false }, true);
+        } else finish(ruled);
+      })
+      .catch(() => finish(ruled));
   }
 
   return (
@@ -118,6 +142,9 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
               <p className="rounded-[14px_14px_14px_4px] bg-[#F2F2EE] px-3.5 py-2.5 text-[15px]">
                 <span className="sr-only">{ui(lang, "docufast")}: </span>{t.reply.text}
               </p>
+              {t.ai && (
+                <p className="text-xs text-brand-gray">Suggested by our assistant. Check the service details and price before you order.</p>
+              )}
               {t.reply.actions.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   {t.reply.actions.map((a) => (
