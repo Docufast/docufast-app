@@ -51,6 +51,8 @@ test("fee shown on every quote screen and in the Terms; provider never named in 
     assert.match(read(p), /<PaymentFeeRows /, p);
   }
   assert.match(read("app/terms/page.tsx"), /payment\s+processing fee/);
+  assert.match(read("app/terms/page.tsx"), /payment processing fee is not refunded, including on a full refund/);
+  assert.match(read("lib/faq.ts"), /The fee is not refunded, including on a full refund/);
   const email = fs.readFileSync(path.resolve(web, "../../services/docufast-api/services/emailService.js"), "utf8");
   assert.match(email, /paymentFee\(total\)/);
   for (const p of ["lib/faq.ts", "app/terms/page.tsx", "components/PaymentFeeRows.tsx", "components/ServiceOrderForm.tsx", "app/services/affidavits/[slug]/page.tsx"]) {
