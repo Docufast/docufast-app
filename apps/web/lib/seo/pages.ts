@@ -23,7 +23,7 @@ export const PAGE_META: Record<string, PageMeta> = {
   '/services': {
     title: 'All services: affidavits, CAC, newspaper notices and more',
     description:
-      'Every Docufast service in one place: affidavits, newspaper notices, CAC registration and filings, typing and data entry, and NPC birth and death services. Every order is quoted before work starts.',
+      'Every Docufast service in one place: affidavits, newspaper notices, CAC registration and filings, typing and data entry, with help for NPC birth and death applications coming soon. Every order is quoted before work starts.',
   },
   '/services/affidavits': {
     title: 'Affidavits online in Lagos: change of name, loss, age and more',
@@ -58,7 +58,7 @@ export const PAGE_META: Record<string, PageMeta> = {
   '/about': {
     title: 'About Docufast: who we are and how we work',
     description:
-      'Docufast Integrated Services Limited (RC 1893484) helps people and businesses in Nigeria get affidavits, newspaper notices, CAC filings and NPC services online. Registrations, address and contacts.',
+      'Docufast Nigeria (Docufast Integrated Services Limited, RC 1893484) helps people and businesses in Nigeria get affidavits, newspaper notices and CAC filings online. Registrations, address and contacts.',
   },
   '/faq': {
     title: 'Frequently asked questions',

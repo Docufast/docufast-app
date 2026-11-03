@@ -6,12 +6,22 @@
 
 export const SITE_URL = 'https://www.docufast.ng';
 
+// NPC wording follows the switch (Playbook 7.3): "we help you complete your NPC application",
+// never "NPC agent" or "NPC partner". While the switch is off, NPC help is "coming soon".
+const NPC_ON = process.env.NEXT_PUBLIC_NPC_SERVICES_ENABLED === 'on';
+
 export const FACTS = {
   name: 'Docufast',
   legalName: 'Docufast Integrated Services Limited',
-  alternateNames: ['Docufast NG', 'docufast.ng'],
-  oneLine:
-    "Docufast helps people and businesses in Nigeria get affidavits, newspaper notices, CAC registrations and filings, and birth and death registrations online. A person checks every document before it is delivered to the customer's encrypted Vault.",
+  // "Docufast Nigeria" first: other, unrelated businesses abroad use the name Docufast, so the
+  // country and RC number travel with the name everywhere (AI visibility baseline, 2 Nov 2026).
+  alternateNames: ['Docufast Nigeria', 'Docufast NG', 'docufast.ng'],
+  // The sentence assistants quote first. Keep name, legal name and RC number together.
+  identityLine:
+    'Docufast Nigeria (Docufast Integrated Services Limited, RC 1893484) is an online document service based in Lagos.',
+  oneLine: NPC_ON
+    ? "Docufast helps people and businesses in Nigeria get affidavits, newspaper notices and CAC registrations and filings online, and helps you complete your NPC birth and death applications. A person checks every document before it is delivered to the customer's encrypted Vault."
+    : "Docufast helps people and businesses in Nigeria get affidavits, newspaper notices and CAC registrations and filings online. A person checks every document before it is delivered to the customer's encrypted Vault. Help with NPC birth and death applications is coming soon.",
   rcNumber: 'RC 1893484',
   incorporated: '2022-02-15',
   address: {
