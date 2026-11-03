@@ -45,13 +45,16 @@ export default function TermsOfServicePage() {
           You see an itemised price before you commit. Once you accept it, the price is fixed for that order.
           A price you have not yet accepted stays valid for 48 hours. The price shows which official fees are
           included and, for filings where they vary, lists government fees and penalties separately. If
-          anything you tell us changes the work, we give you a new price before continuing.
+          anything you tell us changes the work, we give you a new price before continuing. A payment
+          processing fee, charged by our payment provider, is added at checkout; your quote shows it and the
+          amount to pay before you pay.
         </p>
       </Section>
 
       <Section title="5. Payment">
         <p>
-          Pay only on docufast.ng. We never ask you to pay into a personal account or inside WhatsApp; if
+          Pay only on docufast.ng. You pay the quoted price plus the payment processing fee shown on your
+          quote. We never ask you to pay into a personal account or inside WhatsApp; if
           anyone does, do not pay and report it to us. Your order starts once payment is confirmed. Late bank
           transfers are matched automatically; if you are charged twice, the extra payment is refunded
           automatically.

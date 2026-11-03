@@ -25,11 +25,11 @@ const PAGES: { path: string; lastModified: string }[] = [
   { path: '/services/notarization', lastModified: '2026-11-01' },
   { path: '/services/virtual-assistant', lastModified: '2026-10-22' },
   { path: '/about', lastModified: '2026-11-03' },
-  { path: '/faq', lastModified: '2026-11-02' },
+  { path: '/faq', lastModified: '2026-11-03' },
   { path: '/verify', lastModified: '2026-10-22' },
   // { path: '/guides', lastModified: '' }, // add when the page is live
   { path: '/privacy', lastModified: '2026-10-30' },
-  { path: '/terms', lastModified: '2026-10-28' },
+  { path: '/terms', lastModified: '2026-11-03' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
