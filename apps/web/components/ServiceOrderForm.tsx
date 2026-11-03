@@ -4,6 +4,7 @@
 // lib/serviceForms.ts. Shows the price as the customer fills it in; on submit it saves the order,
 // asks the API to price it (quote or estimate, emailed at once) and shows the result.
 
+import { ordersPausedMessage } from "@/lib/ordersPaused";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import HomeLink from "@/components/ui/HomeLink";
@@ -60,7 +61,8 @@ export default function ServiceOrderForm({ form, backHref, backLabel }: { form: 
       .single();
     if (insertError || !inserted) {
       setSubmitting(false);
-      return setError("We could not save your order. Please try again, or message us on WhatsApp.");
+      const pausedMsg = await ordersPausedMessage();
+      return setError(pausedMsg ?? "We could not save your order. Please try again, or message us on WhatsApp.");
     }
 
     let final = false;

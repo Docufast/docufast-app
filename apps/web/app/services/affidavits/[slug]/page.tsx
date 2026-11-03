@@ -1,5 +1,6 @@
 "use client";
 
+import { ordersPausedMessage } from "@/lib/ordersPaused";
 import { FACTS } from "@/lib/seo/facts";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -153,7 +154,8 @@ export default function AffidavitOrderPage() {
 
     if (error || !inserted) {
       setSubmitting(false);
-      setSubmitError("We could not save your order. Please try again, or message us on WhatsApp.");
+      const pausedMsg = await ordersPausedMessage();
+      setSubmitError(pausedMsg ?? "We could not save your order. Please try again, or message us on WhatsApp.");
       return;
     }
 

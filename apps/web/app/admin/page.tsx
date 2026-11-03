@@ -1,5 +1,6 @@
 "use client";
 
+import PauseOrdersPanel from "@/components/admin/PauseOrdersPanel";
 import { useEffect, useState } from "react";
 import { isStaff, ROLE_INTRO, type StaffRole } from "@/lib/staffRoles";
 import Link from "next/link";
@@ -227,6 +228,13 @@ export default function AdminDashboardPage() {
           <MetricCard label="Cash runway" value="Not set" sublabel="Manual input required" />
           <MetricCard label="Open issues" value="0" />
         </div>
+        )}
+
+        {/* Pause-orders switch: Founder only. Left OFF by default. */}
+        {role === "founder" && (
+          <div className="mt-8">
+            <PauseOrdersPanel accessToken={accessToken} />
+          </div>
         )}
 
         {/* Help chat questions from the website (JSB, 27 Oct 2026): Founder and Support */}
