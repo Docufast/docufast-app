@@ -10,10 +10,10 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.116.0",
-    "bip39": "^3.1.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "bip39": "^3.1.2",
     "idb-keyval": "^6.3.0",
-    "lucide-react": "^1.47.0",
+    "lucide-react": "^1.66.0",
     "next": "14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -22,10 +22,10 @@
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "autoprefixer": "^10.4.19",
+    "autoprefixer": "^10.6.2",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.35",
-    "postcss": "^8.4.40",
+    "postcss": "^8.5.32",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.4"
   }
