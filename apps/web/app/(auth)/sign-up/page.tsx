@@ -1,6 +1,7 @@
 "use client";
 
 import { safeRedirect } from "@/lib/safeRedirect";
+import { isValidEmail } from "@/lib/emailCheck.js";
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
@@ -53,6 +54,10 @@ export default function SignUpPage() {
 
     if (!fullName || !email || !phone || !password || !dateOfBirth) {
       setError("Please fill in every field.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address, for example you@example.com.");
       return;
     }
     // Accounts are for adults only (Terms s.3, #199). Checked here first so no account is
