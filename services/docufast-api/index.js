@@ -12,12 +12,14 @@ import partnerRoute from "./routes/partner.js";
 import { sweepLateExpressOrders } from "./services/expressService.js";
 import { sweepExpiredShares } from "./services/shareService.js";
 import { sweepStaleOrders } from "./services/retentionService.js";
+import { securityHeaders, requireBearer, notFound, errorHandler } from "./lib/httpHardening.js";
 
 dotenv.config();
 
 const app = express();
 // H4 (#68): do not advertise the framework in an X-Powered-By header.
 app.disable("x-powered-by");
+app.use(securityHeaders);
 
 // ALLOWED_ORIGINS is a comma-separated list, set per Railway environment
 // (production vs staging each declare only their own frontend URL(s)).
@@ -53,15 +55,18 @@ app.use(express.json());
 
 app.use("/health", healthRoute);
 app.use("/upload", uploadRoute);
-app.use("/admin/orders", adminOrdersRoute);
+app.use("/admin/orders", requireBearer, adminOrdersRoute);
 app.use("/documents", documentsRoute);
 app.use("/orders", paymentsRoute);
 app.use("/share", shareRoute);
 // Partner API (#41): every route needs an IP-allowlisted partner key. No CORS needed (server to server).
 app.use("/partner", partnerRoute);
 
+app.use(notFound);
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`docufast-api listening on port ${PORT}`);
 });
 
@@ -78,5 +83,23 @@ async function runSweeps() {
   await sweepExpiredShares().catch((err) => console.error("Share sweep failed:", err.message));
   await sweepStaleOrders().catch((err) => console.error("Retention sweep failed:", err.message));
 }
-setTimeout(runSweeps, 60 * 1000);
-setInterval(runSweeps, SWEEP_MS);
+const firstSweep = setTimeout(runSweeps, 60 * 1000);
+const sweepTimer = setInterval(runSweeps, SWEEP_MS);
+
+// Graceful shutdown (test report D14, 4 Nov 2026). Railway sends SIGTERM before replacing a
+// deploy: stop taking new requests, let the ones in flight (a payment start, a delivery) finish,
+// then exit. Forced exit after 10 seconds.
+let shuttingDown = false;
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal} received: finishing open requests, then exiting.`);
+  clearTimeout(firstSweep);
+  clearInterval(sweepTimer);
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 10000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+// Log, never crash silently, on a promise nobody awaited.
+process.on("unhandledRejection", (reason) => console.error("Unhandled promise rejection:", reason?.message || reason));

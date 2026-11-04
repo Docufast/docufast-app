@@ -111,8 +111,9 @@ export default function TermsOfServicePage() {
 
       <Section title="10. Verification and sharing">
         <p>
-          Every document we deliver carries a QR code and a reference. Anyone can check it at docufast.ng/verify
-          without seeing its content. Share links you create can expire and be cancelled, and every opening is
+          Every document we deliver carries a reference. When online checking opens, anyone will be able to
+          check a document at docufast.ng/verify without seeing its content; until then, affidavits carry the
+          court&apos;s own seal. Share links you create can expire and be cancelled, and every opening is
           logged.
         </p>
       </Section>

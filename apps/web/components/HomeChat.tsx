@@ -11,10 +11,13 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 // Loaded only when the chat cannot match a question, to keep the home page light (Playbook 18.2).
 const AskQuestionForm = dynamic(() => import("@/components/ui/AskQuestionForm"), { ssr: false });
-import {
-  LANGUAGES, QUICK_REPLIES, enabledLanguages, greeting, replyTo, ui,
-  type ChatReply, type LangCode, type PriceNotes,
-} from "@/lib/homeChat";
+import { LANGUAGES, QUICK_REPLIES, enabledLanguages, greeting, ui, type LangCode } from "@/lib/homeChatText";
+import type { ChatReply, PriceNotes } from "@/lib/homeChat";
+
+// The matching rules load on first use (test report D11, 4 Nov 2026: homepage JavaScript budget),
+// and start loading as soon as the customer focuses the box or taps a quick reply.
+let rulesPromise: Promise<typeof import("@/lib/homeChat")> | null = null;
+const loadRules = () => (rulesPromise ??= import("@/lib/homeChat"));
 
 type Turn = { from: "me"; text: string } | { from: "bot"; reply: ChatReply; ai?: boolean; pending?: boolean };
 
@@ -52,10 +55,16 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
     try { window.localStorage.setItem(LANG_KEY, code); } catch { /* fine */ }
   }
 
-  function send(query: string) {
+  async function send(query: string) {
     const q = query.trim().slice(0, MAX_INPUT);
     if (!q) return;
-    const ruled = replyTo(q, prices);
+    let ruled: ChatReply;
+    try {
+      ruled = (await loadRules()).replyTo(q, prices);
+    } catch {
+      rulesPromise = null; // a failed download can be retried on the next message
+      ruled = { intent: "unknown", text: "Sorry, the chat could not load. Check your connection, or see all our services.", actions: [{ label: "See all services", href: "/services" }], ask: false, whatsapp: true };
+    }
     setText("");
     if (!AI_ON || ruled.intent !== "unknown") {
       setTurns((t) => [...t, { from: "me", text: q }, { from: "bot", reply: ruled }]);
@@ -116,7 +125,7 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
                 <a
                   key={q.label}
                   href={q.href}
-                  onClick={(e) => { e.preventDefault(); send(q.query); }}
+                  onClick={(e) => { e.preventDefault(); void send(q.query); }}
                   className="flex min-h-[60px] flex-col justify-between rounded-[12px] border border-brand-gray-light px-3 py-2 hover:border-brand-black"
                 >
                   <span className="text-sm font-semibold">{q.label}</span>
@@ -170,7 +179,7 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
 
       <form
         action="/services"
-        onSubmit={(e) => { e.preventDefault(); send(text); inputRef.current?.focus(); }}
+        onSubmit={(e) => { e.preventDefault(); void send(text); inputRef.current?.focus(); }}
         className="flex items-center gap-2 border-t border-[#E4E4E0] pt-3"
       >
         <label htmlFor="home-chat-input" className="sr-only">{ui(lang, "placeholder")}</label>
@@ -181,6 +190,7 @@ export default function HomeChat({ prices = {} }: { prices?: PriceNotes }) {
           value={text}
           maxLength={MAX_INPUT}
           onChange={(e) => setText(e.target.value)}
+          onFocus={() => { loadRules().catch(() => { rulesPromise = null; }); }}
           placeholder={ui(lang, "placeholder")}
           autoComplete="off"
           className="h-12 min-w-0 flex-1 rounded-full border border-[#CFCFCA] px-4 text-[15px] outline-none focus:border-brand-black"

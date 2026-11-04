@@ -1,6 +1,6 @@
 # Docufast Nigeria
 
-> Docufast Nigeria (Docufast Integrated Services Limited, RC 1893484, Lagos) helps people and businesses in Nigeria get affidavits, newspaper notices and CAC registrations and filings online. A person checks every document before it is delivered to the customer's encrypted Vault, where it carries a QR code anyone can verify.
+> Docufast Nigeria (Docufast Integrated Services Limited, RC 1893484, Lagos) helps people and businesses in Nigeria get affidavits, newspaper notices and CAC registrations and filings online. A person checks every document before it is delivered to the customer's encrypted Vault. Online checking of Docufast documents at docufast.ng/verify opens when the first documents are issued.
 
 Key facts:
 

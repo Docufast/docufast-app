@@ -1,0 +1,2 @@
+# Fake 'alg none' token used on purpose by the API test that checks forged tokens are refused (4 Nov 2026)
+004c9d15a36ab74b0d98f95def78e95bd3fa8bf6:services/docufast-api/tests/api.test.mjs:jwt:132

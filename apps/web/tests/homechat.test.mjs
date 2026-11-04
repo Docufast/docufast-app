@@ -13,7 +13,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const web = path.resolve(here, "..");
 const out = fs.mkdtempSync(path.join(os.tmpdir(), "df-chat-"));
 const tx = (src) => ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022 } }).outputText;
-for (const f of ["homeChat", "homeChatPrices", "affidavitTypes", "serviceForms", "npcForms"]) {
+for (const f of ["homeChat", "homeChatText", "homeChatPrices", "affidavitTypes", "serviceForms", "npcForms"]) {
   fs.writeFileSync(path.join(out, `${f}.mjs`), tx(fs.readFileSync(path.join(web, "lib", `${f}.ts`), "utf8"))
     .replace(/from "\.\/(\w+)"/g, 'from "./$1.mjs"')
     .replace(/from "\.\/servicePricing\.js"/g, `from "${pathToFileURL(path.join(web, "lib", "servicePricing.js")).href}"`));
@@ -88,7 +88,7 @@ test("prices come from the price file; no NPC price; house rules", () => {
   const npc = reply("birth certificate");
   assert.match(npc.text, /coming soon/);
   assert.ok(npc.actions.every((a) => !a.note));
-  const src = fs.readFileSync(path.join(web, "lib", "homeChat.ts"), "utf8") + fs.readFileSync(path.join(web, "components", "HomeChat.tsx"), "utf8");
+  const src = fs.readFileSync(path.join(web, "lib", "homeChat.ts"), "utf8") + fs.readFileSync(path.join(web, "lib", "homeChatText.ts"), "utf8") + fs.readFileSync(path.join(web, "components", "HomeChat.tsx"), "utf8");
   assert.doesNotMatch(src, /—|regulated|paystack|flutterwave|NPC agent|NPC partner/i);
 });
 
