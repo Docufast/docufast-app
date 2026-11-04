@@ -267,10 +267,12 @@ export default function AffidavitOrderPage() {
           </div>
           <div className="flex flex-col gap-4 p-4">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+              <label htmlFor="deponent-name" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                 Full name
               </label>
               <input
+                id="deponent-name"
+                autoComplete="name"
                 value={deponentName}
                 onChange={(e) => setDeponentName(e.target.value)}
                 className="w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none"
@@ -302,10 +304,11 @@ export default function AffidavitOrderPage() {
           <div className="flex flex-col gap-4 p-4">
             {extraFields.map((field) => (
               <div key={field.key}>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
+                <label htmlFor={`extra-${field.key}`} className="mb-1.5 block text-xs font-semibold uppercase tracking-wide">
                   {field.label}
                 </label>
                 <input
+                  id={`extra-${field.key}`}
                   placeholder={field.placeholder}
                   value={extraValues[field.key] || ""}
                   onChange={(e) => setExtraValues({ ...extraValues, [field.key]: e.target.value })}
@@ -322,7 +325,7 @@ export default function AffidavitOrderPage() {
                   {reason.options.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
                 {reasonChoice === OTHER && (
-                  <input value={reasonOther} onChange={(e) => setReasonOther(e.target.value)} placeholder="Write the reason in a few words"
+                  <input value={reasonOther} onChange={(e) => setReasonOther(e.target.value)} placeholder="Write the reason in a few words" aria-label="Other reason"
                     className="mt-2 w-full rounded-input border-4 border-brand-black px-3 py-2.5 outline-none" />
                 )}
               </div>

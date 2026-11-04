@@ -1,6 +1,8 @@
 "use client";
 
 import { safeRedirect } from "@/lib/safeRedirect";
+import { isValidEmail } from "@/lib/emailCheck.js";
+import { normalizePhone } from "@/lib/phoneCheck.js";
 import { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/components/ui/SiteHeader";
@@ -55,6 +57,15 @@ export default function SignUpPage() {
       setError("Please fill in every field.");
       return;
     }
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address, for example you@example.com.");
+      return;
+    }
+    const cleanPhone = normalizePhone(phone);
+    if (!cleanPhone) {
+      setError("Please enter a valid phone number, for example 0803 123 4567 or +44 7911 123456.");
+      return;
+    }
     // Accounts are for adults only (Terms s.3, #199). Checked here first so no account is
     // created for someone under 18, and again on the server.
     const age = checkAdult(dateOfBirth);
@@ -77,7 +88,7 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          data: { full_name: fullName, phone },
+          data: { full_name: fullName, phone: cleanPhone },
           ...(captchaToken ? { captchaToken } : {}),
         },
       });

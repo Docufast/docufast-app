@@ -29,7 +29,7 @@ const PAGES: { path: string; lastModified: string }[] = [
   { path: '/verify', lastModified: '2026-10-22' },
   // { path: '/guides', lastModified: '' }, // add when the page is live
   { path: '/privacy', lastModified: '2026-10-30' },
-  { path: '/terms', lastModified: '2026-11-03' },
+  { path: '/terms', lastModified: '2026-11-04' },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

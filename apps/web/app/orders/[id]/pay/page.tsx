@@ -69,6 +69,8 @@ export default function OrderPaymentPage() {
       if (!res.ok || !data.paymentUrl) {
         setPayState("failed");
         setPayMessage(data.error || "We could not start your payment. Please try again.");
+        // Quote older than 48 hours and re-priced (test report D6): show the new price before paying.
+        if (res.status === 409 && data.newTotal) setTimeout(() => window.location.reload(), 4000);
         return;
       }
       window.location.href = data.paymentUrl;
