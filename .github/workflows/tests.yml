@@ -1,0 +1,66 @@
+# Docufast regression tests (test report D4, 4 Nov 2026). Runs on every pull request and on pushes
+# to main and staging. After the first green run, make "tests / web" and "tests / api" required
+# checks in the branch protection rule for main (#220), next to "security / secrets".
+#
+#   web: the 61 website tests (prices, fee, chat, affidavit wording, SEO, house rules) + a production build.
+#   api: access control on every route, webhook signature, amount charged, timeouts, quote expiry.
+# Neither job needs secrets: the API tests point at a closed local port, the build uses dummy public values.
+
+name: tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy
+          NEXT_PUBLIC_API_URL: https://api.example.invalid
+          NEXT_TELEMETRY_DISABLED: 1
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/docufast-api
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: services/docufast-api/package-lock.json
+      - run: npm ci
+      - run: npm test
