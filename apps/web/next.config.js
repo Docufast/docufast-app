@@ -9,6 +9,11 @@ const nextConfig = {
   images: { unoptimized: true },
   async redirects() {
     return [
+      // Test report D9 (4 Nov 2026): common guesses for the sign-in and sign-up pages.
+      { source: "/login", destination: "/sign-in", permanent: true },
+      { source: "/signin", destination: "/sign-in", permanent: true },
+      { source: "/register", destination: "/sign-up", permanent: true },
+      { source: "/signup", destination: "/sign-up", permanent: true },
       {
         // Old Vercel production URL -> real domain (same path, permanent 308).
         // Matches ONLY this exact host; staging/preview URLs are unaffected.
