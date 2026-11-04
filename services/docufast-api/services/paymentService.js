@@ -3,7 +3,10 @@
 // server has verified the transaction with Paystack (from the webhook or the return page).
 //
 // Rules this file enforces:
-// - The amount charged is always taken from the order's quote on the server, never the browser.
+// - The amount charged is always taken from the order's quote on the server, never the browser:
+//   the quote price plus the payment processing fee, in whole naira, exactly as the customer saw
+//   it (amountToPay in paymentFee.js). Test report D1, 4 Nov 2026: Paystack must NOT add its own
+//   fee on top ("Pass fees to customers" OFF in the Paystack dashboard), or the amounts differ.
 // - An order moves to "paid" once only, and only from "quote_sent".
 // - A second successful payment for an already-paid order is refunded automatically
 //   (FAQ and Terms: "if you are charged twice, the extra payment is refunded automatically").
@@ -13,6 +16,7 @@ import { supabaseAdmin } from "../lib/verifyFounder.js";
 import { initializeTransaction, verifyTransaction, createRefund } from "../lib/paystack.js";
 import { sendPaymentReceiptEmail, sendStaffAlert } from "./emailService.js";
 import { startExpressClock } from "./expressService.js";
+import { amountToPay } from "./paymentFee.js";
 
 const PAYABLE_STATUS = "quote_sent";
 
@@ -40,7 +44,7 @@ export async function initiatePayment(order, customerEmail) {
     return { success: false, status: 400, error: "Your account needs an email address to pay." };
   }
 
-  const amountKobo = Math.round(amountNaira * 100);
+  const amountKobo = amountToPay(amountNaira) * 100; // whole naira, so whole kobo
   const reference = newReference(order.id);
 
   const { error: insertError } = await supabaseAdmin.from("payments").insert({

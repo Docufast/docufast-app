@@ -4,6 +4,9 @@
 import crypto from "node:crypto";
 
 const BASE_URL = "https://api.paystack.co";
+// Test report D5 (4 Nov 2026): never wait on Paystack for more than 10 seconds. A hung call used to
+// hold the customer's request (and a server connection) for up to 5 minutes.
+const TIMEOUT_MS = Number(process.env.PAYSTACK_TIMEOUT_MS) || 10000;
 
 function secretKey() {
   const key = process.env.PAYSTACK_SECRET_KEY;
@@ -12,14 +15,22 @@ function secretKey() {
 }
 
 async function call(method, path, body) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${secretKey()}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      headers: {
+        Authorization: `Bearer ${secretKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    const err = new Error(e.name === "TimeoutError" ? `Paystack ${method} ${path} timed out after ${TIMEOUT_MS} ms.` : `Paystack ${method} ${path} could not be reached.`);
+    err.status = 504;
+    throw err;
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok || json.status === false) {
     const err = new Error(json.message || `Paystack ${method} ${path} failed (${res.status}).`);

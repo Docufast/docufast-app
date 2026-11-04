@@ -7,6 +7,15 @@ import { sendItemizedQuoteEmail, sendStaffAlert } from "../services/emailService
 
 const QUOTE_VALID_HOURS = 48; // FACTS.pricing.quoteValidHours
 
+// Test report D6 (4 Nov 2026): a quote is valid for 48 hours. Older quotes are re-priced from the
+// price list when the order has a fixed price; if the price is unchanged the customer pays at once.
+// Quotes a person priced must be refreshed by us. Orders with no quote_sent_at (older rows) pass.
+export function quoteExpired(order, now = Date.now()) {
+  if (!order?.quote_sent_at) return false;
+  const sent = Date.parse(order.quote_sent_at);
+  return Number.isFinite(sent) && now - sent > QUOTE_VALID_HOURS * 3600 * 1000;
+}
+
 
 const router = express.Router();
 
@@ -86,7 +95,7 @@ router.post("/:id/auto-quote", async (req, res) => {
 
   const { data: updated, error } = await supabaseAdmin
     .from("orders")
-    .update({ quote_amount: quote.total, status: "quote_sent" })
+    .update({ quote_amount: quote.total, status: "quote_sent", quote_sent_at: new Date().toISOString() })
     .eq("id", order.id)
     .eq("status", "quote_pending") // no double quote if two calls race
     .select("id")
@@ -112,7 +121,7 @@ router.post("/:id/initiate-payment", async (req, res) => {
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, user_id, status, quote_amount")
+    .select("id, user_id, status, quote_amount, quote_sent_at, service_category, order_type, speed, form_data")
     .eq("id", req.params.id)
     .single();
 
@@ -122,6 +131,18 @@ router.post("/:id/initiate-payment", async (req, res) => {
   }
   if (!order.quote_amount) {
     return res.status(400).json({ error: "This order has no quote yet." });
+  }
+  if (order.status === "quote_sent" && quoteExpired(order)) {
+    const fresh = instantQuote(order);
+    if (!fresh?.final) {
+      return res.status(410).json({ error: "This quote is more than 48 hours old. Reply to your quote email or message us on WhatsApp and we will send a fresh one." });
+    }
+    const renewedAt = new Date().toISOString();
+    await supabaseAdmin.from("orders").update({ quote_amount: fresh.total, quote_sent_at: renewedAt }).eq("id", order.id).eq("status", "quote_sent");
+    if (Number(fresh.total) !== Number(order.quote_amount)) {
+      return res.status(409).json({ error: "Your quote was more than 48 hours old and the price has changed. Please check the new price, then pay.", newTotal: fresh.total });
+    }
+    order.quote_sent_at = renewedAt;
   }
 
   const result = await initiatePayment(order, user.email);

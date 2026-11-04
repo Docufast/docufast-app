@@ -83,6 +83,8 @@ router.patch("/:id", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Nothing to update." });
   }
+  // A new or changed quote starts a fresh 48 hours (test report D6).
+  if (updates.status === "quote_sent" || updates.quote_amount !== undefined) updates.quote_sent_at = new Date().toISOString();
 
   const { data: existingOrder } = await supabaseAdmin
     .from("orders")
