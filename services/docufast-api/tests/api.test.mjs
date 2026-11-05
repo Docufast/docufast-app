@@ -170,3 +170,15 @@ test("/health/ready reports the database as down when it cannot be reached", asy
   assert.equal(j.database, "down");
   assert.equal(JSON.stringify(j).includes("test-service-role"), false);
 });
+
+// Customer second step (#220): the authenticator app passes; everything else fails closed.
+const { customerSecondStep } = await import("../lib/verifyFounder.js");
+const fakeToken = (claims) => "h." + Buffer.from(JSON.stringify(claims)).toString("base64url") + ".s";
+
+test("customer second step: the app passes, anything else fails closed", async () => {
+  assert.equal(await customerSecondStep(fakeToken({ aal: "aal2" }), "u1"), true);
+  assert.equal(await customerSecondStep(fakeToken({ aal: "aal1" }), "u1"), false, "no device session");
+  assert.equal(await customerSecondStep(fakeToken({ aal: "aal1", session_id: "s1" }), "u1"), false, "database unreachable");
+  assert.equal(await customerSecondStep("garbage", "u1"), false);
+  assert.equal(await customerSecondStep("", "u1"), false);
+});

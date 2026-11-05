@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { encryptForShare } from "@/lib/vaultCrypto";
+import { fetchWithStepUp } from "@/components/StepUpDialog";
 
 // Share links for one Vault document (Terms section 10). The link can expire and be cancelled,
 // and every opening is logged and shown in "Who opened your documents".
@@ -73,7 +74,7 @@ export default function ShareLinks({
       form.append("iv", iv);
       form.append("days", String(days));
 
-      const res = await fetch(`${API_URL}/documents/${documentId}/shares`, {
+      const res = await fetchWithStepUp(`${API_URL}/documents/${documentId}/shares`, {
         method: "POST",
         headers: await authHeader(),
         body: form,
