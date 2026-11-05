@@ -12,6 +12,7 @@ import { ShieldCheck, Clock, RefreshCw, FolderOpen, Download } from "lucide-reac
 import AppFooter from "@/components/ui/AppFooter";
 import VaultActivity from "@/components/VaultActivity";
 import ShareLinks, { ShareRow } from "@/components/ShareLinks";
+import StepUpDialog, { fetchWithStepUp } from "@/components/StepUpDialog";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -81,7 +82,7 @@ export default function VaultPage() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    const res = await fetch(`${API_URL}/documents/${documentId}/download`, {
+    const res = await fetchWithStepUp(`${API_URL}/documents/${documentId}/download`, {
       headers: {
         Authorization: `Bearer ${session?.access_token}`,
       },
@@ -146,6 +147,7 @@ export default function VaultPage() {
 
       <div>
         <TopBar userName={fullName} />
+        <StepUpDialog />
         <div className="px-6 py-6 lg:px-12 lg:py-8">
           <div className="flex items-center justify-between overflow-hidden rounded-card border-4 border-brand-black bg-gradient-to-r from-brand-yellow/20 to-brand-yellow/5 px-6 py-6">
             <div>
