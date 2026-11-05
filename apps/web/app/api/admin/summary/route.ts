@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   if (tokenAal(token) !== "aal2") {
-    return NextResponse.json({ error: "Two-factor sign-in required." }, { status: 403 });
+    return NextResponse.json({ error: "Two-factor sign-in required. Set it up at /account/security/2fa, then sign in again." }, { status: 403 });
   }
 
   const { data: orders, error } = await supabaseAdmin
