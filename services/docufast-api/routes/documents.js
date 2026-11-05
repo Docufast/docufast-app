@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { r2Client, R2_BUCKET } from "../lib/r2Client.js";
-import { supabaseAdmin } from "../lib/verifyFounder.js";
+import { supabaseAdmin, customerSecondStep } from "../lib/verifyFounder.js";
 import { logDocumentAccess } from "../lib/accessLog.js";
 import { SHARE_DAY_CHOICES, newShareToken, hashShareToken, revokeShare } from "../services/shareService.js";
 
@@ -25,12 +25,27 @@ async function signedInUser(req) {
   return error || !user ? null : user;
 }
 
+// Signed in AND second step done (authenticator app, or an emailed code in the last 12 hours on this device).
+// Answers 401 when not signed in, 403 STEP_UP_REQUIRED when the second step is missing. Returns the user, or null
+// after it has replied. Not needed before payment (Playbook 10.1).
+async function userWithSecondStep(req, res) {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+  if (!token) { res.status(401).json({ error: "Not authenticated." }); return null; }
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  if (error || !user) { res.status(401).json({ error: "Not authenticated." }); return null; }
+  if (!(await customerSecondStep(token, user.id))) {
+    res.status(403).json({ error: "Please confirm it is you first.", code: "STEP_UP_REQUIRED" });
+    return null;
+  }
+  return user;
+}
+
 // POST /documents/:id/shares — the owner creates a share link (Terms section 10).
 // The body is the document already re-encrypted in the owner's browser with a new random key,
 // plus its IV. The key itself never reaches us; it travels only in the link after "#".
 router.post("/:id/shares", shareUpload.single("file"), async (req, res) => {
-  const user = await signedInUser(req);
-  if (!user) return res.status(401).json({ error: "Not authenticated." });
+  const user = await userWithSecondStep(req, res);
+  if (!user) return;
 
   const days = Number(req.body?.days);
   const iv = String(req.body?.iv || "");
@@ -117,6 +132,9 @@ router.get("/:id/download", async (req, res) => {
   } = await supabaseAdmin.auth.getUser(token);
   if (authError || !user) {
     return res.status(401).json({ error: "Not authenticated." });
+  }
+  if (!(await customerSecondStep(token, user.id))) {
+    return res.status(403).json({ error: "Please confirm it is you first.", code: "STEP_UP_REQUIRED" });
   }
 
   const { data: document } = await supabaseAdmin
