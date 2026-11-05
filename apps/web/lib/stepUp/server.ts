@@ -63,7 +63,12 @@ export async function sendCodeEmail(to: string, subject: string, text: string): 
         content: [{ type: "text/plain", value: text }],
       }),
     });
-    if (!r.ok) throw new Error(`SendGrid ${r.status}`);
+    if (!r.ok) {
+      // SendGrid says which field it refused (never the key). Logged by the route so a failure is a one-line diagnosis.
+      const b = await r.json().catch(() => null);
+      const why = Array.isArray(b?.errors) ? b.errors.map((e: { field?: string; message?: string }) => `${e.field ?? ""}: ${e.message ?? ""}`).join("; ") : "";
+      throw new Error(`SendGrid ${r.status} ${why}`.trim());
+    }
   } finally {
     clearTimeout(t);
   }
