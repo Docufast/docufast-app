@@ -30,7 +30,7 @@ async function requireFounder(request: Request) {
   const { data: profile } = await supabaseAdmin.from("profiles").select("role").eq("id", user.id).single();
   // Founder and Support answer customer questions (#224).
   if (profile?.role !== "founder" && profile?.role !== "support") return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
-  if (tokenAal(token) !== "aal2") return { error: NextResponse.json({ error: "Two-factor sign-in required." }, { status: 403 }) };
+  if (tokenAal(token) !== "aal2") return { error: NextResponse.json({ error: "Two-factor sign-in required. Set it up at /account/security/2fa, then sign in again." }, { status: 403 }) };
 
   return { supabaseAdmin, user };
 }
